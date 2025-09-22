@@ -19,9 +19,11 @@ const index = () => {
           <Text className="text-base font-medium text-[12px]">
             Mobile Number
           </Text>
-          <TextInput
+          <TextInput 
             className="p-5 bg-white rounded-2xl mt-2"
             placeholder="+91 9182736450"
+            keyboardType="phone-pad"
+            maxLength={10}
           />
           <TouchableOpacity onPress={() => router.push("/(login)/Otp")} className="bg-primary mt-5 p-5 rounded-2xl">
             <Text className="text-center text-white">Continue</Text>

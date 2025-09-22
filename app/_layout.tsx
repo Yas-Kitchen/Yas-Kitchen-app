@@ -7,9 +7,6 @@ export default function RootLayout() {
     <GlobalProvider>
       <Stack screenOptions={{ headerShown: false }} >
         <Stack.Screen name="index"/>
-        <Stack.Screen name="(parent)"/>
-        <Stack.Screen name="(teacher)"/>
-        <Stack.Screen name="(admin)"/>
       </Stack>
     </GlobalProvider>
   );
