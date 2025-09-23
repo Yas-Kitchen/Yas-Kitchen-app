@@ -10,7 +10,7 @@ module.exports = {
     extend: {
       colors: {
         primary: '#FF7629',
-        base : '#6C757D',
+        base_color : '#6C757D',
         faded_black : '#212529'
       }
     },

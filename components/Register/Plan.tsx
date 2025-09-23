@@ -2,7 +2,6 @@ import { useGlobalContext } from "@/context/GlobalContext";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import MonthlyPlan from "./MonthlyPlan";
-
 const Plan = () => {
   const { setActiveStep } = useGlobalContext();
   return (
