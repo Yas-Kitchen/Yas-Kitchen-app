@@ -1,8 +1,11 @@
+import AlreadyAccount from "@/components/shared/AlreadyAccount";
+import { useGlobalContext } from "@/context/GlobalContext";
 import { router } from "expo-router";
 import React from "react";
 import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
 
-const index = () => {
+const Index = () => {
+  const {setMobile} = useGlobalContext()
   return (
     <View className="h-screen justify-center">
       <Image
@@ -24,18 +27,16 @@ const index = () => {
             placeholder="+91 9182736450"
             keyboardType="phone-pad"
             maxLength={10}
+            onChangeText={setMobile}
           />
           <TouchableOpacity onPress={() => router.push("/(login)/Otp")} className="bg-primary mt-5 p-5 rounded-2xl">
             <Text className="text-center text-white">Continue</Text>
           </TouchableOpacity>
         </View>
-      </View>
-          <TouchableOpacity className=" mt-5 flex-row justify-center">
-            <Text className="text-center text-black">New to yas kitchen ? </Text>
-            <Text className="text-primary"> Register Now</Text>
-          </TouchableOpacity>
+      </View> 
+          <AlreadyAccount main={"New to yas kitchen ? "} sub={"Register Now"} route={"/(register)"}/>
     </View>
   );
 };
 
-export default index;
+export default Index;

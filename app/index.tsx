@@ -12,7 +12,7 @@ export default function Login() {
           <Text className="text-white">Login</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => router.replace("/(user)")}
+          onPress={() => router.replace("/(register)")}
           className="bg-primary h-14 w-60 rounded-full flex justify-center items-center"
         >
           <Text className="text-white">Register</Text>
