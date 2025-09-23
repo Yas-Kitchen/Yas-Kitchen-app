@@ -13,7 +13,7 @@ const Plan = () => {
           onPress={() => {
             setActiveStep(1);
           }}
-          className="bg-base/10 mt-5 p-5 w-1/2 rounded-2xl"
+          className="bg-base_color/10 mt-5 p-5 w-1/2 rounded-2xl"
         >
           <Text className="text-center text-black">Back</Text>
         </TouchableOpacity>

@@ -9,34 +9,48 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+const foodPlans = [
+  {
+    key: "Regular",
+    name: "Regular Plan",
+    description: "Daily meals delivered to your doorstep",
+    price: 83,
+    image: require("@assets/Shared/regular_meal.png"),
+  },
+  {
+    key: "Diet",
+    name: "Diet Plan",
+    description: "Calorie-controlled meals for weight management",
+    price: 100,
+    image: require("@assets/Shared/diet_meal.png"),
+  },
+  {
+    key: "Kids",
+    name: "Kids Plan",
+    description: "Nutritious meals specially designed for children",
+    price: 75,
+    image: require("@assets/Shared/kids_meal.png"),
+  },
+];
+
+const scales = foodPlans.map(() => useSharedValue(1));
+const borderAnims = foodPlans.map(() => useSharedValue(0));
+
+const animatedStyles = scales.map((scale, index) =>
+  useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+      borderColor: interpolateColor(
+        borderAnims[index].value,
+        [0, 1],
+        ["transparent", "#FF6F00"]
+      ),
+    };
+  })
+);
+
 const MonthlyPlan = () => {
   const [monthlyPlan, setMonthlyPlan] = useState("");
-  const foodPlans = [
-    {
-      key: "Regular",
-      name: "Regular Plan",
-      description: "Daily meals delivered to your doorstep",
-      price: 83,
-      image: require("@assets/Shared/regular_meal.png"),
-    },
-    {
-      key: "Diet",
-      name: "Diet Plan",
-      description: "Calorie-controlled meals for weight management",
-      price: 100,
-      image: require("@assets/Shared/diet_meal.png"),
-    },
-    {
-      key: "Kids",
-      name: "Kids Plan",
-      description: "Nutritious meals specially designed for children",
-      price: 75,
-      image: require("@assets/Shared/kids_meal.png"),
-    },
-  ];
-
-  const scales = foodPlans.map(() => useSharedValue(1));
-  const borderAnims = foodPlans.map(() => useSharedValue(0));
 
   const handlePress = (key: string, index: number) => {
     setMonthlyPlan(key);
@@ -54,17 +68,7 @@ const MonthlyPlan = () => {
   return (
     <View className="flex-col">
       {foodPlans.map((plan, index) => {
-        const animatedStyle = useAnimatedStyle(() => {
-          return {
-            transform: [{ scale: scales[index].value }],
-            borderColor: interpolateColor(
-              borderAnims[index].value,
-              [0, 1],
-              ["transparent", "#FF6F00"]
-            ),
-          };
-        });
-
+        const animatedStyle = animatedStyles[index];
         const isSelected = monthlyPlan === plan.key;
 
         return (
@@ -86,7 +90,7 @@ const MonthlyPlan = () => {
                   <View className="flex-row text-center items-center gap-1">
                     <Image
                       className="w-[10px] h-[10px] fill-primary"
-                      source={require("@assets/Shared/dirham.png")}
+                      source={require("@assets/Shared/dirham.svg")}
                     />
                     <Text className="text-primary font-semibold">
                       {plan.price} /mo
