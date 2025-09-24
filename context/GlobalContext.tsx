@@ -54,7 +54,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     monthlyPlan,
     setMonthlyPlan,
     kidsPlanSelected,
-    setKidsPlanSelected
+    setKidsPlanSelected,
   };
   return (
     <GlobalContext.Provider value={values}>{children}</GlobalContext.Provider>

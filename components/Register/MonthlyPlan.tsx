@@ -140,7 +140,6 @@ const MonthlyPlan = () => {
           </Pressable>
         );
       })}
-      {/* Kids Plan as independent toggle */}
       <Pressable
         key={kidsPlan.key}
         onPress={handleKidsPress}

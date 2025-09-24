@@ -1,4 +1,4 @@
-import { router } from "expo-router";
+import { Href, router } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -12,7 +12,7 @@ const AlreadyAccount = ({main,sub,route} : AlreadyProps) => {
   return (
     <View className=" mt-5 flex-row justify-center">
       <Text className="text-center text-faded_black">{main}</Text>
-      <TouchableOpacity onPress={() => router.replace(route)}>
+      <TouchableOpacity onPress={() => router.replace(route as Href)}>
         <Text className="text-primary"> {sub}</Text>
       </TouchableOpacity>
     </View>
