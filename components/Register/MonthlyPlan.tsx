@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useGlobalContext } from "@/context/GlobalContext";
 import { Image, Pressable, Text, View } from "react-native";
 import Animated, {
   interpolateColor,
@@ -50,7 +50,7 @@ const animatedStyles = scales.map((scale, index) =>
 );
 
 const MonthlyPlan = () => {
-  const [monthlyPlan, setMonthlyPlan] = useState("");
+  const { monthlyPlan, setMonthlyPlan } = useGlobalContext();
 
   const handlePress = (key: string, index: number) => {
     setMonthlyPlan(key);
@@ -74,7 +74,10 @@ const MonthlyPlan = () => {
         return (
           <Pressable
             key={plan.key}
-            onPress={() => handlePress(plan.key, index)}
+            onPress={() => {
+              handlePress(plan.key, index);
+              setMonthlyPlan(plan.key);
+            }}
           >
             <Animated.View
               layout={Layout.springify()}

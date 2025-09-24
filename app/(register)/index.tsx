@@ -1,5 +1,6 @@
 import Details from "@/components/Register/Details";
 import Plan from "@/components/Register/Plan";
+import Review from "@/components/Register/Review";
 import Stepper from "@/components/Register/Stepper";
 import AlreadyAccount from "@/components/shared/AlreadyAccount";
 import { useGlobalContext } from "@/context/GlobalContext";
@@ -33,6 +34,12 @@ const Index = () => {
     transform: [{ translateX: interpolate(progress.value, [1, 2], [50, 0]) }],
   }));
   
+const reviewStyle = useAnimatedStyle(() => ({
+  opacity: interpolate(progress.value, [2, 3], [0, 1]),
+  transform: [
+    { translateX: interpolate(progress.value, [2, 3], [50, 0]) },
+  ],
+}));
   return (
     <View className="mt-20 mx-5">
       <Text className="text-center text-[20px] font-bold text-faded_black">
@@ -47,6 +54,9 @@ const Index = () => {
       </Animated.View>
       <Animated.View style={planStyle}>
         {activeStep === 2 && <Plan />}
+      </Animated.View>
+      <Animated.View style={reviewStyle}>
+        {activeStep === 3 && <Review />}
       </Animated.View>
 
       <AlreadyAccount
