@@ -61,8 +61,8 @@ const reviewStyle = useAnimatedStyle(() => ({
 
       <AlreadyAccount
         main="Already have an account ?"
-        sub="Login"
-        route="/(login)"
+        sub="Login" 
+        route="/"
       />
     </View>
   );

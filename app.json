@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Frontend",
+    "name": "Yas Kitchen",
     "slug": "Frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/login/logo.png",
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

@@ -1,20 +1,22 @@
+import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
 import {
-    Pressable,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Pressable,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const Otp = () => {
+  const {mobile} = useGlobalContext()
   return (
     <>
       <Pressable
         className="mt-20 absolute mx-5"
-        onPress={() => router.push("/(login)")}
+        onPress={() => router.back()}
       >
         <Feather name="chevron-left" size={30} />
       </Pressable>
@@ -27,7 +29,7 @@ const Otp = () => {
             We&apos;ve sent a verification code to
           </Text>
           <Text className="text-base text-[14px] font-medium">
-            +91 9182736450
+            {mobile}
           </Text>
           <View className="mt-10">
             <Text className="text-base text-[14px] text-center font-medium">

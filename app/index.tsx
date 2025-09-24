@@ -10,7 +10,7 @@ const Index = () => {
     <View className="h-screen justify-center">
       <Image
         className="w-36 h-36 mx-auto"
-        source={require("../../assets/Login/logo.png")}
+        source={require("@assets/Login/logo.png")}
       />
       <Text className="text-[26px] font-bold mx-auto text-faded_black">
         Yas Kitchen
@@ -35,7 +35,7 @@ const Index = () => {
           />
           <TouchableOpacity
           disabled={mobile.length<9}
-            onPress={() => router.push("/Otp")}
+            onPress={() => router.push("/(login)/Otp")}
             className={`${mobile.length<9 ? "bg-base_color/50" : 'bg-primary'} mt-5 p-5 rounded-2xl`}
           >
             <Text className="text-center text-white">Continue</Text>
@@ -45,7 +45,7 @@ const Index = () => {
       <AlreadyAccount
         main={"New to yas kitchen ? "}
         sub={"Register Now"}
-        route={"/(register)"}
+        route={"/register"}
       />
     </View>
   );
