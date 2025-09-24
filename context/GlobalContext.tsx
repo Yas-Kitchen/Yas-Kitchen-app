@@ -17,6 +17,8 @@ interface GlobalContextType {
   setActiveStep : React.Dispatch<React.SetStateAction<number>>
   monthlyPlan : string
   setMonthlyPlan : React.Dispatch<React.SetStateAction<string>>
+  kidsPlanSelected : string
+  setKidsPlanSelected : React.Dispatch<React.SetStateAction<string>>
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -32,6 +34,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [foodStyle, setFoodStyle] = useState("south");
   const [activeStep, setActiveStep] = useState(1);
   const [monthlyPlan, setMonthlyPlan] = useState("");
+  const [kidsPlanSelected, setKidsPlanSelected] = useState("");
 
   const values: GlobalContextType = {
     mobile,
@@ -49,7 +52,9 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     activeStep,
     setActiveStep,
     monthlyPlan,
-    setMonthlyPlan
+    setMonthlyPlan,
+    kidsPlanSelected,
+    setKidsPlanSelected
   };
   return (
     <GlobalContext.Provider value={values}>{children}</GlobalContext.Provider>

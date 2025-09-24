@@ -12,7 +12,7 @@ type AlreadyProps ={
 const AlreadyAccount = ({main,sub,route} : AlreadyProps) => {
   return (
     <View className=" mt-5 flex-row justify-center">
-      <Text className="text-center text-black">{main}</Text>
+      <Text className="text-center text-faded_black">{main}</Text>
       <TouchableOpacity onPress={() => router.push(route)}>
         <Text className="text-primary"> {sub}</Text>
       </TouchableOpacity>
