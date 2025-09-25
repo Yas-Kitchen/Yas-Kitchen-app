@@ -1,0 +1,30 @@
+{
+  "specials": [
+    {
+      "id": "chicken_curry",
+      "name": "Chicken Curry", 
+      "description": "Tender chicken pieces cooked in aromatic gravy",
+      "price": 120,
+      "image": "chickencurry.png",
+      "order_deadline": "Order before 10"
+    },
+    {
+      "id": "egg_curry",
+      "name": "Egg Curry",
+      "description": "Boiled eggs in flavorful gravy", 
+      "price": 80,
+      "image": "eggcurry.png",
+      "order_deadline": "Order before 10",
+      "featured": true
+    },
+    {
+      "id": "beef_curry", 
+      "name": "Beef Curry",
+      "description": "Tender beef pieces cooked in aromatic gravy",
+      "price": 150,
+      "image": "beefcurry.png",
+      "order_deadline": "Order before 10",
+      "quantity": 1
+    }
+  ]
+}

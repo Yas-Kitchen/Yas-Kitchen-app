@@ -4,23 +4,15 @@ import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
 
 const imageMap: Record<string, any> = {
-  "beefcurry.png": require("../../../assets/User/beefcurry.png"),
   "biriyani.png": require("../../../assets/User/biriyani.png"),
   "chappathiwithCC.png": require("../../../assets/User/chappathiwithCC.png"),
   "chappathiwithvegkurma.png": require("../../../assets/User/chappathiwithvegkurma.png"),
-  "chickencurry.png": require("../../../assets/User/chickencurry.png"),
-  "chickenfry.png": require("../../../assets/User/chickenfry.png"),
-  "curd.png": require("../../../assets/User/curd.png"),
-  "diet_meal.png": require("../../../assets/User/diet_meal.png"),
   "dosa.png": require("../../../assets/User/dosa.png"),
   "dosawithfishcurry.png": require("../../../assets/User/dosawithfishcurry.png"),
-  "eggcurry.png": require("../../../assets/User/eggcurry.png"),
   "gheericewithchicken.png": require("../../../assets/User/gheericewithchicken.png"),
   "idiyappamwithgreenpeas.png": require("../../../assets/User/idiyappamwithgreenpeas.png"),
   "idliwithsambar.png": require("../../../assets/User/idliwithsambar.png"),
-  "kondattam.png": require("../../../assets/User/kondattam.png"),
   "meals.png": require("../../../assets/User/meals.png"),
-  "pappadam.png": require("../../../assets/User/pappadam.png"),
   "porottawithbeef.png": require("../../../assets/User/porottawithbeef.png"),
   "ricewithchicken.png": require("../../../assets/User/ricewithchicken.png"),
   "ricewitheggcurry.png": require("../../../assets/User/ricewitheggcurry.png"),
