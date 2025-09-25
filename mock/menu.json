@@ -1,0 +1,130 @@
+{
+  "menu": {
+    "monday": {
+      "lunch": {
+        "id": "mon_lunch",
+        "name": "Rice - Fish curry",
+        "description": "Aromatic basmati rice served with traditional South Indian fish curry",
+        "availability": "12:00-15:00",
+        "rating": 1.2,
+        "image": "ricewithfish.png"
+      },
+      "dinner": {
+        "id": "mon_dinner",
+        "name": "Chappathi - Veg curma",
+        "description": "Soft wheat chapathi with mixed vegetable kurma in coconut sauce",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "chappathiwithvegkurma.png"
+      }
+    },
+    "tuesday": {
+      "lunch": {
+        "id": "tue_lunch",
+        "name": "Rice - Moru Curry",
+        "description": "Steamed rice with traditional Kerala moru curry (buttermilk curry)",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "ricewithmorucurry.png"
+      },
+      "dinner": {
+        "id": "tue_dinner",
+        "name": "Porotta - Beef",
+        "description": "Flaky layered porotta served with spicy Kerala-style beef curry",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "porottawithbeef.png"
+      }
+    },
+    "wednesday": {
+      "lunch": {
+        "id": "wed_lunch",
+        "name": "Rice - Chicken Curry",
+        "description": "Fragrant basmati rice with home-style chicken curry",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "ricewithchicken.png"
+      },
+      "dinner": {
+        "id": "wed_dinner",
+        "name": "Chappathi - Chicken",
+        "description": "Fresh wheat chapathi with tender chicken curry in rich gravy",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "chappathiwithCC.png"
+      }
+    },
+    "thursday": {
+      "lunch": {
+        "id": "thu_lunch",
+        "name": "Rice - Sambar",
+        "description": "Traditional South Indian rice with authentic sambar and vegetables",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "ricewithsambar.png"
+      },
+      "dinner": {
+        "id": "thu_dinner",
+        "name": "Idiyappan - Green Peas",
+        "description": "String hoppers served with flavorful green peas curry",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "idiyappamwithgreenpeas.png"
+      }
+    },
+    "friday": {
+      "lunch": {
+        "id": "fri_lunch",
+        "name": "Biriyani",
+        "description": "Aromatic basmati rice cooked with spices, served with raita",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "biriyani.png"
+      },
+      "dinner": {
+        "id": "fri_dinner",
+        "name": "Ghee Rice - Chicken",
+        "description": "Fragrant ghee rice paired with succulent chicken curry",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "gheericewithchicken.png"
+      }
+    },
+    "saturday": {
+      "lunch": {
+        "id": "sat_lunch",
+        "name": "Rice - Egg curry",
+        "description": "Steamed rice with spiced egg curry in onion-tomato gravy",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "ricewitheggcurry.png"
+      },
+      "dinner": {
+        "id": "sat_dinner",
+        "name": "Dosha - Fish curry",
+        "description": "Crispy dosa served with traditional fish curry and coconut chutney",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "dosawithfishcurry.png"
+      }
+    },
+    "sunday": {
+      "lunch": {
+        "id": "sun_lunch",
+        "name": "Meals",
+        "description": "Traditional South Indian thali with rice, sambar, rasam, vegetables",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "meals.png"
+      },
+      "dinner": {
+        "id": "sun_dinner",
+        "name": "Majboos",
+        "description": "Arabian-style spiced rice with meat, fusion specialty dish",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": ""
+      }
+    }
+  }
+}
