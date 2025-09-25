@@ -1,6 +1,8 @@
 import Greetings from "@/components/User/Home/Greetings";
 import TodaysMeal from "@/components/User/Home/TodaysMeal";
+import WeeklyPlan from "@/components/User/Home/WeeklyPlan";
 import { useMockMenu } from "@/hooks/use-MockMenu";
+import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 
@@ -13,9 +15,9 @@ const Home = () => {
   const todaysMenu = menu.menu[weekName];
   return (
     <ScrollView>
-      <View className="mt-16 mx-5">
+      <View className="mt-16 mx-5 gap-8">
         <Greetings />
-        <View className="mt-8 gap-5">
+        <View className="gap-5">
           <Text className="font-semibold text-[17px] text-faded_black">
             Today&apos;s Meal&apos;s
           </Text>
@@ -35,6 +37,20 @@ const Home = () => {
             lunch={false}
             image={todaysMenu.dinner.image}
           />
+        </View>
+        <View className="gap-3">
+          <View className="flex-row justify-between">
+            <Text className="font-semibold text-[17px] text-faded_black">
+              This Week
+            </Text>
+            <View className="flex-row items-center">
+              <Text className="text-primary text-[12px font-medium]">
+                Full plan
+              </Text>
+              <Feather name="chevron-right" color={"#FF7629"} size={15} />
+            </View>
+          </View>
+          <WeeklyPlan />
         </View>
       </View>
       <View className="h-32" />
