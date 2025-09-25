@@ -1,7 +1,5 @@
 import FoodSectionWeeklyPlan from "@/components/User/Food/FoodSectionWeeklyPlan";
 import Specials from "@/components/User/Food/Specials";
-import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
 import { useRef, useState } from "react";
 import {
   Animated,
@@ -19,7 +17,6 @@ const Food = () => {
   const contentTranslateX = useRef(new Animated.Value(0)).current;
   const weeklyTabScale = useRef(new Animated.Value(1)).current;
   const specialTabScale = useRef(new Animated.Value(1)).current;
-  const backButtonScale = useRef(new Animated.Value(1)).current;
 
   const switchTab = (newTab: string) => {
     if (newTab === tab) return;
@@ -78,38 +75,10 @@ const Food = () => {
     ]).start();
   };
 
-  const animateBackPress = () => {
-    Animated.sequence([
-      Animated.timing(backButtonScale, {
-        toValue: 0.9,
-        duration: 100,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(backButtonScale, {
-        toValue: 1,
-        duration: 100,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
   return (
     <ScrollView>
       <View className="mt-16 mx-5 gap-3">
         <View className="flex-row gap-2 items-center">
-          <Animated.View style={{ transform: [{ scale: backButtonScale }] }}>
-            <TouchableOpacity
-              onPress={() => {
-                animateBackPress();
-                router.push("/(user)");
-              }}
-              activeOpacity={0.7}
-            >
-              <Feather name="chevron-left" size={20} color={"#212529"} />
-            </TouchableOpacity>
-          </Animated.View>
           <Text className="text-[#212529] font-semibold text-[16px]">
             Food Section
           </Text>

@@ -1,18 +1,18 @@
-import { Feather } from '@expo/vector-icons'
-import React from 'react'
-import { ScrollView, Text, View } from 'react-native'
+import AddonsItems from "@/components/User/Add-on/Addons";
+import React from "react";
+import { ScrollView, Text, View } from "react-native";
 
 const Addons = () => {
   return (
     <ScrollView>
-      <View>
-        <View>
-          <Feather name='chevron-left' size={20} color={'#6C757D'}/>
-          <Text>Food Section</Text>
-        </View>
+      <View className="mt-16 mx-5 gap-3">
+          <Text className="text-[#212529] font-semibold text-[16px]">
+            Add-on item&apos;s
+          </Text>
+        <AddonsItems/>
       </View>
     </ScrollView>
-  )
-}
+  );
+};
 
-export default Addons
+export default Addons;

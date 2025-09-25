@@ -1,0 +1,30 @@
+{
+  "addons": [
+    {
+      "id": "pappadam",
+      "name": "Pappadam",
+      "description": "Crunchy pappadam",
+      "price": 10,
+      "image": "pappadam.png",
+      "order_deadline": "Order before 12"
+    },
+    {
+      "id": "curd", 
+      "name": "Curd",
+      "description": "Curd",
+      "price": 30,
+      "image": "curd.png",
+      "order_deadline": "Order before 12",
+      "featured": true
+    },
+    {
+      "id": "salad",
+      "name": "Salad", 
+      "description": "Salad",
+      "price": 25,
+      "image": "salad.png",
+      "order_deadline": "Order before 12",
+      "quantity": 1
+    }
+  ]
+}

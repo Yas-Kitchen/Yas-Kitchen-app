@@ -1,32 +1,32 @@
-import { useMockSpecials } from "@/hooks/use-MockSpecials";
+import { useMockAddons } from "@/hooks/use-MockAddons";
 import React from "react";
 import {
-  Animated,
-  Dimensions,
-  Easing,
-  Image,
-  Linking,
-  Text,
-  TouchableOpacity,
-  View,
+    Animated,
+    Dimensions,
+    Easing,
+    Image,
+    Linking,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
-const Specials = () => {
+const AddonsItems = () => {
   const screenWidth = Dimensions.get("window").width;
   const width = Math.min(Math.max(screenWidth * 0.45, 300), 130);
   const height = width * 0.8;
   const mobile = 8547266801;
 
   const imageMap: Record<string, any> = {
-    "chickencurry.png": require("../../../assets/User/chickencurry.png"),
-    "beefcurry.png": require("../../../assets/User/beefcurry.png"),
-    "chickenfry.png": require("../../../assets/User/chickenfry.png"),
     "curd.png": require("../../../assets/User/curd.png"),
-    "eggcurry.png": require("../../../assets/User/eggcurry.png"),
+    "chickenfry.png": require("../../../assets/User/chickenfry.png"),
+    "kondattam.png": require("../../../assets/User/kondattam.png"),
+    "pappadam.png": require("../../../assets/User/pappadam.png"),
+    "salad.png": require("../../../assets/User/salad.png"),
   };
 
-  const specials = useMockSpecials();
-  const items = specials.specials;
+  const Addons = useMockAddons();
+  const items = Addons.addons;
   const [cart, setCart] = React.useState<{ [key: string]: number }>({});
 
   const cartAnimation = React.useRef(new Animated.Value(0)).current;
@@ -148,9 +148,6 @@ const Specials = () => {
 
   return (
     <View className="mt-2 gap-3">
-      <Text className="text-faded_black font-semibold text-[17px]">
-        Today&apos;s Special Items
-      </Text>
       {items.map((item) => (
         <View
           key={item.id}
@@ -235,8 +232,6 @@ const Specials = () => {
           </View>
         </View>
       ))}
-
-      {/* Smooth Cart Popup */}
       <Animated.View
         style={{
           transform: [
@@ -302,4 +297,4 @@ const Specials = () => {
   );
 };
 
-export default Specials;
+export default AddonsItems;
