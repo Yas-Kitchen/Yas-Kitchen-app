@@ -58,7 +58,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   return (
     <View className="absolute bottom-0 left-0 right-0 pb-8 px-4 bg-transparent">
       <View
-        className="bg-white rounded-full shadow-2xl mx-2 overflow-hidden"
+        className="bg-white border border-base_color/10 rounded-full shadow-2xl mx-2 overflow-hidden"
         style={{
           flexDirection: "row",
           position: "relative",
