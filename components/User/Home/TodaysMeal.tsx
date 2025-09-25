@@ -27,6 +27,7 @@ const imageMap: Record<string, any> = {
   "ricewithfish.png": require("../../../assets/User/ricewithfish.png"),
   "ricewithmorucurry.png": require("../../../assets/User/ricewithmorucurry.png"),
   "ricewithsambar.png": require("../../../assets/User/ricewithsambar.png"),
+  "majboos.png": require("../../../assets/User/majboos.png"),
 };
 
 type MealTypes = {

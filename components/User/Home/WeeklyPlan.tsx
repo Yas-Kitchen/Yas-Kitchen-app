@@ -83,10 +83,10 @@ const WeeklyPlan = () => {
                 {day.date} {day.month}
               </Text>
             </View>
-              <View className="mt-1 gap-1">
-                <Text className="text-[12px]">Lunch: {day.lunch}</Text>
-                <Text className="text-[12px]">Dinner: {day.dinner}</Text>
-              </View>
+            <View className="mt-1 gap-1">
+              <Text className="text-[12px]">Lunch: {day.lunch}</Text>
+              <Text className="text-[12px]">Dinner: {day.dinner}</Text>
+            </View>
           </View>
         ))}
       </View>
