@@ -1,6 +1,6 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import React, { useEffect } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Dimensions, Pressable, Text, View } from "react-native";
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
@@ -43,22 +43,26 @@ const FoodStyle = () => {
     borderWidth: southBorder.value > 0 ? 2 : 0,
   }));
 
+  const screenWidth = Dimensions.get('window').width
+  const width = Math.min(Math.max(screenWidth * 0.45, 120), 150)
+  const height = width * 0.82
+
   return (
     <View className="mt-3">
-      <View className="flex-row justify-between mx-2">
+      <View className="flex-row justify-evenly gap-4">
         <Pressable onPress={() => setFoodStyle("north")}>
           <Animated.Image
-            className="w-[170px] h-[140px] rounded-2xl"
+            className="rounded-2xl"
             source={require("@assets/Shared/north_indian.png")}
-            style={northStyle}
+            style={[northStyle, { width, height }]}
           />
         </Pressable>
 
         <Pressable onPress={() => setFoodStyle("south")}>
           <Animated.Image
-            className="w-[170px] h-[140px] rounded-2xl"
+            className="rounded-2xl"
             source={require("@assets/Shared/south_indian.png")}
-            style={southStyle}
+            style={[southStyle, { width, height }]}
           />
         </Pressable>
       </View>

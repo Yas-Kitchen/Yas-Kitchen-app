@@ -5,7 +5,8 @@ import PersonalDetails from "./PersonalDetails";
 import SubscriptionPlan from "./SubscriptionPlan";
 
 const Review = () => {
-  const { monthlyPlan, name, mobile, adress, foodStyle } = useGlobalContext();
+  const { monthlyPlan, name, mobile, adress, foodStyle, kidsPlanSelected } =
+    useGlobalContext();
 
   return (
     <View className="bg-white rounded-2xl mt-10 p-5 pt-8 gap-2">
@@ -16,9 +17,11 @@ const Review = () => {
       <SubscriptionPlan />
       <TouchableOpacity
         onPress={() => {
-          const phoneNumber = 919876543210;
+          const phoneNumber = 918547266801;
 
-          const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} plan with ${foodStyle} Indian style. My address is ${adress}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
+          const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} plan ${
+            kidsPlanSelected && "with Kids plan and"
+          } with ${foodStyle} Indian style. My address is ${adress}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
           const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
             message
           )}`;

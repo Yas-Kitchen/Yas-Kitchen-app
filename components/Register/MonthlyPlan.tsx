@@ -1,5 +1,6 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import { Image, Pressable, Text, View } from "react-native";
+import { useEffect } from "react";
+import { Dimensions, Image, Pressable, Text, View } from "react-native";
 import Animated, {
   interpolateColor,
   Layout,
@@ -34,38 +35,34 @@ const kidsPlan = {
   image: require("@assets/Shared/kids_meal.png"),
 };
 
-const scales = foodPlans.map(() => useSharedValue(1));
-const borderAnims = foodPlans.map(() => useSharedValue(0));
-
-const kidsScale = useSharedValue(1);
-const kidsBorderAnim = useSharedValue(0);
-
-const animatedStyles = scales.map((scale, index) =>
-  useAnimatedStyle(() => {
-    return {
-      transform: [{ scale: scale.value }],
-      borderColor: interpolateColor(
-        borderAnims[index].value,
-        [0, 1],
-        ["transparent", "#FF6F00"]
-      ),
-    };
-  })
-);
-
-const kidsAnimatedStyle = useAnimatedStyle(() => {
-  return {
-    transform: [{ scale: kidsScale.value }],
-    borderColor: interpolateColor(
-      kidsBorderAnim.value,
-      [0, 1],
-      ["transparent", "#FF6F00"]
-    ),
-  };
-});
-
 const MonthlyPlan = () => {
-  const { monthlyPlan, setMonthlyPlan, kidsPlanSelected, setKidsPlanSelected } = useGlobalContext();
+  useEffect(() => {
+    const images = [
+      require("@assets/Shared/regular_meal.png"),
+      require("@assets/Shared/diet_meal.png"),
+      require("@assets/Shared/kids_meal.png"),
+    ];
+    images.forEach(img => Image.prefetch(img));
+  }, []);
+  const { monthlyPlan, setMonthlyPlan, kidsPlanSelected, setKidsPlanSelected } =
+    useGlobalContext();
+
+  const scales = foodPlans.map(() => useSharedValue(1));
+  const borderAnims = foodPlans.map(() => useSharedValue(0));
+  const kidsScale = useSharedValue(1);
+  const kidsBorderAnim = useSharedValue(0);
+
+  const animatedStyles = scales.map((scale, index) =>
+    useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+      borderColor: interpolateColor(borderAnims[index].value, [0, 1], ["transparent", "#FF6F00"]),
+    }))
+  );
+
+  const kidsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: kidsScale.value }],
+    borderColor: interpolateColor(kidsBorderAnim.value, [0, 1], ["transparent", "#FF6F00"]),
+  }));
 
   const handlePress = (key: string, index: number) => {
     setMonthlyPlan(key);
@@ -97,7 +94,9 @@ const MonthlyPlan = () => {
       {foodPlans.map((plan, index) => {
         const animatedStyle = animatedStyles[index];
         const isSelected = monthlyPlan === plan.key;
-
+        const screenWidth = Dimensions.get('window').width
+        const width = Math.min(Math.max(screenWidth * 0.45 ,200), 110)
+        const height = width * 1
         return (
           <Pressable
             key={plan.key}
@@ -111,69 +110,66 @@ const MonthlyPlan = () => {
               className={`overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2`}
               style={animatedStyle}
             >
-              <Image className="w-[130px] h-[130px]" source={plan.image} />
-              <View className="flex-col pt-6 gap-1">
-                <View className="flex-row items-center justify-between">
-                  <Text className="w-1/2 text-[14px] font-semibold">
+              <Image style={{height,width}} source={plan.image} />
+              <View className="flex-row pt-6 gap-1 justify-evenly">
+                <View className="flex-col w-1/2">
+                  <Text className="text-[14px] font-semibold">
                     {plan.name}
                   </Text>
-                  <View className="flex-row text-center items-center gap-1">
-                    <Image
-                      className="w-[10px] h-[10px] fill-primary"
-                      source={require("@assets/Shared/dirham.svg")}
-                    />
-                    <Text className="text-primary font-semibold">
-                      {plan.price} /mo
-                    </Text>
-                  </View>
+                  <Text className="text-base_color text-[12px] text-regular">
+                    {plan.description}
+                  </Text>
                 </View>
-                <Text className="text-base_color text-[12px] text-regular w-[200px]">
-                  {plan.description}
-                </Text>
-                {isSelected ? (
-                  <View className="rounded-full absolute bottom-4 right-1 bg-primary w-5 h-5" />
-                ) : (
-                  <View className="rounded-full absolute bottom-4 right-1 bg-base_color/10 w-5 h-5" />
-                )}
+                <View className="flex-row text-center items-baseline gap-1">
+                  <Image
+                    className="w-[10px] h-[10px] fill-primary"
+                    source={require("@assets/Shared/dirham.svg")}
+                  />
+                  <Text className="text-primary font-semibold">
+                    {plan.price} /mo
+                  </Text>
+                </View>
               </View>
+                <View
+                  className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
+                    isSelected ? "bg-primary" : "bg-base_color/10"
+                  }`}
+                />
             </Animated.View>
           </Pressable>
         );
       })}
-      <Pressable
-        key={kidsPlan.key}
-        onPress={handleKidsPress}
-      >
+      <Pressable key={kidsPlan.key} onPress={handleKidsPress}>
         <Animated.View
           layout={Layout.springify()}
-          className={`overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2`}
+          className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
           style={kidsAnimatedStyle}
         >
-          <Image className="w-[130px] h-[130px]" source={kidsPlan.image} />
-          <View className="flex-col pt-6 gap-1">
-            <View className="flex-row items-center justify-between">
-              <Text className="w-1/2 text-[14px] font-semibold">
+          <Image style={{height: Dimensions.get('window').width * 0.25, width: Dimensions.get('window').width * 0.25}} source={kidsPlan.image} />
+          <View className="flex-row gap-1 pt-4 justify-evenly">
+            <View className="flex-col w-1/2">
+              <Text className="text-[14px] font-semibold">
                 {kidsPlan.name}
               </Text>
-              <View className="flex-row text-center items-center gap-1">
-                <Image
-                  className="w-[10px] h-[10px] fill-primary"
-                  source={require("@assets/Shared/dirham.svg")}
-                />
-                <Text className="text-primary font-semibold">
-                  {kidsPlan.price} /mo
-                </Text>
-              </View>
+              <Text className="text-base_color text-[12px] text-regular">
+                {kidsPlan.description}
+              </Text>
             </View>
-            <Text className="text-base_color text-[12px] text-regular w-[200px]">
-              {kidsPlan.description}
-            </Text>
-            {kidsPlanSelected ? (
-              <View className="rounded-full absolute bottom-4 right-1 bg-primary w-5 h-5" />
-            ) : (
-              <View className="rounded-full absolute bottom-4 right-1 bg-base_color/10 w-5 h-5" />
-            )}
+            <View className="flex-row text-center items-baseline gap-1">
+              <Image
+                className="w-[10px] h-[10px] fill-primary"
+                source={require("@assets/Shared/dirham.svg")}
+              />
+              <Text className="text-primary font-semibold">
+                {kidsPlan.price} /mo
+              </Text>
+            </View>
           </View>
+          {kidsPlanSelected ? (
+            <View className="rounded-full absolute bottom-4 right-3 bg-primary w-5 h-5" />
+          ) : (
+            <View className="rounded-full absolute bottom-4 right-3 bg-base_color/10 w-5 h-5" />
+          )}
         </Animated.View>
       </Pressable>
     </View>
