@@ -20,7 +20,7 @@ const SwitchMeals: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { foodStyle, kidsPlanSelected } = useGlobalContext();
+  const { foodStyle } = useGlobalContext();
 
   useEffect(() => {
     if (open) {
