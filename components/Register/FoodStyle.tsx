@@ -44,7 +44,7 @@ const FoodStyle = () => {
   }));
 
   const screenWidth = Dimensions.get('window').width
-  const width = Math.min(Math.max(screenWidth * 0.45, 120), 150)
+  const width = Math.min(Math.max(screenWidth * 0.45, 200), 160)
   const height = width * 0.82
 
   return (

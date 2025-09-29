@@ -9,18 +9,18 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import MonthlyPlan from "../Register/MonthlyPlan";
+import FoodStyle from "../Register/FoodStyle";
 
 interface LeaveReqProps {
   open: boolean;
   onClose: () => void;
 }
 
-const ChangeFoodPlan: React.FC<LeaveReqProps> = ({ open, onClose }) => {
+const SwitchMeals: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { monthlyPlan, kidsPlanSelected } = useGlobalContext();
+  const { foodStyle, kidsPlanSelected } = useGlobalContext();
 
   useEffect(() => {
     if (open) {
@@ -61,24 +61,22 @@ const ChangeFoodPlan: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const content = (
     <>
       <Text className="text-faded_black text-[16px] font-bold">
-        Change your monthly plan
+        Change your Food Plan
       </Text>
-      <View>
-        <MonthlyPlan />
+      <View className="my-4">
+        <FoodStyle/>
       </View>
       <View className="flex-row my-5 gap-2">
         <Pressable
           onPress={() => onClose()}
-          className="p-6 w-1/2 bg-button_bg rounded-2xl"
+          className="p-6 web:p-4 w-1/2 bg-button_bg rounded-2xl"
         >
           <Text className="text-faded_black text-center">Cancel</Text>
         </Pressable>
         <TouchableOpacity
-          className="p-6 w-1/2 bg-primary rounded-2xl"
+          className="p-6 web:p-4 w-1/2 bg-primary rounded-2xl"
           onPress={() => {
-            const message = kidsPlanSelected
-              ? `Hi! I want to choose ${monthlyPlan} plan with kids plan`
-              : `Hi! I want to choose the following plan: ${monthlyPlan}`;
+            const message = `Hi! I want to change the plan with ${foodStyle} style`
 
             const phoneNumber = "918547266801";
             const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
@@ -133,4 +131,4 @@ const ChangeFoodPlan: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   );
 };
 
-export default ChangeFoodPlan;
+export default SwitchMeals;
