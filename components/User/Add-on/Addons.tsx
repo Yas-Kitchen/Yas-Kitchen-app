@@ -1,14 +1,14 @@
 import { useMockAddons } from "@/hooks/use-MockAddons";
 import React from "react";
 import {
-    Animated,
-    Dimensions,
-    Easing,
-    Image,
-    Linking,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  Easing,
+  Image,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const AddonsItems = () => {
@@ -254,6 +254,8 @@ const AddonsItems = () => {
             : "none"
         }
       >
+        <View className="absolute -bottom-60 left-0 right-0 bg-white shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-xl mx-4">
+
         <View>
           <Text className="text-gray-600">
             {Object.values(cart).reduce((a, b) => a + b, 0)} items
@@ -271,27 +273,28 @@ const AddonsItems = () => {
         <TouchableOpacity
           onPress={() => {
             const orderItems = items
-              .filter((item) => cart[item.id])
-              .map(
-                (item) =>
-                  `${cart[item.id]} ${item.name} plate${
-                    cart[item.id] > 1 ? "s" : ""
-                  }`
+            .filter((item) => cart[item.id])
+            .map(
+              (item) =>
+                `${cart[item.id]} ${item.name}${
+                  cart[item.id] > 1 ? "s" : ""
+                }`
               )
               .join(", ");
-            const message = `Hello, I would like to order: ${orderItems}`;
-            const url = `whatsapp://send?phone=+91${mobile}&text=${encodeURIComponent(
-              message
-            )}`;
-            Linking.openURL(url).catch(() => {
-              alert("Make sure WhatsApp is installed on your device");
-            });
-          }}
-          className="bg-orange-500 px-6 py-3 rounded-xl"
-          activeOpacity={0.7}
-        >
+              const message = `Hello, I would like to order: ${orderItems}`;
+              const url = `whatsapp://send?phone=+91${mobile}&text=${encodeURIComponent(
+                message
+              )}`;
+              Linking.openURL(url).catch(() => {
+                alert("Make sure WhatsApp is installed on your device");
+              });
+            }}
+            className="bg-orange-500 px-6 py-3 rounded-xl"
+            activeOpacity={0.7}
+            >
           <Text className="text-white font-semibold">Place Order</Text>
         </TouchableOpacity>
+          </View>
       </Animated.View>
     </View>
   );

@@ -98,6 +98,7 @@ const FoodSectionWeeklyPlan = () => {
             </View>
           </View>
         ))}
+        <View className="h-40"/>
       </View>
     );
 };

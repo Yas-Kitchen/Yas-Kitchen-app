@@ -31,19 +31,19 @@ const SubscriptionPlan = () => {
         </TouchableOpacity>
       </View>
       <View className="flex-col">
-        <View className="flex-row gap-5 mt-5">
-          <Text className="text-base_color text-[12px]">Selected Plan :</Text>
-          <Text className="ml-2">
+        <View className="flex-row mt-5">
+          <Text className="text-base_color text-[12px] web:text-[10px]">Selected Plan :</Text>
+          <Text className="ml-2 web:text-[10px]">
             {monthlyPlan} Plan {kidsPlanSelected && "with Kids Plan"}
           </Text>
         </View>
-        <View className="flex-row w-1/2 gap-5 mt-5">
-          <Text className="text-base_color text-[12px]">Monthly Price :</Text>
-          <Text className="mx-2 text-primary">{getPrice()}/month</Text>
+        <View className="flex-row mt-5">
+          <Text className="text-base_color text-[12px] web:text-[10px]">Monthly Price :</Text>
+          <Text className="mx-2 text-primary web:text-[10px]">{getPrice()}/month</Text>
         </View>
-        <View className="flex-row gap-5 mt-5 w-[250px]">
-          <Text className="text-base_color text-[12px]">Billing Cycle :</Text>
-          <Text className="mx-5">Monthly</Text>
+        <View className="flex-row mt-5">
+          <Text className="text-base_color text-[12px] web:text-[10px]">Billing Cycle :</Text>
+          <Text className="mx-5 web:text-[10px]">Monthly</Text>
         </View>
       </View>
     </View>

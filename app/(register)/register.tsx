@@ -5,7 +5,7 @@ import Stepper from "@/components/Register/Stepper";
 import AlreadyAccount from "@/components/shared/AlreadyAccount";
 import { useGlobalContext } from "@/context/GlobalContext";
 import React, { useEffect } from "react";
-import { Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -41,6 +41,7 @@ const reviewStyle = useAnimatedStyle(() => ({
   ],
 }));
   return (
+    <ScrollView>
     <View className="mt-20 mx-5">
       <Text className="text-center text-[20px] font-bold text-faded_black">
         Complete Registration
@@ -65,6 +66,7 @@ const reviewStyle = useAnimatedStyle(() => ({
         route="/"
       />
     </View>
+    </ScrollView>
   );
 };
 

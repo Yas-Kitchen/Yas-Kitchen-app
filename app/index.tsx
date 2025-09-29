@@ -11,7 +11,7 @@ const Index = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View className="h-screen justify-center">
           <Image
-            className="w-36 h-36 mx-auto"
+            className="w-36 h-36 mx-auto max-w-36 max-h-36"
             source={require("@assets/Login/logo.png")}
           />
           <Text className="text-[26px] font-bold mx-auto text-faded_black">

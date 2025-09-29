@@ -1,5 +1,4 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import { useEffect } from "react";
 import { Dimensions, Image, Pressable, Text, View } from "react-native";
 import Animated, {
   interpolateColor,
@@ -36,14 +35,6 @@ const kidsPlan = {
 };
 
 const MonthlyPlan = () => {
-  useEffect(() => {
-    const images = [
-      require("@assets/Shared/regular_meal.png"),
-      require("@assets/Shared/diet_meal.png"),
-      require("@assets/Shared/kids_meal.png"),
-    ];
-    images.forEach(img => Image.prefetch(img));
-  }, []);
   const { monthlyPlan, setMonthlyPlan, kidsPlanSelected, setKidsPlanSelected } =
     useGlobalContext();
 
@@ -55,13 +46,21 @@ const MonthlyPlan = () => {
   const animatedStyles = scales.map((scale, index) =>
     useAnimatedStyle(() => ({
       transform: [{ scale: scale.value }],
-      borderColor: interpolateColor(borderAnims[index].value, [0, 1], ["transparent", "#FF6F00"]),
+      borderColor: interpolateColor(
+        borderAnims[index].value,
+        [0, 1],
+        ["transparent", "#FF6F00"]
+      ),
     }))
   );
 
   const kidsAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: kidsScale.value }],
-    borderColor: interpolateColor(kidsBorderAnim.value, [0, 1], ["transparent", "#FF6F00"]),
+    borderColor: interpolateColor(
+      kidsBorderAnim.value,
+      [0, 1],
+      ["transparent", "#FF6F00"]
+    ),
   }));
 
   const handlePress = (key: string, index: number) => {
@@ -94,9 +93,10 @@ const MonthlyPlan = () => {
       {foodPlans.map((plan, index) => {
         const animatedStyle = animatedStyles[index];
         const isSelected = monthlyPlan === plan.key;
-        const screenWidth = Dimensions.get('window').width
-        const width = Math.min(Math.max(screenWidth * 0.45 ,200), 110)
-        const height = width * 1
+        const screenWidth = Dimensions.get("window").width;
+        const width = Math.min(Math.max(screenWidth * 0.45, 200), 110);
+        const height = width * 1;
+        
         return (
           <Pressable
             key={plan.key}
@@ -107,60 +107,89 @@ const MonthlyPlan = () => {
           >
             <Animated.View
               layout={Layout.springify()}
-              className={`overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2`}
+              className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
               style={animatedStyle}
             >
-              <Image style={{height,width}} source={plan.image} />
-              <View className="flex-row pt-6 gap-1 justify-evenly">
-                <View className="flex-col w-1/2">
-                  <Text className="text-[14px] font-semibold">
+              <Image
+                style={{ height, width }}
+                source={
+                  plan.image || require("@assets/Shared/regular_meal.png")
+                }
+                 className="max-w-28 max-h-32 web:max-w-24 web:max-h-24"
+                onError={() => {
+                  console.log("Failed to load image for plan:", plan.name);
+                }}
+              />
+              <View className="flex-row pt-6 gap-1 ml-2">
+                <View className="flex-col web:w-[40%] w-1/2">
+                  <Text className="text-[14px] font-semibold web:text-[12px]">
                     {plan.name}
                   </Text>
-                  <Text className="text-base_color text-[12px] text-regular">
+                  <Text className="text-base_color text-[12px] text-regular web:text-[9px] flex-1">
                     {plan.description}
                   </Text>
                 </View>
-                <View className="flex-row text-center items-baseline gap-1">
+                <View className="flex-row text-center items-baseline gap-1 w-1/2">
                   <Image
-                    className="w-[10px] h-[10px] fill-primary"
+                    className="w-[10px] h-[10px] max-w-[10px] max-h-[10px] fill-primary"
                     source={require("@assets/Shared/dirham.svg")}
+                    onError={() => {
+                      console.log("Failed to load dirham icon");
+                    }}
                   />
-                  <Text className="text-primary font-semibold">
+                  <Text className="text-primary font-semibold web:text-[10px]">
                     {plan.price} /mo
                   </Text>
                 </View>
               </View>
-                <View
-                  className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
-                    isSelected ? "bg-primary" : "bg-base_color/10"
-                  }`}
-                />
+              <View
+                className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
+                  isSelected ? "bg-primary" : "bg-base_color/10"
+                }`}
+              />
             </Animated.View>
           </Pressable>
         );
       })}
+      
+      {/* Kids Plan */}
       <Pressable key={kidsPlan.key} onPress={handleKidsPress}>
         <Animated.View
           layout={Layout.springify()}
           className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
           style={kidsAnimatedStyle}
         >
-          <Image style={{height: Dimensions.get('window').width * 0.25, width: Dimensions.get('window').width * 0.25}} source={kidsPlan.image} />
-          <View className="flex-row gap-1 pt-4 justify-evenly">
+          <Image
+            style={{
+              height: Dimensions.get("window").width * 0.25,
+              width: Dimensions.get("window").width * 0.25,
+            }}
+            source={
+              kidsPlan.image || require("@assets/Shared/kids_meal.png")
+            }
+            onError={() => {
+              console.log("Failed to load kids plan image");
+            }}
+            className=""
+          />
+          <View className="flex-row gap-1 pt-4">
             <View className="flex-col w-1/2">
-              <Text className="text-[14px] font-semibold">
+              <Text className="text-[14px] font-semibold web:text-[12px]">
                 {kidsPlan.name}
               </Text>
-              <Text className="text-base_color text-[12px] text-regular">
+              <Text className="text-base_color text-[12px] web:text-[9px] text-regular">
                 {kidsPlan.description}
               </Text>
             </View>
-            <View className="flex-row text-center items-baseline gap-1">
+            <View className="flex-row text-center items-baseline gap-1 justify-items-end w-1/2">
               <Image
                 className="w-[10px] h-[10px] fill-primary"
                 source={require("@assets/Shared/dirham.svg")}
+                onError={() => {
+                  console.log("Failed to load dirham icon");
+                }}
               />
-              <Text className="text-primary font-semibold">
+              <Text className="text-primary font-semibold web:text-[10px]">
                 {kidsPlan.price} /mo
               </Text>
             </View>

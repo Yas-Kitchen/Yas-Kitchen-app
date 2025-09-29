@@ -52,7 +52,7 @@ const FoodStyle = () => {
       <View className="flex-row justify-evenly gap-4">
         <Pressable onPress={() => setFoodStyle("north")}>
           <Animated.Image
-            className="rounded-2xl"
+            className="rounded-2xl web:max-w-36"
             source={require("@assets/Shared/north_indian.png")}
             style={[northStyle, { width, height }]}
           />
@@ -60,7 +60,7 @@ const FoodStyle = () => {
 
         <Pressable onPress={() => setFoodStyle("south")}>
           <Animated.Image
-            className="rounded-2xl"
+            className="rounded-2xl web:max-w-36"
             source={require("@assets/Shared/south_indian.png")}
             style={[southStyle, { width, height }]}
           />

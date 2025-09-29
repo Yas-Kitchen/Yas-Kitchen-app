@@ -18,19 +18,19 @@ const PersonalDetails = () => {
       <View className="flex-col">
         <View className="flex-row w-1/2 gap-5 mt-5">
           <Text className="text-base_color text-[12px]">Name :</Text>
-          <Text className="mx-8">{name}</Text>
+          <Text className="mx-8 web:mx-0">{name}</Text>
         </View>
         <View className="flex-row w-1/2 gap-5 mt-5">
           <Text className="text-base_color text-[12px]">Mobile :</Text>
-          <Text className="mx-7">{mobile}</Text>
+          <Text className="mx-7 web:mx-0">{mobile}</Text>
         </View>
         <View className="flex-row gap-5 mt-5 w-[250px]">
           <Text className="text-base_color text-[12px]">Address :</Text>
-          <Text className="mx-5">{adress}</Text>
+          <Text className="mx-5 web:mx-0">{adress}</Text>
         </View>
-        <View className="flex-row w-1/2 gap-5 mt-5">
+        <View className="flex-row gap-5 mt-5">
           <Text className="text-base_color text-[12px]">Food Style :</Text>
-          <Text className="mx-1">{foodStyle} Indian</Text>
+          <Text className="mx-1 web:mx-0">{foodStyle} Indian</Text>
         </View>
       </View>
     </View>

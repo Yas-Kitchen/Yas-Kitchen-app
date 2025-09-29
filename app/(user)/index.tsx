@@ -15,7 +15,7 @@ const Home = () => {
   const todaysMenu = menu.menu[weekName];
   return (
     <ScrollView>
-      <View className="mt-16 mx-5 gap-8">
+      <View className="ios:mt-16 mt-5 mx-5 gap-8">
         <Greetings />
         <View className="gap-5">
           <Text className="font-semibold text-[17px] text-faded_black">
