@@ -11,7 +11,8 @@ module.exports = {
       colors: {
         primary: '#FF7629',
         base_color : '#6C757D',
-        faded_black : '#212529'
+        faded_black : '#212529',
+        button_bg : '#F3F4F6'
       }
     },
   },

@@ -1,3 +1,5 @@
+import AllPopup from "@/components/Popup/AllPopup";
+import Fadebg from "@/components/shared/Faded";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Tabs } from "expo-router";
@@ -152,7 +154,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 }
 export default function RootLayout() {
   return (
-    <View className="flex-1">
+    <View className="flex-1 min-h-screen ">
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
@@ -164,6 +166,8 @@ export default function RootLayout() {
         <Tabs.Screen name="Add-ons" />
         <Tabs.Screen name="Profile" />
       </Tabs>
+      <Fadebg/>
+      <AllPopup/>
     </View>
   );
 }
