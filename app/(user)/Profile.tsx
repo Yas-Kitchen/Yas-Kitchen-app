@@ -8,6 +8,7 @@ import { Image, ScrollView, Text, View } from "react-native";
 const Profile = () => {
   const { name, mobile, adress, foodStyle, monthlyPlan, kidsPlanSelected } =
     useGlobalContext();
+    
   return (
     <ScrollView>
       <View className="ios:mt-16 mt-5 mx-5">
@@ -28,12 +29,6 @@ const Profile = () => {
             header="Delivery Adress"
             subheader={adress}
             icon="map-pin"
-          />
-          <View className="h-[1px] w-full bg-base_color/10" />
-          <EditProfile
-            header="Food Style"
-            subheader={`${foodStyle} indian`}
-            icon="coffee"
           />
         </View>
         <View className="bg-white/50 mt-10 rounded-xl border border-base_color/10">

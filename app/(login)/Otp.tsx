@@ -11,13 +11,10 @@ import {
 } from "react-native";
 
 const Otp = () => {
-  const {mobile} = useGlobalContext()
+  const { mobile } = useGlobalContext();
   return (
     <>
-      <Pressable
-        className="mt-20 absolute mx-5"
-        onPress={() => router.back()}
-      >
+      <Pressable className="mt-20 absolute mx-5" onPress={() => router.back()}>
         <Feather name="chevron-left" size={30} />
       </Pressable>
       <View className="mx-5 justify-center h-screen">
@@ -28,9 +25,7 @@ const Otp = () => {
           <Text className="text-base text-[14px] mt-4">
             We&apos;ve sent a verification code to
           </Text>
-          <Text className="text-base text-[14px] font-medium">
-            {mobile}
-          </Text>
+          <Text className="text-base text-[14px] font-medium">{mobile}</Text>
           <View className="mt-10">
             <Text className="text-base text-[14px] text-center font-medium">
               Enter 4-digit OTP

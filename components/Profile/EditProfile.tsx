@@ -1,6 +1,7 @@
+import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 type EditProfileType ={
     header : string
@@ -9,6 +10,7 @@ type EditProfileType ={
 }
 
 const EditProfile = ({header,subheader,icon} : EditProfileType) => {
+  const {setPopupNames} = useGlobalContext()
   return (
       <View className="flex-row items-center p-5 gap-3">
         <Feather name={icon} size={20} color={"#FF7629"} />
@@ -16,7 +18,9 @@ const EditProfile = ({header,subheader,icon} : EditProfileType) => {
           <Text className="text-[12px] text-base_color">{header}</Text>
           <Text className="font-medium text-[14px]">{subheader}</Text>
         </View>
+        <TouchableOpacity onPress={() => setPopupNames(header)} style={{display : 'contents'}}>
         <Text className="text-primary text-[12px]">Edit</Text>
+        </TouchableOpacity>
       </View>
   );
 };
