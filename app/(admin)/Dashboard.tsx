@@ -1,7 +1,9 @@
+import ThisMonth from "@/components/Admin/Dashboard/ThisMonth";
 import Today from "@/components/Admin/Dashboard/Today";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import ThisWeek from "../../components/Admin/Dashboard/ThisWeek";
 
 const Dashboard = () => {
   const [active, setActive] = useState("today");
@@ -49,7 +51,7 @@ const Dashboard = () => {
           </Text>
         </TouchableOpacity>
       </View>
-        {active === "today" ? <Today /> : active === "thisweek" ? "" : ""}
+        {active === "today" ? <Today /> : active === "thisweek" ? <ThisWeek/> : <ThisMonth/>}
     </View>
     </ScrollView>
   );
