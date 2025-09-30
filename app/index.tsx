@@ -2,12 +2,25 @@ import AlreadyAccount from "@/components/shared/AlreadyAccount";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { router } from "expo-router";
 import React from "react";
-import { Image, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import {
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 
 const Index = () => {
-  const { setMobile,mobile } = useGlobalContext();
+  const { setMobile, mobile } = useGlobalContext();
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View className="h-screen justify-center">
           <Image
@@ -36,14 +49,19 @@ const Index = () => {
                 onChangeText={setMobile}
               />
               <TouchableOpacity
-              disabled={mobile.length<9}
+                disabled={mobile.length < 9}
                 onPress={() => router.push("/(login)/Otp")}
-                className={`${mobile.length<9 ? "bg-base_color/50" : 'bg-primary'} mt-5 p-5 rounded-2xl`}
+                className={`${
+                  mobile.length < 9 ? "bg-base_color/50" : "bg-primary"
+                } mt-5 p-5 rounded-2xl`}
               >
                 <Text className="text-center text-white">Continue</Text>
               </TouchableOpacity>
             </View>
           </View>
+          <TouchableOpacity onPress={() => router.push('/(admin)/admin')} >
+            <Text className="text-center text-primary">Admin</Text>
+          </TouchableOpacity>
           <AlreadyAccount
             main={"New to yas kitchen ? "}
             sub={"Register Now"}
