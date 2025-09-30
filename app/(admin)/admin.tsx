@@ -1,5 +1,5 @@
-import Detailed from "@/components/Admin/Detailed";
-import Summary from "@/components/Admin/Summary";
+import Detailed from "@/components/Admin/Home/Detailed";
+import Summary from "@/components/Admin/Home/Summary";
 import { Feather } from "@expo/vector-icons";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";

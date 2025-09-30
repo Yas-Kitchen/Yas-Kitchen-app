@@ -26,8 +26,8 @@ const PlanPercentage = ({
         />
       </View>
       <View className="flex-row justify-between">
-        <Text className="text-[12px] text-faded_black">South Indian</Text>
-        <Text className="text-[12px] text-faded_black">
+        <Text className="text-[12px] text-base_color">South Indian</Text>
+        <Text className="text-[12px] text-base_color">
           432 ({southPercentage}%)
         </Text>
       </View>
@@ -38,8 +38,8 @@ const PlanPercentage = ({
         />
       </View>
       <View className="flex-row justify-between">
-        <Text className="text-[12px] text-faded_black">Kids Plan</Text>
-        <Text className="text-[12px] text-faded_black">43 ({kidsMeal}%)</Text>
+        <Text className="text-[12px] text-base_color">Kids Plan</Text>
+        <Text className="text-[12px] text-base_color">43 ({kidsMeal}%)</Text>
       </View>
       <View className="w-full bg-base_color/10 z-1 h-5 overflow-hidden rounded-2xl relative">
         <View

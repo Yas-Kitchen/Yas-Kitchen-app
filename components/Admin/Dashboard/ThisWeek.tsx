@@ -1,6 +1,6 @@
 import React from "react";
 import { Text, View } from "react-native";
-import QuickSettings from "../QuickSettings";
+import QuickSettings from "../Home/QuickSettings";
 import PlanPercentage from "./PlanPercentage";
 import TopAddons from "./TopAddons";
 import TotalRevenue from "./TotalRevenue";
