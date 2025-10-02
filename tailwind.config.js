@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
   content: [
     "./App.tsx", 
@@ -13,7 +14,8 @@ module.exports = {
         base_color : '#6C757D',
         faded_black : '#212529',
         button_bg : '#F3F4F6',
-        yellow : '#FFC107'
+        yellow : '#FFC107',
+        red : '#EF4444'
       }
     },
   },

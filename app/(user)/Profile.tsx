@@ -2,8 +2,9 @@ import EditProfile from "@/components/Profile/EditProfile";
 import MainSetting from "@/components/Profile/MainSetting";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const Profile = () => {
   const { name, mobile, adress, foodStyle, monthlyPlan, kidsPlanSelected } =
@@ -58,10 +59,10 @@ const Profile = () => {
             subheader="Share the flavor!"
           />
         </View>
-        <View className="flex-row items-center gap-2 bg-white justify-center p-5 rounded-2xl mt-5">
+        <TouchableOpacity onPress={() => router.push("/")} className="flex-row items-center gap-2 bg-white justify-center p-5 rounded-2xl mt-5">
           <Feather name="log-out" color={"#FF7629"} size={20} />
           <Text className="text-primary">Logout</Text>
-        </View>
+        </TouchableOpacity>
       </View>
       <View className="h-32"/>
     </ScrollView>

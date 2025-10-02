@@ -247,40 +247,39 @@ const AddonsItems = () => {
             outputRange: [0, 1],
           }),
         }}
-        className="absolute -bottom-60 left-0 right-0 bg-white shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-xl mx-4"
+        className="absolute -bottom-60 left-0 right-0 shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-xl mx-4"
         pointerEvents={
           Object.keys(cart).filter((key) => cart[key] > 0).length > 0
             ? "auto"
             : "none"
         }
       >
-        <View className="absolute -bottom-60 left-0 right-0 bg-white shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-xl mx-4">
+        <View className="absolute left-0 bottom-0 right-0 bg-white shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-xl mx-4">
+          <View>
+            <Text className="text-gray-600">
+              {Object.values(cart).reduce((a, b) => a + b, 0)} items
+            </Text>
+            <Text className="font-semibold text-lg text-black">
+              AED&nbsp;
+              {items.reduce(
+                (total, item) =>
+                  total + (cart[item.id] || 0) * Number(item.price),
+                0
+              )}
+            </Text>
+          </View>
 
-        <View>
-          <Text className="text-gray-600">
-            {Object.values(cart).reduce((a, b) => a + b, 0)} items
-          </Text>
-          <Text className="font-semibold text-lg text-black">
-            AED&nbsp;
-            {items.reduce(
-              (total, item) =>
-                total + (cart[item.id] || 0) * Number(item.price),
-              0
-            )}
-          </Text>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => {
-            const orderItems = items
-            .filter((item) => cart[item.id])
-            .map(
-              (item) =>
-                `${cart[item.id]} ${item.name}${
-                  cart[item.id] > 1 ? "s" : ""
-                }`
-              )
-              .join(", ");
+          <TouchableOpacity
+            onPress={() => {
+              const orderItems = items
+                .filter((item) => cart[item.id])
+                .map(
+                  (item) =>
+                    `${cart[item.id]} ${item.name}${
+                      cart[item.id] > 1 ? "s" : ""
+                    }`
+                )
+                .join(", ");
               const message = `Hello, I would like to order: ${orderItems}`;
               const url = `whatsapp://send?phone=+91${mobile}&text=${encodeURIComponent(
                 message
@@ -291,10 +290,10 @@ const AddonsItems = () => {
             }}
             className="bg-orange-500 px-6 py-3 rounded-xl"
             activeOpacity={0.7}
-            >
-          <Text className="text-white font-semibold">Place Order</Text>
-        </TouchableOpacity>
-          </View>
+          >
+            <Text className="text-white font-semibold">Place Order</Text>
+          </TouchableOpacity>
+        </View>
       </Animated.View>
     </View>
   );

@@ -2,24 +2,24 @@ import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Image,
-    Modal,
-    Platform,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Image,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-interface AddMealProps {
+interface AddSpecialsProps {
   open: boolean;
   onClose: () => void;
 }
 
-const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
+const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
@@ -29,20 +29,7 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
-  const [showDayPicker, setShowDayPicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const times = ["Lunch", "Dinner"];
-
+  const [price, setPrice] = useState("");
   useEffect(() => {
     if (open) {
       setVisible(true);
@@ -62,20 +49,17 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       Animated.parallel([
         Animated.timing(translateY, {
           toValue: 300,
-          duration: 100,
+          duration: 300,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
           toValue: 0,
-          duration: 100,
+          duration: 300,
           useNativeDriver: true,
         }),
-      ]).start(() => {
-        setVisible(false);
-        onClose();
-      });
+      ]).start(() => setVisible(false));
     }
-  }, [open, onClose, opacity, translateY]);
+  }, [open,opacity,translateY]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -95,14 +79,6 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       alert("Please fill all required fields");
       return;
     }
-
-    console.log({
-      day: selectedDay,
-      time: selectedTime,
-      title,
-      description,
-      image,
-    });
 
     Animated.parallel([
       Animated.timing(translateY, {
@@ -139,78 +115,6 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Day</Text>
-      <Pressable
-        onPress={() => setShowDayPicker(!showDayPicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedDay ? "text-black" : "text-base_color"}>
-          {selectedDay || "Select Day"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showDayPicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {days.map((day) => (
-            <Pressable
-              key={day}
-              onPress={() => {
-                setSelectedDay(day);
-                setShowDayPicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedDay === day
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {day}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      <Text className="text-base_color text-[12px] mb-2">Time</Text>
-      <Pressable
-        onPress={() => setShowTimePicker(!showTimePicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedTime ? "text-black" : "text-base_color"}>
-          {selectedTime || "Select Time"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showTimePicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {times.map((time) => (
-            <Pressable
-              key={time}
-              onPress={() => {
-                setSelectedTime(time);
-                setShowTimePicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedTime === time
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {time}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
       <Text className="text-base_color text-[12px] mb-2">Title</Text>
       <TextInput
         value={title}
@@ -229,6 +133,14 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
         numberOfLines={4}
         textAlignVertical="top"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        placeholderTextColor="#999"
+      />
+      <Text className="text-base_color text-[12px] mb-2">Price</Text>
+      <TextInput
+        value={price}
+        onChangeText={setPrice}
+        placeholder="Enter Price"
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
@@ -295,4 +207,4 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   );
 };
 
-export default AddMeal;
+export default AddSpecials;

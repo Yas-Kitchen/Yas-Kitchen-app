@@ -1,5 +1,5 @@
 {
-  "menu": {
+  "southindian": {
     "monday": {
       "lunch": {
         "id": "mon_lunch",
@@ -124,6 +124,134 @@
         "availability": "19:00-22:00",
         "rating": 0,
         "image": "majboos.png"
+      }
+    }
+  },
+  "northindian": {
+    "monday": {
+      "lunch": {
+        "id": "mon_lunch_ni",
+        "name": "Rajma Chawal",
+        "description": "Creamy red kidney beans curry served with steamed basmati rice",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "rajmachawal.png"
+      },
+      "dinner": {
+        "id": "mon_dinner_ni",
+        "name": "Butter Naan - Paneer Butter Masala",
+        "description": "Soft butter naan with rich paneer butter masala in tomato-cashew gravy",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "naanwithpaneerbuttermasala.png"
+      }
+    },
+    "tuesday": {
+      "lunch": {
+        "id": "tue_lunch_ni",
+        "name": "Chole Bhature",
+        "description": "Fluffy deep-fried bhature served with spicy chickpea curry",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "cholebhature.png"
+      },
+      "dinner": {
+        "id": "tue_dinner_ni",
+        "name": "Roti - Dal Makhani",
+        "description": "Whole wheat roti with creamy black lentil dal cooked overnight",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "rotiwithdalmakhani.png"
+      }
+    },
+    "wednesday": {
+      "lunch": {
+        "id": "wed_lunch_ni",
+        "name": "Kadhi Chawal",
+        "description": "Yogurt-based curry with pakoras served with aromatic rice",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "kadhichawal.png"
+      },
+      "dinner": {
+        "id": "wed_dinner_ni",
+        "name": "Paratha - Aloo Gobhi",
+        "description": "Stuffed paratha with dry potato and cauliflower curry",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "parathawithaloogogobhi.png"
+      }
+    },
+    "thursday": {
+      "lunch": {
+        "id": "thu_lunch_ni",
+        "name": "Veg Pulao - Raita",
+        "description": "Fragrant vegetable pulao rice served with cooling cucumber raita",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "vegpulaowithraita.png"
+      },
+      "dinner": {
+        "id": "thu_dinner_ni",
+        "name": "Naan - Chicken Tikka Masala",
+        "description": "Tandoori naan with creamy chicken tikka in spiced tomato gravy",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "naanwithchickentikkamasala.png"
+      }
+    },
+    "friday": {
+      "lunch": {
+        "id": "fri_lunch_ni",
+        "name": "Veg Biryani",
+        "description": "Layered aromatic rice with mixed vegetables, saffron and whole spices",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "vegbiryani.png"
+      },
+      "dinner": {
+        "id": "fri_dinner_ni",
+        "name": "Kulcha - Chana Masala",
+        "description": "Soft leavened kulcha bread with tangy chickpea masala curry",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "kulchawithchanamasala.png"
+      }
+    },
+    "saturday": {
+      "lunch": {
+        "id": "sat_lunch_ni",
+        "name": "Pav Bhaji",
+        "description": "Buttery mixed vegetable curry served with soft pav bread rolls",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "pavbhaji.png"
+      },
+      "dinner": {
+        "id": "sat_dinner_ni",
+        "name": "Tandoori Roti - Mutton Curry",
+        "description": "Charcoal-smoked tandoori roti with slow-cooked mutton curry",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "tandoorirotiwithmuttoncurry.png"
+      }
+    },
+    "sunday": {
+      "lunch": {
+        "id": "sun_lunch_ni",
+        "name": "Thali Special",
+        "description": "North Indian thali with dal, sabzi, roti, rice, raita and dessert",
+        "availability": "12:00-15:00",
+        "rating": 0,
+        "image": "northindianthali.png"
+      },
+      "dinner": {
+        "id": "sun_dinner_ni",
+        "name": "Hyderabadi Biryani",
+        "description": "Authentic dum-cooked chicken biryani with aromatic spices and herbs",
+        "availability": "19:00-22:00",
+        "rating": 0,
+        "image": "hyderabadibiryani.png"
       }
     }
   }

@@ -22,6 +22,7 @@ const TAB_WIDTH = width / TAB_COUNT;
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const translateX = useRef(new Animated.Value(0)).current;
   const pillWidth = useRef(new Animated.Value(TAB_WIDTH)).current;
+  const previousIndex = useRef(0);
   const [tabLayouts, setTabLayouts] = React.useState<
     { x: number; width: number }[]
   >([]);
@@ -29,14 +30,23 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   useEffect(() => {
     if (tabLayouts[state.index]) {
       const { x, width } = tabLayouts[state.index];
-      Animated.spring(translateX, {
-        toValue: x,
-        useNativeDriver: false,
-      }).start();
-      Animated.spring(pillWidth, {
-        toValue: width,
-        useNativeDriver: false,
-      }).start();
+      
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: x,
+          useNativeDriver: false,
+          tension: 68,
+          friction: 10,
+        }),
+        Animated.spring(pillWidth, {
+          toValue: width,
+          useNativeDriver: false,
+          tension: 68,
+          friction: 10,
+        })
+      ]).start();
+
+      previousIndex.current = state.index;
     }
   }, [state.index, tabLayouts, pillWidth, translateX]);
 
@@ -44,7 +54,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     routeName: string
   ): { icon: FeatherIconName; label: string } => {
     switch (routeName) {
-      case "index":
+      case "user":
         return { icon: "home", label: "Home" };
       case "Food":
         return { icon: "coffee", label: "Food" };
@@ -137,7 +147,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               <Text
                 style={{
                   fontSize: 12,
-                  fontWeight : 400,
+                  fontWeight : "400" as any,
                   textAlign: "center",
                   color: isFocused ? "#FF7629" : "#9CA3AF",
                 }}
@@ -152,6 +162,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     </View>
   );
 }
+
 export default function RootLayout() {
   return (
     <View className="flex-1 min-h-screen ">
@@ -159,12 +170,33 @@ export default function RootLayout() {
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
+          animation: 'shift',
         }}
       >
-        <Tabs.Screen name="index" />
-        <Tabs.Screen name="Food" />
-        <Tabs.Screen name="Add-ons" />
-        <Tabs.Screen name="Profile" />
+        <Tabs.Screen 
+          name="user"
+          options={{
+            animation: 'shift',
+          }}
+        />
+        <Tabs.Screen 
+          name="Food"
+          options={{
+            animation: 'shift',
+          }}
+        />
+        <Tabs.Screen 
+          name="Add-ons"
+          options={{
+            animation: 'shift',
+          }}
+        />
+        <Tabs.Screen 
+          name="Profile"
+          options={{
+            animation: 'shift',
+          }}
+        />
       </Tabs>
       <Fadebg/>
       <AllPopup/>

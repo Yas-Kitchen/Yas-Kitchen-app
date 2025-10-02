@@ -1,6 +1,8 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import React from "react";
 import AddMeal from "./AddMeal";
+import AddSpecials from "./AddSpecials";
+import BookMeal from "./BookMeal";
 import ChangeFoodPlan from "./ChangeFoodPlan";
 import EditAdress from "./EditAdress";
 import EditName from "./EditName";
@@ -18,7 +20,7 @@ const AllPopup = () => {
         open={popupNames === "Switch Meals"}
         onClose={() => setPopupNames("")}
       />
-      <AddMeal
+      <BookMeal
         open={popupNames === "Add Meal"}
         onClose={() => setPopupNames("")}
       />
@@ -29,6 +31,14 @@ const AllPopup = () => {
       <EditAdress
         open={popupNames === "Delivery Adress"}
         onClose={() => setPopupNames("")}
+      />
+      <AddMeal 
+      open={popupNames === "addmeal"}
+      onClose={() => setPopupNames('')}
+      />
+      <AddSpecials
+      open={popupNames === "addspecial"}
+      onClose={() => setPopupNames('')}
       />
     </>
   );

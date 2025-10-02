@@ -22,6 +22,7 @@ const TAB_WIDTH = width / TAB_COUNT;
 function CustomTabBar({ state, descriptors, navigation }: any) {
   const translateX = useRef(new Animated.Value(0)).current;
   const pillWidth = useRef(new Animated.Value(TAB_WIDTH)).current;
+  const previousIndex = useRef(0);
   const [tabLayouts, setTabLayouts] = React.useState<
     { x: number; width: number }[]
   >([]);
@@ -29,14 +30,25 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   useEffect(() => {
     if (tabLayouts[state.index]) {
       const { x, width } = tabLayouts[state.index];
-      Animated.spring(translateX, {
-        toValue: x,
-        useNativeDriver: false,
-      }).start();
-      Animated.spring(pillWidth, {
-        toValue: width,
-        useNativeDriver: false,
-      }).start();
+      
+      // Animate both position and width together
+      Animated.parallel([
+        Animated.spring(translateX, {
+          toValue: x,
+          useNativeDriver: false,
+          tension: 68,
+          friction: 10,
+        }),
+        Animated.spring(pillWidth, {
+          toValue: width,
+          useNativeDriver: false,
+          tension: 68,
+          friction: 10,
+        })
+      ]).start();
+
+      // Update previous index for direction tracking
+      previousIndex.current = state.index;
     }
   }, [state.index, tabLayouts, pillWidth, translateX]);
 
@@ -137,7 +149,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
               <Text
                 style={{
                   fontSize: 12,
-                  fontWeight : 400,
+                  fontWeight: "400" as any,
                   textAlign: "center",
                   color: isFocused ? "#FF7629" : "#9CA3AF",
                 }}
@@ -152,6 +164,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     </View>
   );
 }
+
 export default function RootLayout() {
   return (
     <View className="flex-1 min-h-screen ">
@@ -159,12 +172,33 @@ export default function RootLayout() {
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
+          animation: 'shift',
         }}
       >
-        <Tabs.Screen name="admin" />
-        <Tabs.Screen name="Dashboard" />
-        <Tabs.Screen name="Manage" />
-        <Tabs.Screen name="Users" />
+        <Tabs.Screen 
+          name="admin"
+          options={{
+            animation: 'shift',
+          }}
+        />
+        <Tabs.Screen 
+          name="Dashboard"
+          options={{
+            animation: 'shift',
+          }}
+        />
+        <Tabs.Screen 
+          name="Manage"
+          options={{
+            animation: 'shift',
+          }}
+        />
+        <Tabs.Screen 
+          name="Users"
+          options={{
+            animation: 'shift',
+          }}
+        />
       </Tabs>
       <Fadebg/>
       <AllPopup/>

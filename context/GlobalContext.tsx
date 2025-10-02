@@ -33,7 +33,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [popupNames, setPopupNames] = useState("");
   const [foodStyle, setFoodStyle] = useState("south");
   const [activeStep, setActiveStep] = useState(1);
-  const [monthlyPlan, setMonthlyPlan] = useState("");
+  const [monthlyPlan, setMonthlyPlan] = useState("regular");
   const [kidsPlanSelected, setKidsPlanSelected] = useState("");
 
   const values: GlobalContextType = {

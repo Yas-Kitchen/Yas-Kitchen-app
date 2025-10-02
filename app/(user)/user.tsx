@@ -11,8 +11,8 @@ const Home = () => {
   const currentDate = new Date();
   const weekName = currentDate
     .toLocaleDateString("en-US", { weekday: "long" })
-    .toLowerCase() as keyof typeof menu.menu;
-  const todaysMenu = menu.menu[weekName];
+    .toLowerCase() as keyof typeof menu.southindian;
+  const todaysMenu = menu.southindian[weekName];
   return (
     <ScrollView>
       <View className="ios:mt-16 mt-5 mx-5 gap-8">

@@ -55,7 +55,7 @@ const Otp = () => {
           </View>
         </View>
         <TouchableOpacity
-          onPress={() => router.push("/(user)")}
+          onPress={() => router.push("/(user)/user")}
           className="bg-primary mt-10 mx-8 p-5 rounded-2xl"
         >
           <Text className="text-center text-white text-[14px]">Verfiy</Text>

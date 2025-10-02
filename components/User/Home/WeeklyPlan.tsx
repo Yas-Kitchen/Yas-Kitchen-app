@@ -22,7 +22,7 @@ type WeeklyMenu = {
 };
 
 const WeeklyPlan = () => {
-  const menuData: { menu: WeeklyMenu } = useMockMenu();
+  const menuData: { southindian: WeeklyMenu } = useMockMenu();
   const daysOfWeek = [
     "Sunday",
     "Monday",
@@ -58,9 +58,9 @@ const WeeklyPlan = () => {
     const month = months[nextDay.getMonth()];
 
     const dayKey = dayName.toLowerCase();
-    const lunch = menuData.menu[dayKey]?.lunch?.name || "Lunch not available";
+    const lunch = menuData.southindian[dayKey]?.lunch?.name || "Lunch not available";
     const dinner =
-      menuData.menu[dayKey]?.dinner?.name || "Dinner not available";
+      menuData.southindian[dayKey]?.dinner?.name || "Dinner not available";
 
     upcomingDays.push({ dayName, date, month, lunch, dinner });
   }
