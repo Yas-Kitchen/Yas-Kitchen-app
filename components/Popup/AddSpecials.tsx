@@ -1,3 +1,4 @@
+import * as FileSystem from "expo-file-system/legacy";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
@@ -17,19 +18,22 @@ import {
 interface AddSpecialsProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
+
+const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose, onSuccess }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
 
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [price, setPrice] = useState("");
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     if (open) {
       setVisible(true);
@@ -49,21 +53,24 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
       Animated.parallel([
         Animated.timing(translateY, {
           toValue: 300,
-          duration: 300,
+          duration: 100,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
           toValue: 0,
-          duration: 300,
+          duration: 100,
           useNativeDriver: true,
         }),
-      ]).start(() => setVisible(false));
+      ]).start(() => {
+        setVisible(false);
+        onClose();
+      });
     }
-  }, [open,opacity,translateY]);
+  }, [open, onClose, opacity, translateY]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -74,32 +81,75 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
     }
   };
 
-  const handleSubmit = () => {
-    if (!selectedDay || !selectedTime || !title) {
+  const handleSubmit = async () => {
+    if (!title || !price) {
       alert("Please fill all required fields");
       return;
     }
 
-    Animated.parallel([
-      Animated.timing(translateY, {
-        toValue: 300,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setVisible(false);
-      onClose();
-      setSelectedDay("");
-      setSelectedTime("");
-      setTitle("");
-      setDescription("");
-      setImage(null);
-    });
+    setUploading(true);
+
+    try {
+      let imageBase64 = null;
+
+      if (image) {
+        imageBase64 = await FileSystem.readAsStringAsync(image, {
+          encoding: "base64",
+        });
+      }
+
+      const payload = {
+        name: title,
+        description: description,
+        price: parseFloat(price),
+        image: imageBase64,
+      };
+
+      console.log("Sending request to:", `${API_URL}/specials`);
+
+      const response = await fetch(`${API_URL}/specials`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.detail || result.error || "Failed to add special");
+      }
+
+      alert("Special added successfully!");
+
+      onSuccess?.();
+
+      Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: 300,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setVisible(false);
+        onClose();
+        setTitle("");
+        setDescription("");
+        setImage(null);
+        setPrice("");
+      });
+    } catch (error: any) {
+      console.error("Error:", error);
+      alert("Something went wrong: " + error.message);
+    } finally {
+      setUploading(false);
+    }
   };
 
   if (!visible) return null;
@@ -108,7 +158,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
     <ScrollView showsVerticalScrollIndicator={false}>
       <View className="flex-row items-center justify-between mb-6">
         <Text className="text-faded_black text-[20px] font-bold">
-          Add New Item
+          Add New Special
         </Text>
         <Pressable onPress={onClose}>
           <Feather name="x" size={24} color="#666" />
@@ -119,7 +169,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
       <TextInput
         value={title}
         onChangeText={setTitle}
-        placeholder="Enter meal title"
+        placeholder="Enter special title"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
@@ -128,18 +178,20 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
       <TextInput
         value={description}
         onChangeText={setDescription}
-        placeholder="Enter meal description"
+        placeholder="Enter special description"
         multiline
         numberOfLines={4}
         textAlignVertical="top"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
         placeholderTextColor="#999"
       />
-      <Text className="text-base_color text-[12px] mb-2">Price</Text>
+
+      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
         placeholder="Enter Price"
+        keyboardType="decimal-pad"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
@@ -161,6 +213,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
         <Pressable
           onPress={onClose}
           className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+          disabled={uploading}
         >
           <Text className="text-faded_black text-center font-medium">
             Cancel
@@ -169,8 +222,12 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose }) => {
         <TouchableOpacity
           onPress={handleSubmit}
           className="flex-1 p-4 bg-[#FF7629] rounded-xl"
+          disabled={uploading}
+          style={{ opacity: uploading ? 0.5 : 1 }}
         >
-          <Text className="text-white text-center font-medium">Add</Text>
+          <Text className="text-white text-center font-medium">
+            {uploading ? "Adding..." : "Add"}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

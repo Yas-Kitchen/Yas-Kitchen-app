@@ -2,6 +2,7 @@ import WeeklyMeals from "@/components/Admin/Manage/WeeklyMeals";
 import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Specials from "../../components/Admin/Manage/Specials";
+import Addons from "../../components/Admin/Manage/Add-ons";
 
 const Manage = () => {
   const [active, setActive] = useState("weeklymeals");
@@ -47,7 +48,7 @@ const Manage = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        {active === "weeklymeals" ? <WeeklyMeals/> : active === "specials" ? <Specials/> : ""}
+        {active === "weeklymeals" ? <WeeklyMeals/> : active === "specials" ? <Specials/> : <Addons/>}
       </View>
       <View className="h-36"/>
     </ScrollView>

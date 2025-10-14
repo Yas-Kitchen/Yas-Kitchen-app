@@ -3,7 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from "react-native";
 
-interface Special {
+interface Addon {
   id: string;
   name: string;
   description: string;
@@ -14,35 +14,35 @@ interface Special {
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
 
-const Specials = () => {
+const Addons = () => {
   const { setPopupNames } = useGlobalContext();
-  const [specials, setSpecials] = useState<Special[]>([]);
+  const [addons, setAddons] = useState<Addon[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchSpecials();
+    fetchAddons();
   }, []);
 
-  const fetchSpecials = async () => {
+  const fetchAddons = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/specials`);
+      const response = await fetch(`${API_URL}/addons`);
       const result = await response.json();
 
       if (result.success) {
-        setSpecials(result.data);
+        setAddons(result.data);
       }
     } catch (error) {
-      console.error("Error fetching specials:", error);
+      console.error("Error fetching addons:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (specialId: string, specialName: string) => {
+  const handleDelete = async (addonId: string, addonName: string) => {
     Alert.alert(
-      "Delete Special",
-      `Are you sure you want to delete "${specialName}"?`,
+      "Delete Addon",
+      `Are you sure you want to delete "${addonName}"?`,
       [
         {
           text: "Cancel",
@@ -53,16 +53,16 @@ const Specials = () => {
           style: "destructive",
           onPress: async () => {
             try {
-              const response = await fetch(`${API_URL}/specials/${specialId}`, {
+              const response = await fetch(`${API_URL}/addons/${addonId}`, {
                 method: "DELETE",
               });
 
               if (!response.ok) {
-                throw new Error("Failed to delete special");
+                throw new Error("Failed to delete addon");
               }
 
-              await fetchSpecials();
-              Alert.alert("Success", "Special deleted successfully");
+              await fetchAddons();
+              Alert.alert("Success", "Addon deleted successfully");
             } catch (error) {
               console.error("Error:", error);
               Alert.alert("Error", "Something went wrong");
@@ -84,28 +84,28 @@ const Specials = () => {
   return (
     <View className="gap-3">
       <View className="flex-row justify-between items-center">
-        <Text className="text-[17px] font-semibold">Today&apos;s Specials</Text>
+        <Text className="text-[17px] font-semibold">Add-ons</Text>
         <TouchableOpacity
-          onPress={() => setPopupNames("addspecial")}
+          onPress={() => setPopupNames("addaddon")}
           className="flex-row gap-2 p-2 items-center bg-primary rounded-lg"
         >
           <Feather name="plus" color={"#ffffff"} size={18} />
-          <Text className="text-sm text-white">Add Special</Text>
+          <Text className="text-sm text-white">Add Add-on</Text>
         </TouchableOpacity>
       </View>
 
-      {specials.length === 0 ? (
+      {addons.length === 0 ? (
         <View className="items-center justify-center mt-10">
           <Text className="text-gray-400 text-center text-base">
-            No specials yet
+            No add-ons yet
           </Text>
           <Text className="text-gray-400 text-center text-sm mt-2">
-            Click Add Special to add your first special
+            Click Add Add-on to add your first add-on
           </Text>
         </View>
       ) : (
         <View className="gap-2">
-          {specials.map((item) => (
+          {addons.map((item) => (
             <View
               key={item.id}
               className="bg-[#ECE9E3] rounded-2xl p-5 flex-row"
@@ -158,4 +158,4 @@ const Specials = () => {
   );
 };
 
-export default Specials;
+export default Addons;

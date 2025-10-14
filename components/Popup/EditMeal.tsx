@@ -16,66 +16,45 @@ import {
 } from "react-native";
 import { useGlobalContext } from "@/context/GlobalContext";
 
-interface AddMealProps {
+interface EditMealProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
 
-const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
+const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { selectedCategory } = useGlobalContext();
+  const { selectedMeal } = useGlobalContext();
 
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
-  const [showDayPicker, setShowDayPicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const times = ["Lunch", "Dinner"];
+  // ✅ Pre-fill form with existing meal data
+  useEffect(() => {
+    if (selectedMeal && open) {
+      setTitle(selectedMeal.name);
+      setDescription(selectedMeal.description);
+      setImage(selectedMeal.image_url);
+    }
+  }, [selectedMeal, open]);
 
   useEffect(() => {
     if (open) {
       setVisible(true);
       Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
+        Animated.timing(translateY, { toValue: 0, duration: 300, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
       ]).start();
     } else {
       Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 300,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 100,
-          useNativeDriver: true,
-        }),
+        Animated.timing(translateY, { toValue: 300, duration: 100, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0, duration: 100, useNativeDriver: true }),
       ]).start(() => {
         setVisible(false);
         onClose();
@@ -97,13 +76,13 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedDay || !selectedTime || !title) {
-      alert("Please fill all required fields");
+    if (!title) {
+      alert("Please enter meal title");
       return;
     }
 
-    if (!selectedCategory) {
-      alert("Please select a category first");
+    if (!selectedMeal?.id) {
+      alert("Meal data not found");
       return;
     }
 
@@ -112,24 +91,23 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
     try {
       let imageBase64 = null;
 
-      if (image) {
+      // Only encode if image was changed (doesn't start with http)
+      if (image && !image.startsWith('http')) {
         imageBase64 = await FileSystem.readAsStringAsync(image, {
-          encoding: "base64", 
+          encoding: "base64",
         });
       }
 
       const payload = {
-        cuisine_type: selectedCategory,
-        day: selectedDay,
-        time: selectedTime,
         name: title,
         description: description,
-        image: imageBase64,
+        ...(imageBase64 && { image: imageBase64 }), // Only send image if changed
       };
 
+      console.log("Updating meal:", selectedMeal.id);
 
-      const response = await fetch(`${API_URL}/meals`, {
-        method: "POST",
+      const response = await fetch(`${API_URL}/meals/${selectedMeal.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -139,27 +117,19 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.detail || result.error || "Failed to add meal");
+        throw new Error(result.detail || result.error || "Failed to update meal");
       }
 
-      alert("Meal added successfully!");
+      alert("Meal updated successfully!");
+
+      onSuccess?.();
 
       Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 300,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
+        Animated.timing(translateY, { toValue: 300, duration: 300, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0, duration: 300, useNativeDriver: true }),
       ]).start(() => {
         setVisible(false);
         onClose();
-        setSelectedDay("");
-        setSelectedTime("");
         setTitle("");
         setDescription("");
         setImage(null);
@@ -177,83 +147,18 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   const content = (
     <ScrollView showsVerticalScrollIndicator={false}>
       <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-faded_black text-[20px] font-bold">
-          Add New Item
-        </Text>
+        <Text className="text-faded_black text-[20px] font-bold">Edit Meal</Text>
         <Pressable onPress={onClose}>
           <Feather name="x" size={24} color="#666" />
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Day</Text>
-      <Pressable
-        onPress={() => setShowDayPicker(!showDayPicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedDay ? "text-black" : "text-base_color"}>
-          {selectedDay || "Select Day"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showDayPicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {days.map((day) => (
-            <Pressable
-              key={day}
-              onPress={() => {
-                setSelectedDay(day);
-                setShowDayPicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedDay === day
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {day}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      <Text className="text-base_color text-[12px] mb-2">Time</Text>
-      <Pressable
-        onPress={() => setShowTimePicker(!showTimePicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedTime ? "text-black" : "text-base_color"}>
-          {selectedTime || "Select Time"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showTimePicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {times.map((time) => (
-            <Pressable
-              key={time}
-              onPress={() => {
-                setSelectedTime(time);
-                setShowTimePicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedTime === time
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {time}
-              </Text>
-            </Pressable>
-          ))}
+      {/* ✅ Show current day/time (read-only) */}
+      {selectedMeal && (
+        <View className="mb-4 p-4 bg-blue-50 rounded-xl">
+          <Text className="text-xs text-gray-600">
+            {selectedMeal.day.charAt(0).toUpperCase() + selectedMeal.day.slice(1)} • {selectedMeal.time.charAt(0).toUpperCase() + selectedMeal.time.slice(1)}
+          </Text>
         </View>
       )}
 
@@ -292,14 +197,8 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       </Pressable>
 
       <View className="flex-row gap-3 mb-4">
-        <Pressable
-          onPress={onClose}
-          className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
-          disabled={uploading}
-        >
-          <Text className="text-faded_black text-center font-medium">
-            Cancel
-          </Text>
+        <Pressable onPress={onClose} className="flex-1 p-4 bg-[#F5F5F5] rounded-xl" disabled={uploading}>
+          <Text className="text-faded_black text-center font-medium">Cancel</Text>
         </Pressable>
         <TouchableOpacity
           onPress={handleSubmit}
@@ -308,7 +207,7 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
           style={{ opacity: uploading ? 0.5 : 1 }}
         >
           <Text className="text-white text-center font-medium">
-            {uploading ? "Adding..." : "Add"}
+            {uploading ? "Updating..." : "Update"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -331,13 +230,7 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
     <Modal visible={visible} transparent animationType="none">
       <Pressable onPress={onClose} className="flex-1 bg-black/50 justify-end">
         <Pressable onPress={(e) => e.stopPropagation()}>
-          <Animated.View
-            style={{
-              transform: [{ translateY }],
-              opacity,
-            }}
-            className="bg-white rounded-t-3xl p-6"
-          >
+          <Animated.View style={{ transform: [{ translateY }], opacity }} className="bg-white rounded-t-3xl p-6">
             {content}
           </Animated.View>
         </Pressable>
@@ -346,4 +239,4 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   );
 };
 
-export default AddMeal;
+export default EditMeal;

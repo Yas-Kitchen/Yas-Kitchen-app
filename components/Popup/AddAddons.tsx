@@ -14,40 +14,25 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useGlobalContext } from "@/context/GlobalContext";
 
-interface AddMealProps {
+interface AddAddonProps {
   open: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
 
-const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
+const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { selectedCategory } = useGlobalContext();
 
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
-  const [showDayPicker, setShowDayPicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [price, setPrice] = useState("");
   const [uploading, setUploading] = useState(false);
-
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const times = ["Lunch", "Dinner"];
 
   useEffect(() => {
     if (open) {
@@ -97,13 +82,8 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedDay || !selectedTime || !title) {
+    if (!title || !price) {
       alert("Please fill all required fields");
-      return;
-    }
-
-    if (!selectedCategory) {
-      alert("Please select a category first");
       return;
     }
 
@@ -114,21 +94,20 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
 
       if (image) {
         imageBase64 = await FileSystem.readAsStringAsync(image, {
-          encoding: "base64", 
+          encoding: "base64",
         });
       }
 
       const payload = {
-        cuisine_type: selectedCategory,
-        day: selectedDay,
-        time: selectedTime,
         name: title,
         description: description,
+        price: parseFloat(price),
         image: imageBase64,
       };
 
+      console.log("Sending request to:", `${API_URL}/addons`);
 
-      const response = await fetch(`${API_URL}/meals`, {
+      const response = await fetch(`${API_URL}/addons`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,10 +118,12 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.detail || result.error || "Failed to add meal");
+        throw new Error(result.detail || result.error || "Failed to add addon");
       }
 
-      alert("Meal added successfully!");
+      alert("Add-on added successfully!");
+
+      onSuccess?.();
 
       Animated.parallel([
         Animated.timing(translateY, {
@@ -158,11 +139,10 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       ]).start(() => {
         setVisible(false);
         onClose();
-        setSelectedDay("");
-        setSelectedTime("");
         setTitle("");
         setDescription("");
         setImage(null);
+        setPrice("");
       });
     } catch (error: any) {
       console.error("Error:", error);
@@ -178,90 +158,18 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
     <ScrollView showsVerticalScrollIndicator={false}>
       <View className="flex-row items-center justify-between mb-6">
         <Text className="text-faded_black text-[20px] font-bold">
-          Add New Item
+          Add New Add-on
         </Text>
         <Pressable onPress={onClose}>
           <Feather name="x" size={24} color="#666" />
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Day</Text>
-      <Pressable
-        onPress={() => setShowDayPicker(!showDayPicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedDay ? "text-black" : "text-base_color"}>
-          {selectedDay || "Select Day"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showDayPicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {days.map((day) => (
-            <Pressable
-              key={day}
-              onPress={() => {
-                setSelectedDay(day);
-                setShowDayPicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedDay === day
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {day}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      <Text className="text-base_color text-[12px] mb-2">Time</Text>
-      <Pressable
-        onPress={() => setShowTimePicker(!showTimePicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedTime ? "text-black" : "text-base_color"}>
-          {selectedTime || "Select Time"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showTimePicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {times.map((time) => (
-            <Pressable
-              key={time}
-              onPress={() => {
-                setSelectedTime(time);
-                setShowTimePicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedTime === time
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {time}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
       <Text className="text-base_color text-[12px] mb-2">Title</Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
-        placeholder="Enter meal title"
+        placeholder="Enter add-on title"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
@@ -270,11 +178,21 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       <TextInput
         value={description}
         onChangeText={setDescription}
-        placeholder="Enter meal description"
+        placeholder="Enter add-on description"
         multiline
         numberOfLines={4}
         textAlignVertical="top"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        placeholderTextColor="#999"
+      />
+
+      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <TextInput
+        value={price}
+        onChangeText={setPrice}
+        placeholder="Enter Price"
+        keyboardType="decimal-pad"
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
@@ -346,4 +264,4 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   );
 };
 
-export default AddMeal;
+export default AddAddon;

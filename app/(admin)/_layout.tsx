@@ -31,7 +31,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
     if (tabLayouts[state.index]) {
       const { x, width } = tabLayouts[state.index];
       
-      // Animate both position and width together
       Animated.parallel([
         Animated.spring(translateX, {
           toValue: x,
@@ -47,7 +46,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
         })
       ]).start();
 
-      // Update previous index for direction tracking
       previousIndex.current = state.index;
     }
   }, [state.index, tabLayouts, pillWidth, translateX]);

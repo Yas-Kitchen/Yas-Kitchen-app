@@ -1,10 +1,6 @@
-import * as FileSystem from "expo-file-system/legacy";
-import { Feather } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  Image,
   Modal,
   Platform,
   Pressable,
@@ -14,40 +10,26 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useGlobalContext } from "@/context/GlobalContext";
+import { Feather } from "@expo/vector-icons";
 
-interface AddMealProps {
+interface AddUserProps {
   open: boolean;
   onClose: () => void;
 }
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
 
-const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
+const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { selectedCategory } = useGlobalContext();
 
-  const [selectedDay, setSelectedDay] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState<string | null>(null);
-  const [showDayPicker, setShowDayPicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [name, setName] = useState("");
+  const [number, setNumber] = useState("");
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [uploading, setUploading] = useState(false);
-
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-  const times = ["Lunch", "Dinner"];
 
   useEffect(() => {
     if (open) {
@@ -83,52 +65,43 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
     }
   }, [open, onClose, opacity, translateY]);
 
-  const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  useEffect(() => {
+    // Fetch categories on mount
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/categories`);
+        const data = await response.json();
+        if (response.ok) {
+          setCategories(data);
+        } else {
+          console.error("Failed to fetch categories:", data);
+          alert("Failed to fetch categories");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        alert("Error fetching categories");
+      }
+    };
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
+    fetchCategories();
+  }, []);
 
   const handleSubmit = async () => {
-    if (!selectedDay || !selectedTime || !title) {
+    if (!name || !number || !selectedCategory) {
       alert("Please fill all required fields");
-      return;
-    }
-
-    if (!selectedCategory) {
-      alert("Please select a category first");
       return;
     }
 
     setUploading(true);
 
     try {
-      let imageBase64 = null;
-
-      if (image) {
-        imageBase64 = await FileSystem.readAsStringAsync(image, {
-          encoding: "base64", 
-        });
-      }
-
       const payload = {
-        cuisine_type: selectedCategory,
-        day: selectedDay,
-        time: selectedTime,
-        name: title,
-        description: description,
-        image: imageBase64,
+        name,
+        number,
+        meal_type: selectedCategory,
       };
 
-
-      const response = await fetch(`${API_URL}/meals`, {
+      const response = await fetch(`${API_URL}/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,10 +112,10 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.detail || result.error || "Failed to add meal");
+        throw new Error(result.error || "Failed to add user");
       }
 
-      alert("Meal added successfully!");
+      alert("User added successfully!");
 
       Animated.parallel([
         Animated.timing(translateY, {
@@ -158,11 +131,10 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
       ]).start(() => {
         setVisible(false);
         onClose();
-        setSelectedDay("");
-        setSelectedTime("");
-        setTitle("");
-        setDescription("");
-        setImage(null);
+        setName("");
+        setNumber("");
+        setSelectedCategory(null);
+        setShowCategoryPicker(false);
       });
     } catch (error: any) {
       console.error("Error:", error);
@@ -178,118 +150,67 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
     <ScrollView showsVerticalScrollIndicator={false}>
       <View className="flex-row items-center justify-between mb-6">
         <Text className="text-faded_black text-[20px] font-bold">
-          Add New Item
+          Add New User
         </Text>
         <Pressable onPress={onClose}>
           <Feather name="x" size={24} color="#666" />
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Day</Text>
-      <Pressable
-        onPress={() => setShowDayPicker(!showDayPicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedDay ? "text-black" : "text-base_color"}>
-          {selectedDay || "Select Day"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showDayPicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {days.map((day) => (
-            <Pressable
-              key={day}
-              onPress={() => {
-                setSelectedDay(day);
-                setShowDayPicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedDay === day
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {day}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      <Text className="text-base_color text-[12px] mb-2">Time</Text>
-      <Pressable
-        onPress={() => setShowTimePicker(!showTimePicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedTime ? "text-black" : "text-base_color"}>
-          {selectedTime || "Select Time"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
-
-      {showTimePicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {times.map((time) => (
-            <Pressable
-              key={time}
-              onPress={() => {
-                setSelectedTime(time);
-                setShowTimePicker(false);
-              }}
-              className="p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedTime === time
-                    ? "text-primary font-semibold"
-                    : "text-black"
-                }
-              >
-                {time}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      <Text className="text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="text-base_color text-[12px] mb-2">Name</Text>
       <TextInput
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Enter meal title"
+        value={name}
+        onChangeText={setName}
+        placeholder="Enter name"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="text-base_color text-[12px] mb-2">Number</Text>
       <TextInput
-        value={description}
-        onChangeText={setDescription}
-        placeholder="Enter meal description"
-        multiline
-        numberOfLines={4}
-        textAlignVertical="top"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        value={number}
+        onChangeText={setNumber}
+        placeholder="Enter number"
+        keyboardType="phone-pad"
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="text-base_color text-[12px] mb-2">Meal Type</Text>
       <Pressable
-        onPress={pickImage}
-        className="mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        onPress={() => setShowCategoryPicker(!showCategoryPicker)}
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
-        {image ? (
-          <Image source={{ uri: image }} className="w-12 h-12 rounded-lg" />
-        ) : (
-          <Text className="text-base_color">Upload Image</Text>
-        )}
-        <Feather name="upload" size={20} color="#666" />
+        <Text className={selectedCategory ? "text-black" : "text-base_color"}>
+          {selectedCategory || "Select Meal Type"}
+        </Text>
+        <Feather name="chevron-down" size={20} color="#666" />
       </Pressable>
+
+      {showCategoryPicker && (
+        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {categories.map((category) => (
+            <Pressable
+              key={category}
+              onPress={() => {
+                setSelectedCategory(category);
+                setShowCategoryPicker(false);
+              }}
+              className="p-4 border-b border-gray-100"
+            >
+              <Text
+                className={
+                  selectedCategory === category
+                    ? "text-primary font-semibold"
+                    : "text-black"
+                }
+              >
+                {category}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
 
       <View className="flex-row gap-3 mb-4">
         <Pressable
@@ -346,4 +267,4 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   );
 };
 
-export default AddMeal;
+export default AddUser;

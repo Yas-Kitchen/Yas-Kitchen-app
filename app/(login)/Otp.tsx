@@ -1,71 +1,238 @@
-import { useGlobalContext } from "@/context/GlobalContext";
-import { Feather } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
-  Pressable,
+  Alert,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
+  ActivityIndicator,
 } from "react-native";
+import { router } from "expo-router";
+import { useGlobalContext } from "@/context/GlobalContext";
+import { authAPI } from "@/services/auth.api";
 
 const Otp = () => {
   const { mobile } = useGlobalContext();
-  return (
-    <>
-      <Pressable className="mt-20 absolute mx-5" onPress={() => router.back()}>
-        <Feather name="chevron-left" size={30} />
-      </Pressable>
-      <View className="mx-5 justify-center h-screen">
-        <View className="items-center ">
-          <Text className="text-[20px] mt-7 font-bold text-faded_black">
-            Verify Phone
-          </Text>
-          <Text className="text-base text-[14px] mt-4">
-            We&apos;ve sent a verification code to
-          </Text>
-          <Text className="text-base text-[14px] font-medium">{mobile}</Text>
-          <View className="mt-10">
-            <Text className="text-base text-[14px] text-center font-medium">
-              Enter 4-digit OTP
-            </Text>
-            <View className="flex-row gap-3">
-              <TextInput
-                maxLength={1}
-                keyboardType="phone-pad"
-                className="h-16 w-16 bg-transparent text-center text-[30px] border mt-4 border-[#E5E7EB] rounded-xl"
-              />
-              <TextInput
-                maxLength={1}
-                keyboardType="phone-pad"
-                className="h-16 w-16 bg-transparent text-center text-[30px] border mt-4 border-[#E5E7EB] rounded-xl"
-              />
-              <TextInput
-                maxLength={1}
-                keyboardType="phone-pad"
-                className="h-16 w-16 bg-transparent text-center text-[30px] border mt-4 border-[#E5E7EB] rounded-xl"
-              />
-              <TextInput
-                maxLength={1}
-                keyboardType="phone-pad"
-                className="h-16 w-16 bg-transparent text-center text-[30px] border mt-4 border-[#E5E7EB] rounded-xl"
-              />
-            </View>
-          </View>
-        </View>
-        <TouchableOpacity
-          onPress={() => router.push("/(user)/user")}
-          className="bg-primary mt-10 mx-8 p-5 rounded-2xl"
-        >
-          <Text className="text-center text-white text-[14px]">Verfiy</Text>
-        </TouchableOpacity>
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+  const inputRefs = useRef<TextInput[]>([]);
 
-        <Text className="text-base text-center mt-5">
-          Resend OTP in 30 secconds
-        </Text>
-      </View>
-    </>
+  // Redirect if no phone number
+  useEffect(() => {
+    if (!mobile) {
+      Alert.alert("Error", "Please enter your phone number first");
+      router.replace("/");
+    }
+  }, [mobile]);
+
+  // Countdown timer for resend OTP
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+    if (countdown > 0 && !canResend) {
+      timer = setInterval(() => {
+        setCountdown((prev) => prev - 1);
+      }, 1000);
+    } else if (countdown === 0) {
+      setCanResend(true);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [countdown, canResend]);
+
+  // Auto-verify when all digits are entered
+  useEffect(() => {
+    const otpString = otp.join("");
+    if (otpString.length === 6 && !loading) {
+      handleVerifyOtp(otpString);
+    }
+  }, [otp]);
+
+  const handleChange = (text: string, index: number) => {
+    // Only allow numbers
+    if (text && !/^\d+$/.test(text)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = text;
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (text && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleVerifyOtp = async (otpCode: string) => {
+    if (otpCode.length < 6) {
+      Alert.alert("Error", "Please enter complete OTP");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await authAPI.verifyOtp(mobile, otpCode);
+
+      if (response.profile_exists) {
+        Alert.alert("Success", "Login successful!");
+        router.replace("/(user)/user");
+      } else {
+        Alert.alert("Success", "OTP verified! Please complete your profile");
+        router.push("/register");
+      }
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.error || "Invalid OTP. Please try again."
+      );
+      // Clear OTP and focus first input
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!canResend) return;
+
+    setLoading(true);
+    try {
+      const response = await authAPI.sendOtp(mobile);
+      Alert.alert(
+        "OTP Sent",
+        response.test_mode && response.test_otp
+          ? `Test OTP: ${response.test_otp}`
+          : "A new OTP has been sent to your phone"
+      );
+      setCanResend(false);
+      setCountdown(60);
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.error || "Failed to resend OTP"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleManualVerify = () => {
+    const otpString = otp.join("");
+    handleVerifyOtp(otpString);
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View className="h-screen justify-center px-5">
+          <Image
+            className="w-36 h-36 mx-auto max-w-36 max-h-36"
+            source={require("@assets/Login/logo.png")}
+          />
+          <Text className="text-[26px] font-bold mx-auto text-faded_black mt-5">
+            Verify OTP
+          </Text>
+          <Text className="text-[13px] text-center mx-auto text-faded_black mt-2">
+            Enter the 6-digit code sent to{"\n"}
+            {mobile}
+          </Text>
+
+          <View className="mt-10 mx-5 border border-[#bababa27] rounded-2xl p-5">
+            <Text className="text-[17px] font-semibold mx-auto text-faded_black mb-5">
+              Enter OTP
+            </Text>
+
+            {/* OTP Input Fields */}
+            <View className="flex-row justify-between mb-5">
+              {otp.map((digit, index) => (
+                <TextInput
+                  key={index}
+                  ref={(ref) => {
+                    if (ref) inputRefs.current[index] = ref;
+                  }}
+                  className={`w-12 h-14 bg-white rounded-xl text-center text-xl font-semibold ${
+                    digit ? "border-2 border-primary" : "border border-gray-300"
+                  }`}
+                  maxLength={1}
+                  keyboardType="number-pad"
+                  value={digit}
+                  onChangeText={(text) => handleChange(text, index)}
+                  onKeyPress={(e) => handleKeyPress(e, index)}
+                  editable={!loading}
+                  selectTextOnFocus
+                  autoFocus={index === 0}
+                />
+              ))}
+            </View>
+
+            {/* Resend OTP */}
+            <TouchableOpacity
+              onPress={handleResendOtp}
+              disabled={!canResend || loading}
+              className="mb-3"
+            >
+              <Text
+                className={`text-center ${
+                  canResend ? "text-primary" : "text-gray-400"
+                }`}
+              >
+                {canResend
+                  ? "Resend OTP"
+                  : `Resend OTP in ${countdown}s`}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Verify Button */}
+            <TouchableOpacity
+              onPress={handleManualVerify}
+              disabled={otp.join("").length < 6 || loading}
+              className={`${
+                otp.join("").length < 6 || loading
+                  ? "bg-base_color/50"
+                  : "bg-primary"
+              } p-5 rounded-2xl`}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-center text-white font-semibold">
+                  Verify OTP
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Back to Login */}
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mt-5"
+            disabled={loading}
+          >
+            <Text className="text-center text-primary">
+              Change Phone Number
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
