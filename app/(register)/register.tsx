@@ -2,7 +2,6 @@ import Details from "@/components/Register/Details";
 import Plan from "@/components/Register/Plan";
 import Review from "@/components/Register/Review";
 import Stepper from "@/components/Register/Stepper";
-import AlreadyAccount from "@/components/shared/AlreadyAccount";
 import { useGlobalContext } from "@/context/GlobalContext";
 import React, { useEffect } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -25,7 +24,7 @@ const Index = () => {
     const isForward = activeStep > progress.value;
     setDirection(isForward ? "forward" : "backward");
     progress.value = withTiming(activeStep, { duration: 300 });
-  }, [activeStep]);
+  }, [activeStep, progress]);
 
   const detailsStyle = useAnimatedStyle(() => {
     return {
@@ -121,12 +120,6 @@ const Index = () => {
             </Animated.View>
           )}
         </View>
-
-        <AlreadyAccount
-          main="Already have an account ?"
-          sub="Login"
-          route="/"
-        />
       </View>
     </ScrollView>
   );

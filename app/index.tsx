@@ -1,4 +1,3 @@
-import AlreadyAccount from "@/components/shared/AlreadyAccount";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -119,11 +118,6 @@ const Index = () => {
               </TouchableOpacity>
             </View>
           </View>
-          <AlreadyAccount
-            main={"New to yas kitchen? "}
-            sub={"Register Now"}
-            route={"/register"}
-          />
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
