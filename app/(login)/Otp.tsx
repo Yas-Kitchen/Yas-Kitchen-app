@@ -25,6 +25,7 @@ const Otp = () => {
   const inputRefs = useRef<TextInput[]>([]);
 
   // Redirect if no phone number
+
   useEffect(() => {
     if (!mobile) {
       Alert.alert("Error", "Please enter your phone number first");
@@ -51,19 +52,31 @@ const Otp = () => {
   useEffect(() => {
     const otpString = otp.join("");
     if (otpString.length === 6 && !loading) {
-      handleVerifyOtp(otpString);
+      handleVerifyOTP(otpString);
     }
   }, [otp]);
 
+  const handlePaste = (text: string) => {
+    // If user pasted entire OTP
+    if (text.length === 6 && /^\d+$/.test(text)) {
+      const digits = text.split("");
+      setOtp(digits);
+      Keyboard.dismiss();
+    }
+  };
+
   const handleChange = (text: string, index: number) => {
-    // Only allow numbers
+    if (text.length > 1) {
+      handlePaste(text);
+      return;
+    }
+
     if (text && !/^\d+$/.test(text)) return;
 
     const newOtp = [...otp];
     newOtp[index] = text;
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (text && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -75,7 +88,7 @@ const Otp = () => {
     }
   };
 
-  const handleVerifyOtp = async (otpCode: string) => {
+  const handleVerifyOTP = async (otpCode: string) => {
     if (otpCode.length < 6) {
       Alert.alert("Error", "Please enter complete OTP");
       return;
@@ -85,19 +98,24 @@ const Otp = () => {
     try {
       const response = await authAPI.verifyOtp(mobile, otpCode);
 
-      if (response.profile_exists) {
-        Alert.alert("Success", "Login successful!");
+      if (response.user?.role === "admin") {
+        Alert.alert("Success", "Welcome Admin!");
+        router.replace("/(admin)/admin");
+      } else if (response.profile_exists) {
+        Alert.alert("Success", "Login Successful");
         router.replace("/(user)/user");
       } else {
-        Alert.alert("Success", "OTP verified! Please complete your profile");
+        Alert.alert(
+          "Welcome",
+          "User not registered, please complete you'r profile"
+        );
         router.push("/register");
       }
     } catch (error: any) {
       Alert.alert(
         "Error",
-        error.response?.data?.error || "Invalid OTP. Please try again."
+        error.response?.data?.error || "invalid OTP, please try agian"
       );
-      // Clear OTP and focus first input
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
@@ -133,7 +151,7 @@ const Otp = () => {
 
   const handleManualVerify = () => {
     const otpString = otp.join("");
-    handleVerifyOtp(otpString);
+    handleVerifyOTP(otpString);
   };
 
   return (
@@ -171,7 +189,7 @@ const Otp = () => {
                   className={`w-12 h-14 bg-white rounded-xl text-center text-xl font-semibold ${
                     digit ? "border-2 border-primary" : "border border-gray-300"
                   }`}
-                  maxLength={1}
+                  maxLength={6}
                   keyboardType="number-pad"
                   value={digit}
                   onChangeText={(text) => handleChange(text, index)}
@@ -182,8 +200,6 @@ const Otp = () => {
                 />
               ))}
             </View>
-
-            {/* Resend OTP */}
             <TouchableOpacity
               onPress={handleResendOtp}
               disabled={!canResend || loading}
@@ -194,13 +210,9 @@ const Otp = () => {
                   canResend ? "text-primary" : "text-gray-400"
                 }`}
               >
-                {canResend
-                  ? "Resend OTP"
-                  : `Resend OTP in ${countdown}s`}
+                {canResend ? "Resend OTP" : `Resend OTP in ${countdown}s`}
               </Text>
             </TouchableOpacity>
-
-            {/* Verify Button */}
             <TouchableOpacity
               onPress={handleManualVerify}
               disabled={otp.join("").length < 6 || loading}
@@ -219,8 +231,6 @@ const Otp = () => {
               )}
             </TouchableOpacity>
           </View>
-
-          {/* Back to Login */}
           <TouchableOpacity
             onPress={() => router.back()}
             className="mt-5"

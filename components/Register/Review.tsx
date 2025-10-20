@@ -17,7 +17,7 @@ const Review = () => {
       <SubscriptionPlan />
       <TouchableOpacity
         onPress={() => {
-          const phoneNumber = 918547266801;
+          const phoneNumber = process.env.EXPO_PUBLIC_NUMBER;
 
           const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} plan ${
             kidsPlanSelected && "with Kids plan and"

@@ -16,11 +16,11 @@ const PersonalDetails = () => {
         </TouchableOpacity>
       </View>
       <View className="flex-col">
-        <View className="flex-row w-1/2 gap-5 mt-5">
+        <View className="flex-row w-fit/2 gap-5 mt-5">
           <Text className="text-base_color text-[12px]">Name :</Text>
           <Text className="mx-8 web:mx-0">{name}</Text>
         </View>
-        <View className="flex-row w-1/2 gap-5 mt-5">
+        <View className="flex-row w-fit gap-5 mt-5">
           <Text className="text-base_color text-[12px]">Mobile :</Text>
           <Text className="mx-7 web:mx-0">{mobile}</Text>
         </View>
