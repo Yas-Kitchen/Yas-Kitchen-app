@@ -11,8 +11,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem("access_token");
-  if (token && config.headers) {
+  const token = await AsyncStorage.getItem('access_token');
+  if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -75,14 +75,13 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         await AsyncStorage.removeItem("access_token");
         await AsyncStorage.removeItem("refresh_token");
-        await api.post('/auth/logout')
+        await api.post("/auth/logout");
         return Promise.reject(refreshError);
-      }
-      finally{
-        isRefreshing = false
+      } finally {
+        isRefreshing = false;
       }
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
 );
 

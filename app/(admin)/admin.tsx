@@ -8,7 +8,7 @@ const Admin = () => {
   const [selected, setSelected] = useState("summary");
   return (
     <ScrollView>
-    <View className="mx-5 ios:mt-16 mt-5">
+    <View className="mx-5 mt-16">
       <View className="flex-col gap-5">
         <View className="flex-row justify-between">
           <View className="flex-col gap-1">

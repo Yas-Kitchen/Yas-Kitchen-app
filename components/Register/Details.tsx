@@ -1,5 +1,5 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import React from "react";
+import React, { useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -16,17 +16,111 @@ import FoodStyle from "./FoodStyle";
 const Details = () => {
   const { setMobile, setName, setAdress, setActiveStep, name, adress, mobile } =
     useGlobalContext();
+  const [nameLength, setNameLength] = useState(name?.length || 0);
+  const [addressLength, setAddressLength] = useState(adress?.length || 0);
+
+  const handleNameChange = (text: string) => {
+    setName(text);
+    setNameLength(text.length);
+  };
+
+  const handleAddressChange = (text: string) => {
+    setAdress(text);
+    setAddressLength(text.length);
+  };
+
+  const handleMobileChange = (text: string) => {
+    const cleaned = text.replace(/[^\d+]/g, "");
+    setMobile(cleaned);
+  };
 
   const handleContinue = () => {
-    if (!name?.trim() || !adress?.trim() || !mobile?.trim()) {
+    const trimmedName = name?.trim() || "";
+    const trimmedAddress = adress?.trim() || "";
+    const trimmedMobile = mobile?.trim() || "";
+    if (!trimmedName || !trimmedAddress || !trimmedMobile) {
       Alert.alert(
-        "Please fill all fields",
-        "All fields are required to continue."
+        "Missing Information",
+        "Please fill in all fields to continue."
       );
       return;
     }
+    if (trimmedName.length < 2) {
+      Alert.alert(
+        "Invalid Name",
+        "Please enter your full name (at least 2 characters)."
+      );
+      return;
+    }
+    if (/^User\s*\d+$/i.test(trimmedName)) {
+      Alert.alert(
+        "Invalid Name",
+        "Please enter your real name, not a placeholder."
+      );
+      return;
+    }
+
+    if (trimmedAddress.length < 10) {
+      Alert.alert(
+        "Incomplete Address",
+        "Please enter your complete delivery address (at least 10 characters).\n\nExample: House No, Street Name, City"
+      );
+      return;
+    }
+
+    if (/address\s*not\s*provided/i.test(trimmedAddress)) {
+      Alert.alert(
+        "Invalid Address",
+        "Please enter your real delivery address."
+      );
+      return;
+    }
+
+    let validMobile = trimmedMobile;
+    if (validMobile.startsWith("+91")) {
+      const digitsAfterCode = validMobile.substring(3);
+      if (digitsAfterCode.length !== 10) {
+        Alert.alert(
+          "Invalid Mobile Number",
+          "Please enter a valid mobile number: +91 followed by 10 digits."
+        );
+        return;
+      }
+    } else if (validMobile.startsWith("91") && validMobile.length === 12) {
+      validMobile = "+" + validMobile;
+    } else if (/^\d{10}$/.test(validMobile)) {
+      validMobile = "+91" + validMobile;
+    } else {
+      Alert.alert(
+        "Invalid Mobile Number",
+        "Please enter a valid 10-digit mobile number."
+      );
+      return;
+    }
+
+    setName(trimmedName);
+    setAdress(trimmedAddress);
+    setMobile(validMobile);
+
     setActiveStep(2);
   };
+
+  const getMobileDigitsCount = () => {
+    if (!mobile) return 0;
+    if (mobile.startsWith("+91")) {
+      return mobile.substring(3).length;
+    }
+    if (mobile.startsWith("91")) {
+      return mobile.substring(2).length;
+    }
+    return mobile.length;
+  };
+
+  const mobileDigits = getMobileDigitsCount();
+  const isFormValid =
+    name?.trim().length >= 2 &&
+    adress?.trim().length >= 10 &&
+    mobileDigits === 10;
 
   return (
     <KeyboardAvoidingView
@@ -39,47 +133,85 @@ const Details = () => {
 
           <View className="mt-3 gap-1">
             <Text className="font-medium text-[11px] text-base_color">
-              Full name
+              Full Name *
             </Text>
             <TextInput
-              onChangeText={setName}
-              placeholder="Enter your name"
+              onChangeText={handleNameChange}
+              placeholder="Enter your full name"
               className="p-5 border border-base_color/30 rounded-2xl"
               value={name}
+              autoCapitalize="words"
+              maxLength={50}
             />
-
+            <Text
+              className={`text-[10px] mb-2 ${
+                nameLength < 2 ? "text-red-500" : "text-green-600"
+              }`}
+            >
+              {nameLength}/50 characters{" "}
+              {nameLength < 2 && "(minimum 2 required)"}
+            </Text>
             <Text className="font-medium text-[11px] text-base_color">
-              Delivery Address
+              Delivery Address *
             </Text>
             <TextInput
-              onChangeText={setAdress}
-              placeholder="Enter delivery address"
-              className="p-14 px-5 border border-base_color/30 rounded-2xl"
-              value={adress}
-            />
-
-            <Text className="font-medium text-[11px] text-base_color">
-              Mobile Number
-            </Text>
-            <TextInput
-              onChangeText={setMobile}
-              placeholder="Enter your mobile number"
+              onChangeText={handleAddressChange}
+              placeholder="House No, Street, Landmark, City"
               className="p-5 border border-base_color/30 rounded-2xl"
-              value={mobile}
-              keyboardType="phone-pad"
+              value={adress}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+              maxLength={200}
             />
+            <Text
+              className={`text-[10px] mb-2 ${
+                addressLength < 10 ? "text-red-500" : "text-green-600"
+              }`}
+            >
+              {addressLength}/200 characters{" "}
+              {addressLength < 10 && "(minimum 10 required)"}
+            </Text>
+
+            <Text className="font-medium text-[11px] text-base_color">
+              Mobile Number *
+            </Text>
+            <View className="flex-row items-center border border-base_color/30 rounded-2xl">
+              <Text className="pl-5 text-base_color/60">+91</Text>
+              <TextInput
+                onChangeText={handleMobileChange}
+                placeholder="10-digit mobile number"
+                className="flex-1 p-5"
+                value={
+                  mobile?.startsWith("+91")
+                    ? mobile.substring(3)
+                    : mobile?.startsWith("91")
+                    ? mobile.substring(2)
+                    : mobile
+                }
+                keyboardType="phone-pad"
+                maxLength={10}
+              />
+            </View>
+            <Text
+              className={`text-[10px] mb-2 ${
+                mobileDigits !== 10 ? "text-red-500" : "text-green-600"
+              }`}
+            >
+              {mobileDigits}/10 digits {mobileDigits !== 10 && "(10 required)"}
+            </Text>
           </View>
 
           <TouchableOpacity
             onPress={handleContinue}
             className={`mt-5 p-5 rounded-2xl ${
-              !name || !adress || !mobile ? "bg-primary/10" : "bg-primary"
+              !isFormValid ? "bg-primary/10" : "bg-primary"
             }`}
-            disabled={!name || !adress || !mobile}
+            disabled={!isFormValid}
           >
             <Text
-              className={`text-center ${
-                !name || !adress || !mobile ? "text-black/20" : "text-white"
+              className={`text-center font-semibold ${
+                !isFormValid ? "text-black/20" : "text-white"
               }`}
             >
               Continue

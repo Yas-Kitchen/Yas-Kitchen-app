@@ -15,6 +15,7 @@ import {
 import { router } from "expo-router";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { authAPI } from "@/services/auth.api";
+import { storage } from "@/services/storage";
 
 const Otp = () => {
   const { mobile } = useGlobalContext();
@@ -24,8 +25,6 @@ const Otp = () => {
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<TextInput[]>([]);
 
-  // Redirect if no phone number
-
   useEffect(() => {
     if (!mobile) {
       Alert.alert("Error", "Please enter your phone number first");
@@ -33,7 +32,6 @@ const Otp = () => {
     }
   }, [mobile]);
 
-  // Countdown timer for resend OTP
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     if (countdown > 0 && !canResend) {
@@ -48,7 +46,6 @@ const Otp = () => {
     };
   }, [countdown, canResend]);
 
-  // Auto-verify when all digits are entered
   useEffect(() => {
     const otpString = otp.join("");
     if (otpString.length === 6 && !loading) {
@@ -57,7 +54,6 @@ const Otp = () => {
   }, [otp]);
 
   const handlePaste = (text: string) => {
-    // If user pasted entire OTP
     if (text.length === 6 && /^\d+$/.test(text)) {
       const digits = text.split("");
       setOtp(digits);
@@ -96,26 +92,83 @@ const Otp = () => {
 
     setLoading(true);
     try {
+      console.log("Verifying OTP for:", mobile);
+
       const response = await authAPI.verifyOtp(mobile, otpCode);
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      const tokens = await storage.getTokens();
+      console.log("Tokens after OTP verification:", {
+        hasAccessToken: !!tokens.accessToken,
+        hasRefreshToken: !!tokens.refreshToken,
+      });
 
       if (response.user?.role === "admin") {
         Alert.alert("Success", "Welcome Admin!");
         router.replace("/(admin)/admin");
-      } else if (response.profile_exists) {
-        Alert.alert("Success", "Login Successful");
-        router.replace("/(user)/user");
-      } else {
-        Alert.alert(
-          "Welcome",
-          "User not registered, please complete you'r profile"
-        );
-        router.push("/register");
+        return;
       }
-    } catch (error: any) {
+      if (!tokens.accessToken) {
+        console.error(" Tokens were not saved after OTP verification");
+        Alert.alert("Error", "Authentication failed. Please try again.");
+        return;
+      }
+      if (!response.profile_exists) {
+        console.log("New user detected - redirecting to profile completion");
+        Alert.alert("Welcome!", "Please complete your profile to continue", [
+          { text: "OK", onPress: () => router.push("/(register)/register") },
+        ]);
+        return;
+      }
+      if (response.user?.status === "pending") {
+        Alert.alert(
+          "Pending Approval",
+          "Your account is waiting for admin approval. You will be notified once activated.",
+          [
+            {
+              text: "OK",
+              onPress: async () => {
+                await storage.clearAll();
+                router.replace("/");
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      if (response.user?.status === "active") {
+        Alert.alert("Success", "Welcome back!");
+        router.replace("/(user)/user");
+        return;
+      }
       Alert.alert(
-        "Error",
-        error.response?.data?.error || "invalid OTP, please try agian"
+        "Account Issue",
+        "There's an issue with your account. Please contact support.",
+        [
+          {
+            text: "OK",
+            onPress: async () => {
+              await storage.clearAll();
+              router.replace("/");
+            },
+          },
+        ]
       );
+    } catch (error: any) {
+      console.error(
+        "OTP verification error:",
+        error.response?.data || error.message
+      );
+
+      Alert.alert(
+        "Verification Failed",
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Invalid OTP. Please try again."
+      );
+
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {

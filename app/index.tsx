@@ -36,19 +36,10 @@ const Index = () => {
     setLoading(true);
     try {
       const response = await authAPI.sendOtp(mobile);
-      
-      // Check if test mode is enabled
-      if (response.test_mode && response.test_otp) {
-        Alert.alert(
-          "OTP Sent (Test Mode)", 
-          `Your test OTP is: ${response.test_otp}\n\nExpires in ${response.expires_in_minutes} minutes`
-        );
-      } else {
         Alert.alert(
           "OTP Sent", 
           `OTP has been sent to ${mobile}\n\nExpires in ${response.expires_in_minutes} minutes`
-        );
-      }
+        )
       
       router.push("/(login)/Otp");
     } catch (error: any) {
@@ -114,6 +105,11 @@ const Index = () => {
               >
                 <Text className="text-center text-white font-semibold">
                   {loading ? "Sending OTP..." : "Continue"}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace('/(admin)/admin')}>
+                <Text>
+                   Admin
                 </Text>
               </TouchableOpacity>
             </View>

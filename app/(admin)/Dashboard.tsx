@@ -8,7 +8,7 @@ const Dashboard = () => {
   const [active, setActive] = useState("today");
   return (
     <ScrollView>
-      <View className="ios:mt-16 mt-5 mx-5">
+      <View className="mt-16 mx-5">
           <Text className="font-semibold text-[16px] text-faded_black">
             Dashboard
           </Text>

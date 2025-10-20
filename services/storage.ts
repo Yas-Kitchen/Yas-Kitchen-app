@@ -1,22 +1,33 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const KEYS = {
-  ACCESS_TOKEN: 'access_token',
-  REFRESH_TOKEN: 'refresh_token',
-  USER_PROFILE: 'user_profile',
+  ACCESS_TOKEN: "access_token",
+  REFRESH_TOKEN: "refresh_token",
+  USER_PROFILE: "user_profile",
 };
 
 export const storage = {
-  // Token management
-  setToken: async (accessToken: string, refreshToken: string) => {
-    await AsyncStorage.multiSet([
-      [KEYS.ACCESS_TOKEN, accessToken],
-      [KEYS.REFRESH_TOKEN, refreshToken],
-    ]);
+  setToken: async (accessToken: string, refreshToken?: string) => {
+    try {
+      const items: [string, string][] = [[KEYS.ACCESS_TOKEN, accessToken]];
+      if (refreshToken) items.push([KEYS.REFRESH_TOKEN, refreshToken]);
+      await AsyncStorage.multiSet(items);
+      console.log("Tokens saved successfully");
+    } catch (error) {
+      console.error('Error saving tokens : ' , error);
+      throw error
+    }
   },
 
-  getToken: async () => {
-    return await AsyncStorage.getItem(KEYS.ACCESS_TOKEN);
+  getTokens: async () => {
+    const values = await AsyncStorage.multiGet([
+      KEYS.ACCESS_TOKEN,
+      KEYS.REFRESH_TOKEN,
+    ]);
+    return {
+      accessToken: values[0][1] || null,
+      refreshToken: values[1][1] || null,
+    };
   },
 
   getRefreshToken: async () => {
