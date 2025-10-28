@@ -1,16 +1,21 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useRef, useState } from "react";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface Meal {
+export interface Meal {
   id: string;
   name: string;
   description: string;
-  image_url: string;
+  image?: string;
+  cuisine_type_id: string;
+  is_available: boolean;
+  day_of_week?: string;
+  meal_time?: string;
+  created_at: string;
+  updated_at: string;
+  item_id?: string;
+  mealPlanId: string;
   day: string;
   time: string;
-  rating: number;
-  cuisine_type: string;
+  image_url?: string | null;
 }
 
 interface Category {
@@ -19,13 +24,17 @@ interface Category {
   name: string;
 }
 
+export interface MealListRef {
+  refresh: () => void;
+}
+
 interface GlobalContextType {
   mobile: string;
   setMobile: React.Dispatch<React.SetStateAction<string>>;
   name: any;
   setName: React.Dispatch<React.SetStateAction<any>>;
-  adress: any;
-  setAdress: React.Dispatch<React.SetStateAction<any>>;
+  address: any;
+  setAddress: React.Dispatch<React.SetStateAction<any>>;
   popupNames: string;
   setPopupNames: React.Dispatch<React.SetStateAction<string>>;
   teacher: any;
@@ -42,13 +51,13 @@ interface GlobalContextType {
   setSelectedCategory: React.Dispatch<React.SetStateAction<string | null>>;
   selectedCategoryName: string | null;
   setSelectedCategoryName: React.Dispatch<React.SetStateAction<string | null>>;
-  categories: Array<Category>;
-  setCategories: React.Dispatch<React.SetStateAction<Array<Category>>>;
-  fetchCategories: () => Promise<void>;
-  addCategory: (name: string) => Promise<void>;
-  // ✅ Add these two lines
+  categories: Category[];
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  selectedUser: any;
+  setSelectedUser: React.Dispatch<React.SetStateAction<any>>;
   selectedMeal: Meal | null;
   setSelectedMeal: React.Dispatch<React.SetStateAction<Meal | null>>;
+  mealListRef: React.RefObject<MealListRef | null>;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -58,7 +67,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [mobile, setMobile] = useState("");
   const [name, setName] = useState("");
-  const [adress, setAdress] = useState("");
+  const [address, setAddress] = useState("");
   const [teacher, setTeacher] = useState("");
   const [popupNames, setPopupNames] = useState("");
   const [foodStyle, setFoodStyle] = useState("south");
@@ -66,64 +75,21 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [monthlyPlan, setMonthlyPlan] = useState("regular");
   const [kidsPlanSelected, setKidsPlanSelected] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedCategoryName, setSelectedCategoryName] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Array<Category>>([]);
+  const [selectedCategoryName, setSelectedCategoryName] = useState<
+    string | null
+  >(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch(`${API_URL}/categories`);
-      const result = await response.json();
-
-      if (result.success && result.data) {
-        const formattedCategories = result.data.map((cat: any) => ({
-          label: cat.name,
-          value: cat.id,
-          name: cat.name,
-        }));
-        setCategories(formattedCategories);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
-
-  const addCategory = async (name: string) => {
-    try {
-      const response = await fetch(`${API_URL}/categories`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.detail || "Failed to add category");
-      }
-
-      await fetchCategories();
-      
-      return result;
-    } catch (error: any) {
-      console.error("Error adding category:", error);
-      throw error;
-    }
-  };
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const mealListRef = useRef<MealListRef | null>(null);
 
   const values: GlobalContextType = {
     mobile,
     setMobile,
     name,
     setName,
-    adress,
-    setAdress,
+    address,
+    setAddress,
     popupNames,
     setPopupNames,
     teacher,
@@ -142,10 +108,11 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     setSelectedCategoryName,
     categories,
     setCategories,
-    fetchCategories,
-    addCategory,
     selectedMeal,
     setSelectedMeal,
+    selectedUser,
+    setSelectedUser,
+    mealListRef,
   };
 
   return (

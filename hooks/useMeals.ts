@@ -24,7 +24,6 @@ export const useMeals = () => {
         ...planDetails[categoryId],
         mealPlanId,
       });
-
     } catch (err: any) {
       console.log("fetchMeals error", err);
       setError(err?.message || "Failed to fetch meals");
@@ -46,20 +45,40 @@ export const useMeals = () => {
       setLoading(false);
     }
   };
-  
-  const updateMeal = async (mealPlanId : string, itemId : string) => {
-      setLoading(true)
-      setError(null)
-      try {
-        await mealsAPI.updateMealPlan(mealPlanId,itemId)
-        await fetchMeals(mealPlanId)
-      } catch (err : any) {
-        console.log("UpdateMeal error", err);
-        setError(err?.message || "Failed to update meal")
-      }
-      finally{
-        setLoading(false)
-      }
+
+  const updateMeal = async (
+    mealPlanId: string,
+    itemId: string,
+    data: {
+      name?: string;
+      description?: string;
+      image?: string | null;
+      availability?: string;
+      userId?: string;
     }
-    return { meals, loading, fetchMeals, deleteMeals, updateMeal };
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      let imageUrl = data.image;
+      if (data.image && !data.image.startsWith("http")) {
+        imageUrl = await mealsAPI.uploadMealImage(data.image, data.userId!);
+      }
+
+      const payload = {
+        name: data.name,
+        description: data.description,
+        ...(imageUrl && { image: imageUrl }),
+      };
+
+      await mealsAPI.updateMealPlan(mealPlanId, itemId, payload);
+      await fetchMeals(mealPlanId);
+    } catch (err: any) {
+      console.log("Update Meal error", err);
+      setError(err?.message || "Failed to update meal");
+    } finally {
+      setLoading(false);
+    }
+  };
+  return { meals, loading, fetchMeals, deleteMeals, updateMeal };
 };

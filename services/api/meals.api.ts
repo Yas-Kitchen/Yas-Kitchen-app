@@ -15,8 +15,19 @@ export const mealsAPI = {
     );
     return response.data;
   },
-  updateMealPlan: async (mealPlanId: string, itemId: any) => {
-    const response = await api.put(`admin/meal-plans/${mealPlanId}/items/${itemId}`);
+  updateMealPlan: async (mealPlanId: string, itemId: any, data: any) => {
+    const response = await api.put(
+      `admin/meal-plans/${mealPlanId}/items/${itemId}`,
+      data
+    );
     return response.data;
+  },
+  uploadMealImage: async (fileBase64: string, userId: string) => {
+    const response = await api.post(`images/upload`, {
+      file: fileBase64,
+      category: "meals",
+      user_id: userId,
+    });
+    return response.data?.data?.url;
   },
 };
