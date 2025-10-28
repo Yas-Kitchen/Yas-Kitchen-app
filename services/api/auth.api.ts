@@ -1,5 +1,5 @@
-import api from "./api";
-import { storage } from "./storage";
+import api from "../api";
+import { storage } from "../storage";
 
 export interface SendOtpResponse {
   message: string;
@@ -8,8 +8,6 @@ export interface SendOtpResponse {
   test_mode?: boolean;
   test_otp?: string;
 }
-
-// services/auth.api.ts
 
 export interface VerifyOtpResponse {
   user?: {
@@ -60,7 +58,7 @@ export interface RegisterUserData {
 export interface CompleteProfileData {
   name: string;
   address: string;
-  meal_type: "north_indian" | "south_indian";
+  cuisine_type_id: string;
 }
 
 export interface UserProfileResponse {
