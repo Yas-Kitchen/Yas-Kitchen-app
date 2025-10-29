@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useGlobalContext } from "@/context/GlobalContext";
-import { authAPI } from "@/services/auth.api";
+import { authAPI } from "@/services/api/auth.api";
 import { storage } from "@/services/storage";
 
 const Otp = () => {

@@ -13,7 +13,8 @@ import EditMeal from "./EditMeal";
 import AddAddon from "./AddAddons";
 
 const AllPopup = () => {
-  const { popupNames, setPopupNames } = useGlobalContext();
+  const { popupNames, setPopupNames, selectedCategory, mealListRef } =
+    useGlobalContext();
   return (
     <>
       <ChangeFoodPlan
@@ -39,6 +40,8 @@ const AllPopup = () => {
       <AddMeal
         open={popupNames === "addmeal"}
         onClose={() => setPopupNames("")}
+        categoryId={selectedCategory}
+        onSuccess={() => mealListRef.current?.refresh()}
       />
       <AddSpecials
         open={popupNames === "addspecial"}

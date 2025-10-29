@@ -3,54 +3,33 @@ import React, { useState } from "react";
 import { Linking, Text, TouchableOpacity, View, Alert } from "react-native";
 import PersonalDetails from "./PersonalDetails";
 import SubscriptionPlan from "./SubscriptionPlan";
-import { authAPI, CompleteProfileData } from "@/services/auth.api";
 import { router } from "expo-router";
-import { storage } from "@/services/storage";
+import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 
 const Review = () => {
   const [loading, setLoading] = useState(false);
-  const { monthlyPlan, name, mobile, adress, foodStyle, kidsPlanSelected } =
+  const { monthlyPlan, name, mobile, address, foodStyle, kidsPlanSelected } =
     useGlobalContext();
+  const { confirmPrice } = useRegisterAPI();
 
   const handleContinue = async () => {
+    const phoneNumber = process.env.EXPO_PUBLIC_NUMBER;
     try {
-      setLoading(true);
-
-      console.log("Completing profile with ", { name, adress, foodStyle });
-
-      const profileData: CompleteProfileData = {
-        name: name,
-        address: adress,
-        meal_type: foodStyle === "north" ? "north_indian" : "south_indian",
-      };
-
-      const tokens = await storage.getTokens();
-      console.log("Tokens before completing profile:", tokens);
-
-      if (!tokens.accessToken) {
-        Alert.alert(
-          "Error",
-          "You are not logged in. Please verify your OTP first."
-        );
-        return;
-      }
-
-      const response = await authAPI.completeProfile(profileData);
-      console.log("Profile completed successfully:", response);
-
-      const phoneNumber = process.env.EXPO_PUBLIC_NUMBER;
+      await confirmPrice();
       const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} plan ${
         kidsPlanSelected ? "with Kids plan and" : ""
-      } with ${foodStyle} Indian style. My address is ${adress}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
+      } with ${foodStyle} Indian style. My address is ${address}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
       const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
         message
       )}`;
+
       await Linking.openURL(url).catch(() => {
         Alert.alert(
           "WhatsApp Not Found",
           "Make sure WhatsApp is installed on your device"
         );
       });
+
       Alert.alert(
         "Success!",
         "Your profile has been completed. Our team will contact you shortly.",
@@ -89,12 +68,34 @@ const Review = () => {
         const phoneNumber = process.env.EXPO_PUBLIC_NUMBER;
         const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} plan ${
           kidsPlanSelected ? "with Kids plan and" : ""
-        } with ${foodStyle} Indian style. My address is ${adress}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
+        } with ${foodStyle} Indian style. My address is ${address}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
 
         const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
           message
         )}`;
-        await Linking.openURL(url);
+
+        try {
+          await Linking.openURL(url);
+          Alert.alert("Success", "Redirecting to WhatsApp...", [
+            {
+              text: "OK",
+              onPress: () => {
+                router.replace("/");
+              },
+            },
+          ]);
+        } catch (err: any) {
+          Alert.alert(
+            "WhatsApp Not Found",
+            "Make sure WhatsApp is installed on your device"
+          );
+          console.log(err?.message);
+        }
+      } else if (error.response?.status === 422) {
+        Alert.alert(
+          "Error",
+          "Some required fields are missing. Please check your information."
+        );
       } else {
         Alert.alert(
           "Error",
@@ -114,10 +115,11 @@ const Review = () => {
       <PersonalDetails />
       <SubscriptionPlan />
       <TouchableOpacity
-        onPress={() => {
-          handleContinue();
-        }}
-        className="bg-primary mt-5 p-5 rounded-2xl w-full"
+        onPress={handleContinue}
+        disabled={loading}
+        className={`bg-primary mt-5 p-5 rounded-2xl w-full ${
+          loading && "opacity-50"
+        }`}
       >
         {loading ? (
           <Text className="text-center text-white">Loading...</Text>

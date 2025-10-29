@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { storage } from "@/services/storage";
 
 interface AddUserProps {
   open: boolean;
@@ -69,7 +70,16 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
     // Fetch categories on mount
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`${API_URL}/categories`);
+        const tokens = await storage.getTokens();
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_API_URL}/cuisine-types/`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${tokens.accessToken}`,
+            },
+          }
+        );
         const data = await response.json();
         if (response.ok) {
           setCategories(data);

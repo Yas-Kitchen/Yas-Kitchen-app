@@ -3,7 +3,7 @@ import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 const PersonalDetails = () => {
-  const { name, mobile, adress, foodStyle, setActiveStep } = useGlobalContext();
+  const { name, mobile, address, foodStyle, setActiveStep } = useGlobalContext();
 
   return (
     <View className="bg-base_color/10 rounded-2xl p-5">
@@ -26,7 +26,7 @@ const PersonalDetails = () => {
         </View>
         <View className="flex-row gap-5 mt-5 w-[250px]">
           <Text className="text-base_color text-[12px]">Address :</Text>
-          <Text className="mx-5 web:mx-0">{adress}</Text>
+          <Text className="mx-5 web:mx-0">{address}</Text>
         </View>
         <View className="flex-row gap-5 mt-5">
           <Text className="text-base_color text-[12px]">Food Style :</Text>

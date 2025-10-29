@@ -1,8 +1,8 @@
-import * as FileSystem from "expo-file-system/legacy";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Image,
   Modal,
@@ -14,21 +14,24 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useGlobalContext } from "@/context/GlobalContext";
+import { storage } from "@/services/storage";
 
 interface AddMealProps {
   open: boolean;
   onClose: () => void;
+  categoryId: string | null;
+  onSuccess?: () => void | undefined;
 }
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
+const AddMeal: React.FC<AddMealProps> = ({
+  open,
+  onClose,
+  categoryId,
+  onSuccess,
+}) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { selectedCategory } = useGlobalContext();
-
   const [selectedDay, setSelectedDay] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [title, setTitle] = useState("");
@@ -97,80 +100,147 @@ const AddMeal: React.FC<AddMealProps> = ({ open, onClose }) => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedDay || !selectedTime || !title) {
-      alert("Please fill all required fields");
-      return;
-    }
+  if (!selectedDay || !selectedTime || !title || !categoryId) {
+    Alert.alert("Error", "Please fill all required fields");
+    return;
+  }
 
-    if (!selectedCategory) {
-      alert("Please select a category first");
-      return;
-    }
+  setUploading(true);
 
-    setUploading(true);
+  try {
+    const tokens = await storage.getTokens();
 
-    try {
-      let imageBase64 = null;
+    console.log("🎯 Selected category ID:", categoryId);
 
-      if (image) {
-        imageBase64 = await FileSystem.readAsStringAsync(image, {
-          encoding: "base64", 
-        });
+    // Step 1: Get meal plan
+    const planResponse = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/meal-plans/?cuisine_type_id=${categoryId}`,
+      {
+        headers: { Authorization: `Bearer ${tokens.accessToken}` },
       }
+    );
 
-      const payload = {
-        cuisine_type: selectedCategory,
-        day: selectedDay,
-        time: selectedTime,
-        name: title,
-        description: description,
-        image: imageBase64,
-      };
+    if (!planResponse.ok) throw new Error("Failed to get meal plan");
 
+    const plans = await planResponse.json();
+    console.log("📋 All plans returned:", plans);
 
-      const response = await fetch(`${API_URL}/meals`, {
+    // Filter manually since backend isn't filtering
+    const matchingPlans = plans.filter((p: any) => p.cuisine_type_id === categoryId);
+    console.log("✅ Matching plans:", matchingPlans);
+
+    if (!matchingPlans || matchingPlans.length === 0) {
+      Alert.alert(
+        "No Meal Plan Found",
+        `Please create a meal plan for this category in the database first.\n\nCategory ID: ${categoryId}`
+      );
+      return;
+    }
+
+    const mealPlan = matchingPlans[0];
+    const mealPlanId = mealPlan.id;
+    console.log("✅ Using meal plan:", mealPlan);
+
+    // Step 2: Get meal time ID
+    const mealTimesResponse = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/meal-times/`,
+      {
+        headers: { Authorization: `Bearer ${tokens.accessToken}` },
+      }
+    );
+
+    const mealTimes = await mealTimesResponse.json();
+    const mealTime = mealTimes.find(
+      (mt: any) => mt.name.toLowerCase() === selectedTime.toLowerCase()
+    );
+
+    if (!mealTime) throw new Error("Meal time not found");
+
+    // Step 3: Upload image (if any)
+    let imageUrl = null;
+    if (image) {
+      const fileName = `meal-${Date.now()}.jpg`;
+      const formData = new FormData();
+      const response = await fetch(image);
+      const blob = await response.blob();
+      formData.append("file", blob, fileName);
+
+      const uploadResponse = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/upload/image`,
+        {
+          method: "POST",
+          headers: { Authorization: `Bearer ${tokens.accessToken}` },
+          body: formData,
+        }
+      );
+
+      if (uploadResponse.ok) {
+        const uploadData = await uploadResponse.json();
+        imageUrl = uploadData.url;
+      }
+    }
+
+    // Step 4: Create meal
+    console.log("🍽️ Creating meal with cuisine_type_id:", categoryId);
+
+    const mealResponse = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/admin/meals/`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${tokens.accessToken}`,
         },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.detail || result.error || "Failed to add meal");
+        body: JSON.stringify({
+          name: title,
+          description: description,
+          cuisine_type_id: categoryId,
+          image_url: imageUrl,
+          is_available: true,
+        }),
       }
+    );
 
-      alert("Meal added successfully!");
+    if (!mealResponse.ok) throw new Error("Failed to create meal");
 
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 300,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setVisible(false);
-        onClose();
-        setSelectedDay("");
-        setSelectedTime("");
-        setTitle("");
-        setDescription("");
-        setImage(null);
-      });
-    } catch (error: any) {
-      console.error("Error:", error);
-      alert("Something went wrong: " + error.message);
-    } finally {
-      setUploading(false);
+    const meal = await mealResponse.json();
+    console.log("✅ Created meal:", meal);
+
+    // Step 5: Add to meal plan
+    const itemResponse = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/admin/meal-plans/${mealPlanId}/items?meal_id=${meal.id}&day_of_week=${selectedDay.toLowerCase()}&meal_time_id=${mealTime.id}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokens.accessToken}`,
+        },
+      }
+    );
+
+    if (!itemResponse.ok) {
+      const errorText = await itemResponse.text();
+      throw new Error(`Failed to add to plan: ${errorText}`);
     }
-  };
+
+    Alert.alert("Success", "Meal added successfully!");
+
+    // Reset form
+    setSelectedDay("");
+    setSelectedTime("");
+    setTitle("");
+    setDescription("");
+    setImage(null);
+    if (onSuccess) onSuccess();
+    onClose();
+  } catch (error: any) {
+    console.error("❌ Error:", error);
+    Alert.alert("Error", error.message);
+  } finally {
+    setUploading(false);
+  }
+};
+
+
 
   if (!visible) return null;
 

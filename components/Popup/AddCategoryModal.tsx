@@ -8,8 +8,10 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useGlobalContext } from "@/context/GlobalContext";
+import { storage } from "@/services/storage";
 
 interface AddCategoryModalProps {
   open: boolean;
@@ -22,28 +24,54 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 }) => {
   const [categoryName, setCategoryName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { addCategory } = useGlobalContext();
+  const {setPopupNames } = useGlobalContext();
 
   const handleAddCategory = async () => {
-    if (!categoryName.trim()) {
-      alert("Please enter a category name");
-      return;
+  if (!categoryName.trim()) {
+    Alert.alert("Error", "Please enter a category name");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const tokens = await storage.getTokens();
+    
+    // Create cuisine type only
+    const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/admin/cuisine-types/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${tokens.accessToken}`,
+        },
+        body: JSON.stringify({ 
+          name: categoryName,
+          description: `${categoryName} cuisine meals`,
+          is_active: true 
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Failed to add category: ${error}`);
     }
 
-    setLoading(true);
+    Alert.alert(
+      "Success", 
+      "Category created! Please create a meal plan for this cuisine in your database before adding meals."
+    );
+    setCategoryName("");
+    setPopupNames("");
+  } catch (error: any) {
+    console.error("❌ Error:", error);
+    Alert.alert("Error", error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
-    try {
-      await addCategory(categoryName.trim());
-
-      alert("Category added successfully!");
-      setCategoryName("");
-      onClose();
-    } catch (error: any) {
-      alert(error.message || "Failed to add category");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <Modal visible={open} transparent animationType="fade">

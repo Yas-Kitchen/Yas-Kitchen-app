@@ -1,21 +1,100 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
-import { useRef, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Text, TouchableOpacity, View, Alert } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
-import MealList, { MealListRef } from "./MealList";
+import MealList from "./MealList";
+import { storage } from "@/services/storage";
+
+interface Category {
+  label: string;
+  value: string;
+  name: string;
+}
 
 const WeeklyMeals = () => {
   const [open, setOpen] = useState(false);
-  const {
-    selectedCategory,
-    setSelectedCategory,
-    categories,
-    setCategories,
-    setPopupNames,
-  } = useGlobalContext();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(false);
   
-  const mealListRef = useRef<MealListRef>(null);
+  const { setPopupNames,selectedCategory,setSelectedCategory,mealListRef} = useGlobalContext();
+
+  useEffect(() => {
+    fetchCategories();
+    // eslint-disable-next-line
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      const tokens = await storage.getTokens();
+      
+     const response = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}cuisine-types/`,  
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${tokens.accessToken}`,
+        },
+      }
+    );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+
+      const data = await response.json();
+      
+      const formatted = data.map((cuisine: any) => ({
+        label: cuisine.name,
+        value: cuisine.id,
+        name: cuisine.name,
+      }));
+      
+      setCategories(formatted);
+
+      if(formatted.length > 0 && !selectedCategory){
+        setSelectedCategory(formatted[0].value)
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      Alert.alert("Error", "Failed to load categories");
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    try {
+      const tokens = await storage.getTokens();
+      
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_API_URL}/admin/cuisine-types/${categoryId}`,  // ✅ Backend: cuisine-types
+        {
+          method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${tokens.accessToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.message || "Failed to delete category");
+      }
+
+      setCategories((prev) => prev.filter((c) => c.value !== categoryId));
+      
+      if (selectedCategory === categoryId) {
+        setSelectedCategory(null);
+      }
+
+      Alert.alert("Success", "Category deleted successfully");
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Failed to delete category");
+    }
+  };
 
   return (
     <>
@@ -31,12 +110,15 @@ const WeeklyMeals = () => {
               items={categories}
               setOpen={setOpen}
               setValue={(callback) => {
-                const value = typeof callback === "function" ? callback(selectedCategory) : callback;
+                const value =
+                  typeof callback === "function"
+                    ? callback(selectedCategory)
+                    : callback;
                 setSelectedCategory(value);
               }}
               setItems={setCategories}
               listMode="SCROLLVIEW"
-              placeholder="Select Category"
+              placeholder="Select Category"  
               placeholderStyle={{ color: "#999" }}
               style={{
                 borderRadius: 8,
@@ -52,7 +134,7 @@ const WeeklyMeals = () => {
                 backgroundColor: "white",
               }}
               textStyle={{ fontSize: 12, color: "#FF7629" }}
-              disabled={categories.length === 0}
+              disabled={categories.length === 0 || loading}
               disabledStyle={{ opacity: 0.5 }}
               renderListItem={({ item }) => (
                 <View
@@ -76,36 +158,20 @@ const WeeklyMeals = () => {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={async () => {
+                    onPress={() => {
                       if (!item.value) return;
-
-                      try {
-                        const response = await fetch(
-                          `${process.env.EXPO_PUBLIC_API_URL}/categories/${item.value}`,
+                      Alert.alert(
+                        "Delete Category",  
+                        `Are you sure you want to delete "${item.label}"?`,
+                        [
+                          { text: "Cancel", style: "cancel" },
                           {
-                            method: "DELETE",
-                          }
-                        );
-
-                        if (!response.ok) {
-                          const errData = await response.json();
-                          throw new Error(
-                            errData.detail || "Failed to delete category"
-                          );
-                        }
-
-                        setCategories((prev) =>
-                          prev.filter((cat) => cat.value !== item.value)
-                        );
-
-                        if (selectedCategory === item.value)
-                          setSelectedCategory(null);
-                      } catch (error: any) {
-                        alert(
-                          error.message ||
-                            "Something went wrong while deleting the category"
-                        );
-                      }
+                            text: "Delete",
+                            style: "destructive",
+                            onPress: () => handleDeleteCategory(item.value!),
+                          },
+                        ]
+                      );
                     }}
                     style={{ padding: 4 }}
                   >
@@ -115,21 +181,22 @@ const WeeklyMeals = () => {
               )}
             />
           </View>
+
           <TouchableOpacity
-            onPress={() => setPopupNames("addcategory")}
+            onPress={() => setPopupNames("addcategory")} 
             className="flex-row items-center gap-1 bg-primary/10 rounded-lg"
             style={{ height: 36, paddingHorizontal: 8 }}
           >
             <Feather name="folder-plus" size={16} color={"#FF7629"} />
             <Text className="text-primary font-medium text-[12px]">
-              Add Category
+              Add Category  
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => {
               if (!selectedCategory) {
-                alert("Please select a category first");
+                Alert.alert("Error", "Please select a category first"); 
                 return;
               }
               setPopupNames("addmeal");
@@ -151,21 +218,25 @@ const WeeklyMeals = () => {
       </View>
 
       <View className="mt-5">
-        {categories.length === 0 ? (
+        {loading ? (
+          <Text className="text-gray-400 text-center mt-10">
+            Loading categories...  
+          </Text>
+        ) : categories.length === 0 ? (
           <View className="items-center justify-center mt-10">
             <Feather name="folder-plus" size={48} color="#ddd" />
             <Text className="text-gray-400 text-center mt-4 text-base">
-              No categories yet
+              No categories yet  
             </Text>
             <Text className="text-gray-400 text-center text-sm">
-              Create your first category to get started
+              Create your first category to get started  
             </Text>
           </View>
         ) : selectedCategory ? (
-          <MealList ref={mealListRef} categoryId={selectedCategory} />
+          <MealList ref={mealListRef} categoryId={selectedCategory} /> 
         ) : (
           <Text className="text-gray-400 text-center mt-10">
-            Select a category to view meals
+            Select a category to view meals  
           </Text>
         )}
       </View>

@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { authAPI } from "@/services/auth.api";
+import { authAPI } from "@/services/api/auth.api";
 
 const Index = () => {
   const { setMobile, mobile } = useGlobalContext();
@@ -107,11 +107,24 @@ const Index = () => {
                   {loading ? "Sending OTP..." : "Continue"}
                 </Text>
               </TouchableOpacity>
+              <View className="flex-row items-center justify-between px-5 py-1">
+
               <TouchableOpacity onPress={() => router.replace('/(admin)/admin')}>
                 <Text>
                    Admin
                 </Text>
               </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace('/(user)/user')}>
+                <Text>
+                   User
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.replace('/(register)/register')}>
+                <Text>
+                   Register
+                </Text>
+              </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
