@@ -1,32 +1,5 @@
+import { Category, Meal, MealListRef } from "@/types/register.types";
 import React, { createContext, useContext, useRef, useState } from "react";
-
-export interface Meal {
-  id: string;
-  name: string;
-  description: string;
-  image?: string;
-  cuisine_type_id: string;
-  is_available: boolean;
-  day_of_week?: string;
-  meal_time?: string;
-  created_at: string;
-  updated_at: string;
-  item_id?: string;
-  mealPlanId: string;
-  day: string;
-  time: string;
-  image_url?: string | null;
-}
-
-interface Category {
-  label: string;
-  value: string;
-  name: string;
-}
-
-export interface MealListRef {
-  refresh: () => void;
-}
 
 interface GlobalContextType {
   mobile: string;
@@ -70,9 +43,9 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [address, setAddress] = useState("");
   const [teacher, setTeacher] = useState("");
   const [popupNames, setPopupNames] = useState("");
-  const [foodStyle, setFoodStyle] = useState("south");
+  const [foodStyle, setFoodStyle] = useState("");
   const [activeStep, setActiveStep] = useState(1);
-  const [monthlyPlan, setMonthlyPlan] = useState("regular");
+  const [monthlyPlan, setMonthlyPlan] = useState("");
   const [kidsPlanSelected, setKidsPlanSelected] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState<

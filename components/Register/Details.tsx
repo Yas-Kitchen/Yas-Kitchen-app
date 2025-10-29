@@ -12,12 +12,24 @@ import {
   View,
 } from "react-native";
 import FoodStyle from "./FoodStyle";
+import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 
 const Details = () => {
-  const { setMobile, setName, setAdress, setActiveStep, name, adress, mobile } =
-    useGlobalContext();
+  const {
+    setMobile,
+    setName,
+    setAddress,
+    setActiveStep,
+    name,
+    address,
+    mobile,
+    foodStyle,
+    categories,
+  } = useGlobalContext();
   const [nameLength, setNameLength] = useState(name?.length || 0);
-  const [addressLength, setAddressLength] = useState(adress?.length || 0);
+  const [addressLength, setAddressLength] = useState(address?.length || 0);
+  const { startOnboarding, selectCuisine, profileCompletion } =
+    useRegisterAPI();
 
   const handleNameChange = (text: string) => {
     setName(text);
@@ -25,7 +37,7 @@ const Details = () => {
   };
 
   const handleAddressChange = (text: string) => {
-    setAdress(text);
+    setAddress(text);
     setAddressLength(text.length);
   };
 
@@ -34,9 +46,9 @@ const Details = () => {
     setMobile(cleaned);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     const trimmedName = name?.trim() || "";
-    const trimmedAddress = adress?.trim() || "";
+    const trimmedAddress = address?.trim() || "";
     const trimmedMobile = mobile?.trim() || "";
     if (!trimmedName || !trimmedAddress || !trimmedMobile) {
       Alert.alert(
@@ -98,11 +110,30 @@ const Details = () => {
       return;
     }
 
-    setName(trimmedName);
-    setAdress(trimmedAddress);
-    setMobile(validMobile);
+    if (!foodStyle) {
+      Alert.alert(
+        "Missing Selection",
+        "Please select a food style to continue."
+      );
+      return;
+    }
 
-    setActiveStep(2);
+    try {
+      await startOnboarding();
+      const selectedCuisine = categories.find((c) => c.id === foodStyle);
+
+      if (!selectedCuisine) {
+        Alert.alert("Error", "Please select a valid cuisine type");
+        return;
+      }
+
+      await selectCuisine(selectedCuisine.id);
+      await profileCompletion(name, address);
+      setActiveStep(2);
+    } catch (err: any) {
+      console.log("Error during onboarding : ", err);
+      Alert.alert("Error", "Something went wrong. Please try again");
+    }
   };
 
   const getMobileDigitsCount = () => {
@@ -119,7 +150,7 @@ const Details = () => {
   const mobileDigits = getMobileDigitsCount();
   const isFormValid =
     name?.trim().length >= 2 &&
-    adress?.trim().length >= 10 &&
+    address?.trim().length >= 10 &&
     mobileDigits === 10;
 
   return (
@@ -158,7 +189,7 @@ const Details = () => {
               onChangeText={handleAddressChange}
               placeholder="House No, Street, Landmark, City"
               className="p-5 border border-base_color/30 rounded-2xl"
-              value={adress}
+              value={address}
               multiline
               numberOfLines={3}
               textAlignVertical="top"
