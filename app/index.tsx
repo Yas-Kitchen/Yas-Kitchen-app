@@ -1,8 +1,7 @@
 import { useGlobalContext } from "@/context/GlobalContext";
+import { usePhoneAuth } from "@/hooks/Login/useAuth";
 import { router } from "expo-router";
-import React, { useState } from "react";
 import {
-  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -13,52 +12,14 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { authAPI } from "@/services/api/auth.api";
 
 const Index = () => {
-  const { setMobile, mobile } = useGlobalContext();
-  const [loading, setLoading] = useState(false);
-
-  const handleNumberChange = (text: string) => {
-    let formattedText = text;
-    if (!text.startsWith("+91")) {
-      formattedText = "+91" + text.replace(/^\+91/, "");
-    }
-    setMobile(formattedText);
-  };
+  const { sendOtp, mobile, loading, handleNumberChange } = usePhoneAuth();
 
   const handleContinue = async () => {
-    if (mobile.length < 13) {
-      Alert.alert("Error", "Please enter a valid 10-digit phone number with +91 prefix");
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      const response = await authAPI.sendOtp(mobile);
-        Alert.alert(
-          "OTP Sent", 
-          `OTP has been sent to ${mobile}\n\nExpires in ${response.expires_in_minutes} minutes`
-        )
-      
+    const success = await sendOtp();
+    if (success) {
       router.push("/(login)/Otp");
-    } catch (error: any) {
-      console.error("Send OTP Error:", error);
-      
-      const errorDetail = error.response?.data?.detail;
-      let errorMessage = "Failed to send OTP. Please try again.";
-      
-      if (typeof errorDetail === 'string') {
-        errorMessage = errorDetail;
-      } else if (errorDetail?.message) {
-        errorMessage = errorDetail.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      Alert.alert("Error", errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -100,7 +61,9 @@ const Index = () => {
                 disabled={mobile.length < 13 || loading}
                 onPress={handleContinue}
                 className={`${
-                  mobile.length < 13 || loading ? "bg-base_color/50" : "bg-primary"
+                  mobile.length < 13 || loading
+                    ? "bg-base_color/50"
+                    : "bg-primary"
                 } mt-5 p-5 rounded-2xl`}
               >
                 <Text className="text-center text-white font-semibold">
@@ -108,22 +71,21 @@ const Index = () => {
                 </Text>
               </TouchableOpacity>
               <View className="flex-row items-center justify-between px-5 py-1">
-
-              <TouchableOpacity onPress={() => router.replace('/(admin)/admin')}>
-                <Text>
-                   Admin
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.replace('/(user)/user')}>
-                <Text>
-                   User
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.replace('/(register)/register')}>
-                <Text>
-                   Register
-                </Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.replace("/(admin)/admin")}
+                >
+                  <Text>Admin</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.replace("/(user)/user")}
+                >
+                  <Text>User</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.replace("/(register)/register")}
+                >
+                  <Text>Register</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>

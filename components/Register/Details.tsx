@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import FoodStyle from "./FoodStyle";
-import { useRegisterAPI } from "@/hooks/useRegisterAPI";
+import { useRegisterAPI } from "@/hooks/Register/useRegisterAPI";
 
 const Details = () => {
   const {

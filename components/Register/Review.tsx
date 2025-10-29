@@ -4,7 +4,7 @@ import { Linking, Text, TouchableOpacity, View, Alert } from "react-native";
 import PersonalDetails from "./PersonalDetails";
 import SubscriptionPlan from "./SubscriptionPlan";
 import { router } from "expo-router";
-import { useRegisterAPI } from "@/hooks/useRegisterAPI";
+import { useRegisterAPI } from "@/hooks/Register/useRegisterAPI";
 
 const Review = () => {
   const [loading, setLoading] = useState(false);

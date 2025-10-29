@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 import { useGlobalContext } from "@/context/GlobalContext";
-import { useMeals } from "@/hooks/useMealsAPI";
+import { useMeals } from "@/hooks/Admin/Meals/useMealsAPI";
 
 interface EditMealProps {
   open: boolean;

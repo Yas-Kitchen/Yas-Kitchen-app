@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useGlobalContext } from "@/context/GlobalContext";
-import { useMeals } from "@/hooks/useMealsAPI";
+import { useMeals } from "@/hooks/Admin/Meals/useMealsAPI";
 
 interface MealListProps {
   categoryId: string;

@@ -1,5 +1,5 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import { useRegisterAPI } from "@/hooks/useRegisterAPI";
+import { useRegisterAPI } from "@/hooks/Register/useRegisterAPI";
 import { CuisineItemProps } from "@/types/register.types";
 import React, { useEffect, useState } from "react";
 import {
