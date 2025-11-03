@@ -5,10 +5,7 @@ export const registerAPI = {
     const response = await api.post(`onboarding/start`);
     return response.data;
   },
-  getCuisineDetails: async () => {
-    const response = await api.get(`cuisine-types/`);
-    return response.data;
-  },
+
   selectCuisine: async (cuisineId: string) => {
     const response = await api.post(`onboarding/cuisine-selection`, {
       cuisine_type_id: cuisineId,
@@ -22,18 +19,41 @@ export const registerAPI = {
     });
     return response.data;
   },
-  getPlanDetails: async () => {
-    const response = await api.get("onboarding/available-plans");
+
+  selectPlan: async (planIds: string | string[]) => {
+    const selectedPlans = Array.isArray(planIds)
+      ? planIds.map((p) => p.toLowerCase())
+      : [planIds.toLowerCase()];
+
+    const response = await api.post(`onboarding/plan-selection`, {
+      selected_plans: selectedPlans,
+    });
+
     return response.data;
   },
-  selectPlan: async (planId: string) => {
-    const response = await api.post(`onboarding/plan-selection`, {
-      meal_plan_id: planId,
+  
+  confirmPrice: async () => {
+    const response = await api.post(`onboarding/confirm-pricing`, {
+      confirmed: true,
     });
     return response.data;
   },
-  confirmPrice: async () => {
-    const response = await api.post(`onboarding/confirm-price`);
+
+  getOnboardingUserData: async () => {
+    const response = await api.get(`onboarding/user-data`);
+    return response.data;
+  },
+
+  updateProfile: async (name: string, address: string) => {
+    const response = await api.put(`users/profile`, {
+      name,
+      address,
+    });
+    return response.data;
+  },
+
+  getOnboardingSession: async () => {
+    const response = await api.get(`onboarding/session`);
     return response.data;
   },
 };

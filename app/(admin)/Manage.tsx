@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Specials from "../../components/Admin/Manage/Specials";
 import Addons from "../../components/Admin/Manage/Add-ons";
+import DietPlan from "@/components/Admin/Manage/DietPlan";
 
 const Manage = () => {
   const [active, setActive] = useState("weeklymeals");
@@ -20,7 +21,7 @@ const Manage = () => {
                 active === "weeklymeals"
                   ? "text-primary bg-primary/10 font-medium"
                   : "text-base_color"
-              } text-[14px] p-3 rounded-xl w-32 text-center`}
+              } text-xs p-3 rounded-xl w-32 text-center`}
             >
               Weekly Meals
             </Text>
@@ -31,7 +32,7 @@ const Manage = () => {
                 active === "specials"
                   ? "text-primary bg-primary/10 font-medium"
                   : "text-base_color"
-              } text-[14px] p-3 rounded-xl w-28 text-center`}
+              } text-xs p-3 rounded-xl text-center`}
             >
               Specials
             </Text>
@@ -42,15 +43,34 @@ const Manage = () => {
                 active === "addons"
                   ? "text-primary bg-primary/10 font-medium"
                   : "text-base_color"
-              } text-[14px] p-3 rounded-xl text-center w-28`}
+              } text-xs p-3 rounded-xl text-center`}
             >
               Add-ons
             </Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActive("dietplan")}>
+            <Text
+              className={`${
+                active === "dietplan"
+                  ? "text-primary bg-primary/10 font-medium"
+                  : "text-base_color"
+              } text-xs p-3 rounded-xl text-center`}
+            >
+              Diet Plan
+            </Text>
+          </TouchableOpacity>
         </View>
-        {active === "weeklymeals" ? <WeeklyMeals/> : active === "specials" ? <Specials/> : <Addons/>}
+        {active === "weeklymeals" ? (
+          <WeeklyMeals />
+        ) : active === "specials" ? (
+          <Specials />
+        ) : active === "addons" ? (
+          <Addons />
+        ) : (
+          <DietPlan/>
+        )}
       </View>
-      <View className="h-36"/>
+      <View className="h-36" />
     </ScrollView>
   );
 };

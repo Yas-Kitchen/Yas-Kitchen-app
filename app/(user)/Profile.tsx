@@ -7,8 +7,9 @@ import React from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const Profile = () => {
-  const { name, mobile, adress, foodStyle, monthlyPlan, kidsPlanSelected } =
+  const { name, mobile, address, foodStyle, monthlyPlan, kidsPlanSelected } =
     useGlobalContext();
+    console.log(foodStyle,monthlyPlan);
     
   return (
     <ScrollView>
@@ -27,8 +28,8 @@ const Profile = () => {
           <EditProfile header="Name" subheader={name} icon="user" />
           <View className="h-[1px] w-full bg-base_color/10" />
           <EditProfile
-            header="Delivery Adress"
-            subheader={adress}
+            header="Delivery Address"
+            subheader={address}
             icon="map-pin"
           />
         </View>

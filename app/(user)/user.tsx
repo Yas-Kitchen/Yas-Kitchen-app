@@ -2,17 +2,27 @@ import Greetings from "@/components/User/Home/Greetings";
 import TodaysMeal from "@/components/User/Home/TodaysMeal";
 import WeeklyPlan from "@/components/User/Home/WeeklyPlan";
 import { useMockMenu } from "@/hooks/use-MockMenu";
+import { useUserAPI } from "@/hooks/useUserAPI";
 import { Feather } from "@expo/vector-icons";
-import React from "react";
+import React, { useEffect } from "react";
 import { ScrollView, Text, View } from "react-native";
 
 const Home = () => {
   const menu = useMockMenu();
+  const { fetchUserData } = useUserAPI();
+
+  
   const currentDate = new Date();
   const weekName = currentDate
     .toLocaleDateString("en-US", { weekday: "long" })
     .toLowerCase() as keyof typeof menu.southindian;
   const todaysMenu = menu.southindian[weekName];
+
+  useEffect(() => {
+    fetchUserData();
+    //eslint-disable-next-line
+  }, []);
+
   return (
     <ScrollView>
       <View className="ios:mt-16 mt-5 mx-5 gap-8">

@@ -29,7 +29,10 @@ export const authAPI = {
       phone_number: phone,
       otp: token,
     });
-    await storage.setToken(response.data.access_token, response.data.refresh_token);
+    await storage.setToken(
+      response.data.access_token,
+      response.data.refresh_token
+    );
     return response.data;
   },
 
@@ -59,7 +62,7 @@ export const authAPI = {
     return response.data;
   },
 
-   getProfile: async () => {
+  getProfile: async () => {
     const response = await api.get("auth/me");
     return response.data;
   },

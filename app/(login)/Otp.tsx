@@ -14,8 +14,8 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { useGlobalContext } from "@/context/GlobalContext";
-import { authAPI } from "@/services/api/auth.api";
 import { storage } from "@/services/storage";
+import { authAPI } from "@/services/api/auth.api";
 
 const Otp = () => {
   const { mobile } = useGlobalContext();
@@ -51,6 +51,7 @@ const Otp = () => {
     if (otpString.length === 6 && !loading) {
       handleVerifyOTP(otpString);
     }
+    //eslint-disable-next-line
   }, [otp]);
 
   const handlePaste = (text: string) => {
@@ -92,35 +93,16 @@ const Otp = () => {
 
     setLoading(true);
     try {
-      console.log("Verifying OTP for:", mobile);
-
       const response = await authAPI.verifyOtp(mobile, otpCode);
 
       await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const tokens = await storage.getTokens();
-      console.log("Tokens after OTP verification:", {
-        hasAccessToken: !!tokens.accessToken,
-        hasRefreshToken: !!tokens.refreshToken,
-      });
 
       if (response.user?.role === "admin") {
         Alert.alert("Success", "Welcome Admin!");
         router.replace("/(admin)/admin");
         return;
       }
-      if (!tokens.accessToken) {
-        console.error(" Tokens were not saved after OTP verification");
-        Alert.alert("Error", "Authentication failed. Please try again.");
-        return;
-      }
-      if (!response.profile_exists) {
-        console.log("New user detected - redirecting to profile completion");
-        Alert.alert("Welcome!", "Please complete your profile to continue", [
-          { text: "OK", onPress: () => router.push("/(register)/register") },
-        ]);
-        return;
-      }
+
       if (response.user?.status === "pending") {
         Alert.alert(
           "Pending Approval",
@@ -143,6 +125,15 @@ const Otp = () => {
         router.replace("/(user)/user");
         return;
       }
+      
+
+      if (response.user?.status === "initiated") {
+        Alert.alert("Welcome!", "Please complete your profile to continue", [
+          { text: "OK", onPress: () => router.push("/(register)/register") },
+        ]);
+        return;
+      }
+
       Alert.alert(
         "Account Issue",
         "There's an issue with your account. Please contact support.",

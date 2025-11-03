@@ -1,5 +1,4 @@
-import { useGlobalContext } from "@/context/GlobalContext";
-import { usePhoneAuth } from "@/hooks/Login/useAuth";
+import { usePhoneAuth } from "@/hooks/useAuth";
 import { router } from "expo-router";
 import {
   Image,

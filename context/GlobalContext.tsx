@@ -1,4 +1,4 @@
-import { Category, Meal, MealListRef } from "@/types/register.types";
+import { Category, Meal, MealListRef } from "@/types/meals.types";
 import React, { createContext, useContext, useRef, useState } from "react";
 
 interface GlobalContextType {
@@ -10,16 +10,14 @@ interface GlobalContextType {
   setAddress: React.Dispatch<React.SetStateAction<any>>;
   popupNames: string;
   setPopupNames: React.Dispatch<React.SetStateAction<string>>;
-  teacher: any;
-  setTeacher: React.Dispatch<React.SetStateAction<any>>;
   foodStyle: string;
   setFoodStyle: React.Dispatch<React.SetStateAction<string>>;
   activeStep: number;
   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
-  monthlyPlan: string;
-  setMonthlyPlan: React.Dispatch<React.SetStateAction<string>>;
-  kidsPlanSelected: string;
-  setKidsPlanSelected: React.Dispatch<React.SetStateAction<string>>;
+  monthlyPlan: string[];
+  setMonthlyPlan: React.Dispatch<React.SetStateAction<string[]>>;
+  kidsPlanSelected: boolean;
+  setKidsPlanSelected: React.Dispatch<React.SetStateAction<boolean>>;
   selectedCategory: string | null;
   setSelectedCategory: React.Dispatch<React.SetStateAction<string | null>>;
   selectedCategoryName: string | null;
@@ -31,6 +29,8 @@ interface GlobalContextType {
   selectedMeal: Meal | null;
   setSelectedMeal: React.Dispatch<React.SetStateAction<Meal | null>>;
   mealListRef: React.RefObject<MealListRef | null>;
+  isEditing : boolean
+  setIsEditing : React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -41,12 +41,11 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [mobile, setMobile] = useState("");
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
-  const [teacher, setTeacher] = useState("");
   const [popupNames, setPopupNames] = useState("");
   const [foodStyle, setFoodStyle] = useState("");
   const [activeStep, setActiveStep] = useState(1);
-  const [monthlyPlan, setMonthlyPlan] = useState("");
-  const [kidsPlanSelected, setKidsPlanSelected] = useState("");
+const [monthlyPlan, setMonthlyPlan] = useState<string[]>([]);
+  const [kidsPlanSelected, setKidsPlanSelected] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState<
     string | null
@@ -54,6 +53,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [isEditing,setIsEditing] = useState(false)
   const mealListRef = useRef<MealListRef | null>(null);
 
   const values: GlobalContextType = {
@@ -65,8 +65,6 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     setAddress,
     popupNames,
     setPopupNames,
-    teacher,
-    setTeacher,
     foodStyle,
     setFoodStyle,
     activeStep,
@@ -86,6 +84,8 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     selectedUser,
     setSelectedUser,
     mealListRef,
+    isEditing,
+    setIsEditing
   };
 
   return (
