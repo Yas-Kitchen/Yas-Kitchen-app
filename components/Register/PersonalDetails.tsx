@@ -1,10 +1,18 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import React from "react";
+import { getCuisineNameByID } from "@/utils/cuisine.util";
+import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 const PersonalDetails = () => {
-  const { name, mobile, address, foodStyle, setActiveStep } = useGlobalContext();
-
+  const { name, mobile, address, foodStyle, setActiveStep } =
+    useGlobalContext();
+  const [cuisine, setCuisine] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    const fetchCuisine = async () => {
+      setCuisine(await getCuisineNameByID(foodStyle));
+    };
+    fetchCuisine();
+  }, [foodStyle]);
   return (
     <View className="bg-base_color/10 rounded-2xl p-5">
       <View className="flex-row justify-between">
@@ -30,7 +38,7 @@ const PersonalDetails = () => {
         </View>
         <View className="flex-row gap-5 mt-5">
           <Text className="text-base_color text-[12px]">Food Style :</Text>
-          <Text className="mx-1 web:mx-0">{foodStyle} Indian</Text>
+          <Text className="mx-1 web:mx-0">{cuisine}</Text>
         </View>
       </View>
     </View>

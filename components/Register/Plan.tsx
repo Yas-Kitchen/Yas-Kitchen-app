@@ -1,9 +1,17 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import MonthlyPlan from "./MonthlyPlan";
+import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 const Plan = () => {
-  const { setActiveStep } = useGlobalContext();
+  const { setActiveStep, monthlyPlan: selectedPlan } = useGlobalContext();
+  const { selectPlan } = useRegisterAPI();
+  const handleContinue = async () => {
+    if (selectedPlan) {
+      await selectPlan(selectedPlan);
+    }
+    setActiveStep(3);
+  };
+
   return (
     <View className="bg-white rounded-2xl mt-10 p-5 pt-8">
       <Text className="text-base text-[12px]">Choose your monthly plan</Text>
@@ -19,7 +27,7 @@ const Plan = () => {
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
-            setActiveStep(3);
+            handleContinue();
           }}
           className="bg-primary mt-5 w-1/2 p-5 rounded-2xl"
         >

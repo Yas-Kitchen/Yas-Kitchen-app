@@ -12,7 +12,7 @@ import {
   View,
 } from "react-native";
 import FoodStyle from "./FoodStyle";
-import { useRegisterAPI } from "@/hooks/Register/useRegisterAPI";
+import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 
 const Details = () => {
   const {
@@ -25,11 +25,59 @@ const Details = () => {
     mobile,
     foodStyle,
     categories,
+    setFoodStyle,
+    isEditing,
   } = useGlobalContext();
   const [nameLength, setNameLength] = useState(name?.length || 0);
   const [addressLength, setAddressLength] = useState(address?.length || 0);
-  const { startOnboarding, selectCuisine, profileCompletion } =
-    useRegisterAPI();
+  const {
+    startOnboarding,
+    selectCuisine,
+    profileCompletion,
+    updateProfile,
+    getOnboardingSession,
+    getOnboardingUserData,
+  } = useRegisterAPI();
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const onboarding = await getOnboardingUserData();
+
+        if (onboarding?.user) {
+          const userData = onboarding.user;
+          if (userData.name) setName(userData.name);
+          if (userData.address) setAddress(userData.address);
+          if (userData.phone_number) setMobile(userData.phone_number);
+          if (userData.cuisine_type_id) setFoodStyle(userData.cuisine_type_id);
+        }
+        if (isEditing) return;
+
+        const session = await getOnboardingSession();
+
+        if (
+          session?.progress?.profile_complete &&
+          session?.progress?.cuisine_selected
+        ) {
+          setActiveStep(2);
+          if (
+            session?.progress?.plans_selected &&
+            session?.progress?.pricing_confirmed
+          ) {
+            setActiveStep(3);
+          }
+        } else if (
+          onboarding?.user?.cuisine_type_id &&
+          !session?.progress?.cuisine_selected
+        ) {
+          await selectCuisine(onboarding.user.cuisine_type_id);
+        }
+      } catch (error) {
+        console.log("Failed to fetch session or user:", error);
+      }
+    })();
+    //eslint-disable-next-line
+  }, [isEditing]);
 
   const handleNameChange = (text: string) => {
     setName(text);
@@ -50,6 +98,7 @@ const Details = () => {
     const trimmedName = name?.trim() || "";
     const trimmedAddress = address?.trim() || "";
     const trimmedMobile = mobile?.trim() || "";
+
     if (!trimmedName || !trimmedAddress || !trimmedMobile) {
       Alert.alert(
         "Missing Information",
@@ -57,6 +106,7 @@ const Details = () => {
       );
       return;
     }
+
     if (trimmedName.length < 2) {
       Alert.alert(
         "Invalid Name",
@@ -64,6 +114,7 @@ const Details = () => {
       );
       return;
     }
+
     if (/^User\s*\d+$/i.test(trimmedName)) {
       Alert.alert(
         "Invalid Name",
@@ -119,23 +170,34 @@ const Details = () => {
     }
 
     try {
-      await startOnboarding();
-      const selectedCuisine = categories.find((c) => c.id === foodStyle);
+      const session = await getOnboardingSession();
 
-      if (!selectedCuisine) {
-        Alert.alert("Error", "Please select a valid cuisine type");
-        return;
+      if (
+        session?.status === "in_progress" ||
+        session?.status === "completed"
+      ) {
+        // User has already started onboarding, so update profile only
+        await updateProfile(name, address);
+        Alert.alert(
+          "Profile Updated",
+          "Your details have been saved successfully!"
+        );
+        // Set active step to 3 (Review step) for in-progress or completed onboarding
+        setActiveStep(3);
+      } else {
+        // fresh onboarding
+        await startOnboarding();
+        const selectedCuisine = categories.find((c) => c.id === foodStyle);
+        if (selectedCuisine) await selectCuisine(selectedCuisine.id);
+        await profileCompletion(name, address);
+        // Set active step to 2 (Plan step) for new onboarding
+        setActiveStep(2);
       }
-
-      await selectCuisine(selectedCuisine.id);
-      await profileCompletion(name, address);
-      setActiveStep(2);
     } catch (err: any) {
       console.log("Error during onboarding : ", err);
       Alert.alert("Error", "Something went wrong. Please try again");
     }
   };
-
   const getMobileDigitsCount = () => {
     if (!mobile) return 0;
     if (mobile.startsWith("+91")) {

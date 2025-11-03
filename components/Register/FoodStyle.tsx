@@ -1,6 +1,6 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import { useRegisterAPI } from "@/hooks/Register/useRegisterAPI";
-import { CuisineItemProps } from "@/types/register.types";
+import { useMealsAPI } from "@/hooks/useMealsAPI";
+import { CuisineItemProps } from "@/types/meals.types";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -20,7 +20,7 @@ import Animated, {
 const FoodStyle = () => {
   const { foodStyle, setFoodStyle, categories, setCategories } =
     useGlobalContext();
-  const { fetchCuisineDetails } = useRegisterAPI();
+  const { fetchCuisineDetails } = useMealsAPI();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -36,11 +36,10 @@ const FoodStyle = () => {
           cuisineData = res;
         }
 
-        console.log("Fetched cuisines:", cuisineData);
         setCategories(cuisineData);
 
         if (cuisineData.length > 0 && !foodStyle) {
-          setFoodStyle(cuisineData[0].id); 
+          setFoodStyle(cuisineData[0].id);
         }
       } catch (err) {
         console.error("Failed to fetch cuisines:", err);
@@ -75,8 +74,8 @@ const FoodStyle = () => {
     Math.max((screenWidth - 60) / Math.min(categories.length, 3), 120),
     160
   );
-  const itemHeight = itemWidth * 0.90;
-  
+  const itemHeight = itemWidth * 0.9;
+
   return (
     <View className="mt-3">
       <ScrollView
@@ -103,8 +102,6 @@ const FoodStyle = () => {
     </View>
   );
 };
-
-
 
 const CuisineItem: React.FC<CuisineItemProps> = ({
   cuisine,

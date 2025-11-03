@@ -1,126 +1,123 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import { Dimensions, Image, Pressable, Text, View } from "react-native";
-import Animated, {
-  interpolateColor,
-  Layout,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  withTiming,
-} from "react-native-reanimated";
-
-const foodPlans = [
-  {
-    key: "Regular",
-    name: "Regular Plan",
-    description: "Daily meals delivered to your doorstep",
-    price: 83,
-    image: require("@assets/Shared/regular_meal.png"),
-  },
-  {
-    key: "Diet",
-    name: "Diet Plan",
-    description: "Calorie-controlled meals for weight management",
-    price: 100,
-    image: require("@assets/Shared/diet_meal.png"),
-  },
-];
-
-const kidsPlan = {
-  key: "Kids",
-  name: "Kids Plan",
-  description: "Nutritious meals specially designed for children",
-  price: 75,
-  image: require("@assets/Shared/kids_meal.png"),
-};
+import { useMealsAPI } from "@/hooks/useMealsAPI";
+import { useEffect, useMemo } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 
 const MonthlyPlan = () => {
-  const { monthlyPlan, setMonthlyPlan, kidsPlanSelected, setKidsPlanSelected } =
-    useGlobalContext();
+  const {
+    monthlyPlan: selectedPlan,
+    setMonthlyPlan,
+    kidsPlanSelected,
+    setKidsPlanSelected,
+  } = useGlobalContext();
+  const { monthlyPlan, fetchPlanDetails, loading } = useMealsAPI();
 
-  const scales = foodPlans.map(() => useSharedValue(1));
-  const borderAnims = foodPlans.map(() => useSharedValue(0));
-  const kidsScale = useSharedValue(1);
-  const kidsBorderAnim = useSharedValue(0);
+  useEffect(() => {
+    fetchPlanDetails();
+    // eslint-disable-next-line
+  }, []);
 
-  const animatedStyles = scales.map((scale, index) =>
-    useAnimatedStyle(() => ({
-      transform: [{ scale: scale.value }],
-      borderColor: interpolateColor(
-        borderAnims[index].value,
-        [0, 1],
-        ["transparent", "#FF6F00"]
-      ),
-    }))
-  );
+  const foodPlans = useMemo(() => {
+    if (!monthlyPlan || !Array.isArray(monthlyPlan)) return [];
+    return monthlyPlan.filter((plan: any) => !plan.special);
+  }, [monthlyPlan]);
 
-  const kidsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: kidsScale.value }],
-    borderColor: interpolateColor(
-      kidsBorderAnim.value,
-      [0, 1],
-      ["transparent", "#FF6F00"]
-    ),
-  }));
-
-  const handlePress = (key: string, index: number) => {
-    setMonthlyPlan(key);
-    foodPlans.forEach((plan, i) => {
-      if (i === index) {
-        scales[i].value = withSpring(1.05);
-        borderAnims[i].value = withTiming(1);
+  const kidsPlan = useMemo(() => {
+    if (!monthlyPlan || !Array.isArray(monthlyPlan)) return null;
+    return monthlyPlan.find((plan: any) => plan.special);
+  }, [monthlyPlan]);
+  const handlePress = (plan: any) => {
+    let newSelected: string[] = [];
+    if (plan.key === "Diet" || plan.key === "Regular") {
+      let basePlan = plan.key;
+      if (Array.isArray(selectedPlan) && selectedPlan.includes(plan.key)) {
+        if (kidsPlanSelected) {
+          return;
+        } else {
+          setMonthlyPlan([""]);
+          return;
+        }
       } else {
-        scales[i].value = withSpring(1);
-        borderAnims[i].value = withTiming(0);
+        if (kidsPlanSelected) {
+          newSelected = [basePlan, "Kids"];
+        } else {
+          newSelected = [basePlan];
+        }
       }
-    });
-  };
-
-  const handleKidsPress = () => {
-    const newValue = !kidsPlanSelected;
-    setKidsPlanSelected(newValue);
-    if (newValue) {
-      kidsScale.value = withSpring(1.05);
-      kidsBorderAnim.value = withTiming(1);
-    } else {
-      kidsScale.value = withSpring(1);
-      kidsBorderAnim.value = withTiming(0);
+      setMonthlyPlan(newSelected);
+      return;
     }
   };
 
+  const handleKidsPress = () => {
+    let basePlan = null;
+    if (Array.isArray(selectedPlan)) {
+      basePlan = selectedPlan.find((k) => k === "Diet" || k === "Regular");
+    } else if (selectedPlan === "Diet" || selectedPlan === "Regular") {
+      basePlan = selectedPlan;
+    }
+    if (!kidsPlanSelected) {
+      if (!basePlan) {
+        return;
+      }
+      setKidsPlanSelected(true);
+      setMonthlyPlan([basePlan, "Kids"]);
+    } else {
+      setKidsPlanSelected(false);
+      if (basePlan) {
+        setMonthlyPlan([basePlan]);
+      } else {
+        setMonthlyPlan([""]);
+      }
+    }
+  };
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center py-10">
+        <ActivityIndicator size="large" color="#FF6F00" />
+        <Text className="text-base_color mt-2">Loading plans...</Text>
+      </View>
+    );
+  }
+
+  if (!foodPlans || foodPlans.length === 0) {
+    return (
+      <View className="flex-1 items-center justify-center py-10">
+        <Text className="text-base_color">No plans available</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-col">
-      {foodPlans.map((plan, index) => {
-        const animatedStyle = animatedStyles[index];
-        const isSelected = monthlyPlan === plan.key;
+      {foodPlans.map((plan: any) => {
+        const isSelected = selectedPlan === plan.key;
         const screenWidth = Dimensions.get("window").width;
         const width = Math.min(Math.max(screenWidth * 0.45, 200), 110);
         const height = width * 1;
-        
+
         return (
-          <Pressable
-            key={plan.key}
-            onPress={() => {
-              handlePress(plan.key, index);
-              setMonthlyPlan(plan.key);
-            }}
-          >
-            <Animated.View
-              layout={Layout.springify()}
+          <Pressable key={plan.key} onPress={() => handlePress(plan)}>
+            <View
               className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
-              style={animatedStyle}
+              style={{
+                borderColor: isSelected ? "#FF6F00" : "transparent",
+              }}
             >
               <Image
                 style={{ height, width }}
-                source={
-                  plan.image || require("@assets/Shared/regular_meal.png")
-                }
-                 className="max-w-28 max-h-32 web:max-w-24 web:max-h-24"
-                onError={() => {
-                  console.log("Failed to load image for plan:", plan.name);
-                }}
+                source={{ uri: plan.image }}
+                className="max-w-28 max-h-32 web:max-w-24 web:max-h-24"
               />
-              <View className="flex-row pt-6 gap-1 ml-2">
+              <View className="flex-row pt-6 gap-1 ml-2 w-[75%]">
                 <View className="flex-col web:w-[40%] w-1/2">
                   <Text className="text-[14px] font-semibold web:text-[12px]">
                     {plan.name}
@@ -129,13 +126,10 @@ const MonthlyPlan = () => {
                     {plan.description}
                   </Text>
                 </View>
-                <View className="flex-row text-center items-baseline gap-1 w-1/2">
+                <View className="flex-row text-center items-baseline gap-1 absolute right-1 top-5">
                   <Image
                     className="w-[10px] h-[10px] max-w-[10px] max-h-[10px] fill-primary"
                     source={require("@assets/Shared/dirham.svg")}
-                    onError={() => {
-                      console.log("Failed to load dirham icon");
-                    }}
                   />
                   <Text className="text-primary font-semibold web:text-[10px]">
                     {plan.price} /mo
@@ -147,60 +141,54 @@ const MonthlyPlan = () => {
                   isSelected ? "bg-primary" : "bg-base_color/10"
                 }`}
               />
-            </Animated.View>
+            </View>
           </Pressable>
         );
       })}
-      
+
       {/* Kids Plan */}
-      <Pressable key={kidsPlan.key} onPress={handleKidsPress}>
-        <Animated.View
-          layout={Layout.springify()}
-          className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
-          style={kidsAnimatedStyle}
-        >
-          <Image
+      {kidsPlan && (
+        <Pressable onPress={handleKidsPress}>
+          <View
+            className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
             style={{
-              height: Dimensions.get("window").width * 0.25,
-              width: Dimensions.get("window").width * 0.25,
+              borderColor: kidsPlanSelected ? "#FF6F00" : "transparent",
             }}
-            source={
-              kidsPlan.image || require("@assets/Shared/kids_meal.png")
-            }
-            onError={() => {
-              console.log("Failed to load kids plan image");
-            }}
-            className=""
-          />
-          <View className="flex-row gap-1 pt-4">
-            <View className="flex-col w-1/2">
-              <Text className="text-[14px] font-semibold web:text-[12px]">
-                {kidsPlan.name}
-              </Text>
-              <Text className="text-base_color text-[12px] web:text-[9px] text-regular">
-                {kidsPlan.description}
-              </Text>
+          >
+            <Image
+              style={{
+                height: Dimensions.get("window").width * 0.25,
+                width: Dimensions.get("window").width * 0.25,
+              }}
+              source={{ uri: kidsPlan.image }}
+            />
+            <View className="flex-row gap-1 pt-4">
+              <View className="flex-col w-1/2">
+                <Text className="text-[14px] font-semibold web:text-[12px]">
+                  {kidsPlan.name}
+                </Text>
+                <Text className="text-base_color text-[12px] web:text-[9px] text-regular">
+                  {kidsPlan.description}
+                </Text>
+              </View>
+              <View className="flex-row text-center items-baseline gap-1 justify-items-end w-1/2">
+                <Image
+                  className="w-[10px] h-[10px] fill-primary"
+                  source={require("@assets/Shared/dirham.svg")}
+                />
+                <Text className="text-primary font-semibold web:text-[10px]">
+                  {kidsPlan.price_per_month || kidsPlan.price} /mo
+                </Text>
+              </View>
             </View>
-            <View className="flex-row text-center items-baseline gap-1 justify-items-end w-1/2">
-              <Image
-                className="w-[10px] h-[10px] fill-primary"
-                source={require("@assets/Shared/dirham.svg")}
-                onError={() => {
-                  console.log("Failed to load dirham icon");
-                }}
-              />
-              <Text className="text-primary font-semibold web:text-[10px]">
-                {kidsPlan.price} /mo
-              </Text>
-            </View>
+            {kidsPlanSelected ? (
+              <View className="rounded-full absolute bottom-4 right-3 bg-primary w-5 h-5" />
+            ) : (
+              <View className="rounded-full absolute bottom-4 right-3 bg-base_color/10 w-5 h-5" />
+            )}
           </View>
-          {kidsPlanSelected ? (
-            <View className="rounded-full absolute bottom-4 right-3 bg-primary w-5 h-5" />
-          ) : (
-            <View className="rounded-full absolute bottom-4 right-3 bg-base_color/10 w-5 h-5" />
-          )}
-        </Animated.View>
-      </Pressable>
+        </Pressable>
+      )}
     </View>
   );
 };
