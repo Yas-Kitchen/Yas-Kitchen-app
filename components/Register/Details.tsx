@@ -176,21 +176,17 @@ const Details = () => {
         session?.status === "in_progress" ||
         session?.status === "completed"
       ) {
-        // User has already started onboarding, so update profile only
         await updateProfile(name, address);
         Alert.alert(
           "Profile Updated",
           "Your details have been saved successfully!"
         );
-        // Set active step to 3 (Review step) for in-progress or completed onboarding
         setActiveStep(3);
       } else {
-        // fresh onboarding
         await startOnboarding();
         const selectedCuisine = categories.find((c) => c.id === foodStyle);
         if (selectedCuisine) await selectCuisine(selectedCuisine.id);
         await profileCompletion(name, address);
-        // Set active step to 2 (Plan step) for new onboarding
         setActiveStep(2);
       }
     } catch (err: any) {

@@ -1,8 +1,9 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import { useMealsAPI } from "@/hooks/useMealsAPI";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Dimensions,
   Image,
   Pressable,
@@ -19,6 +20,8 @@ const MonthlyPlan = () => {
   } = useGlobalContext();
   const { monthlyPlan, fetchPlanDetails, loading } = useMealsAPI();
 
+  const animationValues = useRef<{ [key: string]: Animated.Value }>({}).current;
+
   useEffect(() => {
     fetchPlanDetails();
     // eslint-disable-next-line
@@ -33,6 +36,39 @@ const MonthlyPlan = () => {
     if (!monthlyPlan || !Array.isArray(monthlyPlan)) return null;
     return monthlyPlan.find((plan: any) => plan.special);
   }, [monthlyPlan]);
+
+  // Initialize animation values for each plan
+  foodPlans.forEach((plan: any) => {
+    if (!animationValues[plan.key]) {
+      animationValues[plan.key] = new Animated.Value(0);
+    }
+  });
+
+  if (kidsPlan && !animationValues["Kids"]) {
+    animationValues["Kids"] = new Animated.Value(0);
+  }
+
+  useEffect(() => {
+    foodPlans.forEach((plan: any) => {
+      const isSelected = Array.isArray(selectedPlan)
+        ? selectedPlan.includes(plan.key)
+        : selectedPlan === plan.key;
+      Animated.timing(animationValues[plan.key], {
+        toValue: isSelected ? 1 : 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    });
+
+    Animated.timing(animationValues["Kids"], {
+      toValue: kidsPlanSelected ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+
+    // eslint-disable-next-line 
+  }, [selectedPlan, foodPlans, kidsPlanSelected]);
+
   const handlePress = (plan: any) => {
     let newSelected: string[] = [];
     if (plan.key === "Diet" || plan.key === "Regular") {
@@ -99,60 +135,90 @@ const MonthlyPlan = () => {
   return (
     <View className="flex-col">
       {foodPlans.map((plan: any) => {
-        const isSelected = selectedPlan === plan.key;
+        const isSelected = Array.isArray(selectedPlan)
+          ? selectedPlan.includes(plan.key)
+          : selectedPlan === plan.key;
         const screenWidth = Dimensions.get("window").width;
         const width = Math.min(Math.max(screenWidth * 0.45, 200), 110);
         const height = width * 1;
 
+        const borderColor = animationValues[plan.key].interpolate({
+          inputRange: [0, 1],
+          outputRange: ["transparent", "#FF6F00"],
+        });
+
+        const scale = animationValues[plan.key].interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 1.05],
+        });
+
         return (
-          <Pressable key={plan.key} onPress={() => handlePress(plan)}>
-            <View
-              className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
-              style={{
-                borderColor: isSelected ? "#FF6F00" : "transparent",
-              }}
-            >
-              <Image
-                style={{ height, width }}
-                source={{ uri: plan.image }}
-                className="max-w-28 max-h-32 web:max-w-24 web:max-h-24"
-              />
-              <View className="flex-row pt-6 gap-1 ml-2 w-[75%]">
-                <View className="flex-col web:w-[40%] w-1/2">
-                  <Text className="text-[14px] font-semibold web:text-[12px]">
-                    {plan.name}
-                  </Text>
-                  <Text className="text-base_color text-[12px] text-regular web:text-[9px] flex-1">
-                    {plan.description}
-                  </Text>
+          <Animated.View
+            key={plan.key}
+            style={{
+              borderColor,
+              borderWidth: 2,
+              transform: [{ scale }],
+              borderRadius: 16,
+              marginTop: 20,
+              overflow: "hidden",
+            }}
+          >
+            <Pressable onPress={() => handlePress(plan)}>
+              <View className="overflow bg-[#F0F1EB] pr-10 flex-row">
+                <Image
+                  style={{ height, width }}
+                  source={{ uri: plan.image }}
+                  className="max-w-28 max-h-32 web:max-w-24 web:max-h-24"
+                />
+                <View className="flex-row pt-6 gap-1 ml-2 w-[75%]">
+                  <View className="flex-col web:w-[40%] w-1/2">
+                    <Text className="text-[14px] font-semibold web:text-[12px]">
+                      {plan.name}
+                    </Text>
+                    <Text className="text-base_color text-[12px] text-regular web:text-[9px] flex-1">
+                      {plan.description}
+                    </Text>
+                  </View>
+                  <View className="flex-row text-center items-baseline gap-1 absolute right-1 top-5">
+                    <Image
+                      className="w-[10px] h-[10px] max-w-[10px] max-h-[10px] fill-primary"
+                      source={require("@assets/Shared/dirham.svg")}
+                    />
+                    <Text className="text-primary font-semibold web:text-[10px]">
+                      {plan.price} /mo
+                    </Text>
+                  </View>
                 </View>
-                <View className="flex-row text-center items-baseline gap-1 absolute right-1 top-5">
-                  <Image
-                    className="w-[10px] h-[10px] max-w-[10px] max-h-[10px] fill-primary"
-                    source={require("@assets/Shared/dirham.svg")}
-                  />
-                  <Text className="text-primary font-semibold web:text-[10px]">
-                    {plan.price} /mo
-                  </Text>
-                </View>
+                <View
+                  className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
+                    isSelected ? "bg-primary" : "bg-base_color/10"
+                  }`}
+                />
               </View>
-              <View
-                className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
-                  isSelected ? "bg-primary" : "bg-base_color/10"
-                }`}
-              />
-            </View>
-          </Pressable>
+            </Pressable>
+          </Animated.View>
         );
       })}
 
       {/* Kids Plan */}
       {kidsPlan && (
         <Pressable onPress={handleKidsPress}>
-          <View
+          <Animated.View
             className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
             style={{
-              borderColor: kidsPlanSelected ? "#FF6F00" : "transparent",
+              borderColor: animationValues["Kids"].interpolate({
+                inputRange: [0, 1],
+                outputRange: ["transparent", "#FF6F00"],
+              }),
+              transform: [
+                {
+                  scale: animationValues["Kids"].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 1.05],
+                  }),
+                },
+              ],
             }}
           >
             <Image
@@ -182,11 +248,11 @@ const MonthlyPlan = () => {
               </View>
             </View>
             {kidsPlanSelected ? (
-              <View className="rounded-full absolute bottom-4 right-3 bg-primary w-5 h-5" />
+              <View className="rounded-[5px] absolute bottom-4 right-3 bg-primary w-5 h-5" />
             ) : (
-              <View className="rounded-full absolute bottom-4 right-3 bg-base_color/10 w-5 h-5" />
+              <View className="rounded-[5px] absolute bottom-4 right-3 bg-base_color/10 w-5 h-5" />
             )}
-          </View>
+          </Animated.View>
         </Pressable>
       )}
     </View>

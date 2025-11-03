@@ -8,7 +8,7 @@ import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 
 const Review = () => {
   const [loading, setLoading] = useState(false);
-  const { monthlyPlan, name, mobile, address, foodStyle, kidsPlanSelected } =
+  const { monthlyPlan,userId, name, mobile, address, foodStyle, kidsPlanSelected } =
     useGlobalContext();
   const { confirmPrice } = useRegisterAPI();
 
@@ -34,7 +34,9 @@ const Review = () => {
 
   const handleContinue = async () => {
     try {
-      await confirmPrice();
+      await confirmPrice(userId);
+      console.log(userId);
+      
       await sendWhatsAppMessage();
 
       Alert.alert(
