@@ -4,97 +4,56 @@ import { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View, Alert } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import MealList from "./MealList";
-import { storage } from "@/services/storage";
-
-interface Category {
-  label: string;
-  value: string;
-  name: string;
-}
+import { useMealsAPI } from "@/hooks/useMealsAPI";
+import { CategoryDropdown } from "@/types/meals.types";
 
 const WeeklyMeals = () => {
   const [open, setOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  
-  const { setPopupNames,selectedCategory,setSelectedCategory,mealListRef} = useGlobalContext();
+  const [categories, setCategories] = useState<CategoryDropdown[]>([]);
+
+  const { setPopupNames, selectedCategory, setSelectedCategory, mealListRef } =
+    useGlobalContext();
+  const {
+    fetchMeals,
+    deleteCuisine,
+    loading,
+    fetchCuisineDetails,
+    meals,
+    deleteMeals,
+  } = useMealsAPI();
 
   useEffect(() => {
-    fetchCategories();
+    if (selectedCategory) {
+      fetchMeals("Regular", selectedCategory);
+    }
     // eslint-disable-next-line
-  }, []);
+  }, [selectedCategory]);
 
-  const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const tokens = await storage.getTokens();
-      
-     const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}cuisine-types/`,  
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${tokens.accessToken}`,
-        },
-      }
-    );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch categories");
-      }
-
-      const data = await response.json();
-      
-      const formatted = data.map((cuisine: any) => ({
-        label: cuisine.name,
-        value: cuisine.id,
-        name: cuisine.name,
-      }));
-      
-      setCategories(formatted);
-
-      if(formatted.length > 0 && !selectedCategory){
-        setSelectedCategory(formatted[0].value)
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      Alert.alert("Error", "Failed to load categories");
-      setCategories([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteCategory = async (categoryId: string) => {
-    try {
-      const tokens = await storage.getTokens();
-      
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/admin/cuisine-types/${categoryId}`,  // ✅ Backend: cuisine-types
-        {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Bearer ${tokens.accessToken}`,
-          },
+  useEffect(() => {
+    const loadCuisines = async () => {
+      try {
+        const data = await fetchCuisineDetails();
+        if (data && Array.isArray(data)) {
+          setCategories(
+            data.map((c: any) => ({
+              id: c.id,
+              label: c.name,
+              value: c.id,
+              name: c.name,
+              is_active: c.is_active ?? true,
+              created_at: c.created_at ?? "",
+              updated_at: c.updated_at ?? "",
+            }))
+          );
         }
-      );
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.message || "Failed to delete category");
+      } catch (error) {
+        console.log("Failed to load cuisines", error);
       }
+    };
 
-      setCategories((prev) => prev.filter((c) => c.value !== categoryId));
-      
-      if (selectedCategory === categoryId) {
-        setSelectedCategory(null);
-      }
-
-      Alert.alert("Success", "Category deleted successfully");
-    } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to delete category");
-    }
-  };
+    loadCuisines();
+    //eslint-disable-next-line
+  }, []);
 
   return (
     <>
@@ -118,7 +77,7 @@ const WeeklyMeals = () => {
               }}
               setItems={setCategories}
               listMode="SCROLLVIEW"
-              placeholder="Select Category"  
+              placeholder="Select Category"
               placeholderStyle={{ color: "#999" }}
               style={{
                 borderRadius: 8,
@@ -161,14 +120,32 @@ const WeeklyMeals = () => {
                     onPress={() => {
                       if (!item.value) return;
                       Alert.alert(
-                        "Delete Category",  
+                        "Delete Category",
                         `Are you sure you want to delete "${item.label}"?`,
                         [
                           { text: "Cancel", style: "cancel" },
                           {
                             text: "Delete",
                             style: "destructive",
-                            onPress: () => handleDeleteCategory(item.value!),
+                            onPress: async () => {
+                              if (item.value) {
+                                await deleteCuisine(item.value);
+                                const updated = await fetchCuisineDetails();
+                                if (updated && Array.isArray(updated)) {
+                                  setCategories(
+                                    updated.map((c: any) => ({
+                                      id: c.id,
+                                      label: c.name,
+                                      value: c.id,
+                                      name: c.name,
+                                      is_active: c.is_active ?? true,
+                                      created_at: c.created_at ?? "",
+                                      updated_at: c.updated_at ?? "",
+                                    }))
+                                  );
+                                }
+                              }
+                            },
                           },
                         ]
                       );
@@ -183,20 +160,20 @@ const WeeklyMeals = () => {
           </View>
 
           <TouchableOpacity
-            onPress={() => setPopupNames("addcategory")} 
+            onPress={() => setPopupNames("addcategory")}
             className="flex-row items-center gap-1 bg-primary/10 rounded-lg"
             style={{ height: 36, paddingHorizontal: 8 }}
           >
             <Feather name="folder-plus" size={16} color={"#FF7629"} />
             <Text className="text-primary font-medium text-[12px]">
-              Add Category  
+              Add Category
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => {
               if (!selectedCategory) {
-                Alert.alert("Error", "Please select a category first"); 
+                Alert.alert("Error", "Please select a category first");
                 return;
               }
               setPopupNames("addmeal");
@@ -220,23 +197,28 @@ const WeeklyMeals = () => {
       <View className="mt-5">
         {loading ? (
           <Text className="text-gray-400 text-center mt-10">
-            Loading categories...  
+            Loading categories...
           </Text>
         ) : categories.length === 0 ? (
           <View className="items-center justify-center mt-10">
             <Feather name="folder-plus" size={48} color="#ddd" />
             <Text className="text-gray-400 text-center mt-4 text-base">
-              No categories yet  
+              No categories yet
             </Text>
             <Text className="text-gray-400 text-center text-sm">
-              Create your first category to get started  
+              Create your first category to get started
             </Text>
           </View>
         ) : selectedCategory ? (
-          <MealList ref={mealListRef} categoryId={selectedCategory} /> 
+          <MealList
+            meals={meals}
+            loading={loading}
+            onDeleteMeal={deleteMeals}
+            ref={mealListRef}
+          />
         ) : (
           <Text className="text-gray-400 text-center mt-10">
-            Select a category to view meals  
+            Select a category to view meals
           </Text>
         )}
       </View>

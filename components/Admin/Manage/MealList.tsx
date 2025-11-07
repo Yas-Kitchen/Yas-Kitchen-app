@@ -1,4 +1,4 @@
-import { useEffect, forwardRef } from "react";
+import { forwardRef } from "react";
 import {
   View,
   Text,
@@ -9,25 +9,16 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useGlobalContext } from "@/context/GlobalContext";
-import { useMeals } from "@/hooks/Admin/Meals/useMealsAPI";
-
-interface MealListProps {
-  categoryId: string;
-}
+import { MealListProps } from "@/types/meals.types";
 
 export interface MealListRef {
   refresh: () => void;
 }
 
 const MealList = forwardRef<MealListRef, MealListProps>(
-  ({ categoryId }, ref) => {
+  ({ loading, meals, onDeleteMeal }, ref) => {
     const { setPopupNames, setSelectedMeal } = useGlobalContext();
-    const { meals, loading, fetchMeals, deleteMeals } = useMeals();
-
-    useEffect(() => {
-      fetchMeals(categoryId);
-      //eslint-disable-next-line
-    }, [categoryId]);
+    console.log("Fetched Meals", meals);
 
     if (loading) {
       return (
@@ -68,8 +59,8 @@ const MealList = forwardRef<MealListRef, MealListProps>(
                       <View className="flex-row gap-2">
                         <TouchableOpacity
                           onPress={() => {
-                            setPopupNames("editmeal")
-                            setSelectedMeal(meal.mealPlanId)
+                            setPopupNames("editmeal");
+                            setSelectedMeal(meal.mealPlanId);
                           }}
                           className="flex-row gap-1 p-3 rounded-xl bg-[#F3F4F6] items-center"
                         >
@@ -77,7 +68,7 @@ const MealList = forwardRef<MealListRef, MealListProps>(
                           <Text className="text-sm">Edit</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                          onPress={() => deleteMeals(meal.mealPlanId, meal.id)}
+                          onPress={() => onDeleteMeal(meal.mealPlanId, meal.id)}
                           className="flex-row gap-1 p-3 items-center bg-primary/10 rounded-xl"
                         >
                           <Feather name="trash" size={15} color={"#FF7629"} />

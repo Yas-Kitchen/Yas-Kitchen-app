@@ -1,43 +1,43 @@
 import { useGlobalContext } from "@/context/GlobalContext";
+import { useExtrasApi } from "@/hooks/useExtrasApi";
 import { Feather } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from "react-native";
-
-interface Special {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  available: boolean;
-}
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
+import React, { useEffect } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const Specials = () => {
   const { setPopupNames } = useGlobalContext();
-  const [specials, setSpecials] = useState<Special[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { loading, specials, fetchTodaySpecials, deleteSpecials } =
+    useExtrasApi();
 
   useEffect(() => {
-    fetchSpecials();
+    fetchTodaySpecials();
+    //eslint-disable-next-line
   }, []);
 
-  const fetchSpecials = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/specials`);
-      const result = await response.json();
-
-      if (result.success) {
-        setSpecials(result.data);
-      }
-    } catch (error) {
-      console.error("Error fetching specials:", error);
-    } finally {
-      setLoading(false);
-    }
+  const convertToNumber = (value: string): number => {
+    const num = Number(value);
+    return isNaN(num) ? 0 : num;
   };
+
+  const formatTime = (timeString: string) => {
+    if (!timeString) return "";
+    const [hours, minutes] = timeString.split(":");
+    const date = new Date();
+    date.setHours(convertToNumber(hours), convertToNumber(minutes));
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+  
 
   const handleDelete = async (specialId: string, specialName: string) => {
     Alert.alert(
@@ -52,21 +52,8 @@ const Specials = () => {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            try {
-              const response = await fetch(`${API_URL}/specials/${specialId}`, {
-                method: "DELETE",
-              });
-
-              if (!response.ok) {
-                throw new Error("Failed to delete special");
-              }
-
-              await fetchSpecials();
-              Alert.alert("Success", "Special deleted successfully");
-            } catch (error) {
-              console.error("Error:", error);
-              Alert.alert("Error", "Something went wrong");
-            }
+            await deleteSpecials(specialId);
+            await fetchTodaySpecials();
           },
         },
       ]
@@ -110,37 +97,21 @@ const Specials = () => {
               key={item.id}
               className="bg-[#ECE9E3] rounded-2xl p-5 flex-row"
             >
-              {item.image_url ? (
-                <Image
-                  source={{ uri: item.image_url }}
-                  className="w-40 h-40 max-w-40 max-h-40 rounded-lg mr-3"
-                  resizeMode="cover"
-                />
-              ) : (
-                <View className="w-40 h-40 max-w-40 max-h-40 rounded-lg mr-3 bg-gray-200 items-center justify-center">
-                  <Feather name="image" size={40} color="#999" />
-                </View>
-              )}
-              <View className="flex-col w-1/2 gap-2">
-                <View className="flex-row justify-between">
-                  <Text className="text-xs font-semibold">{item.name}</Text>
-                  <Text className="text-xs font-medium text-primary">
-                    AED {item.price.toFixed(2)}
-                  </Text>
-                </View>
+              <Image
+                source={{ uri: item.image_url }}
+                className="w-40 h-40 max-w-40 max-h-40 rounded-lg mr-3"
+                resizeMode="cover"
+              />
+
+              <Text className="text-xs font-medium absolute right-5 top-5 text-primary">
+                AED {Number(item.price).toFixed(2)}
+              </Text>
+              <View className="flex-col w-1/2 gap-2 my-auto">
+                <Text className="text-sm font-semibold">{item.name}</Text>
                 <Text className="text-xs text-base_color ">
                   {item.description}
                 </Text>
                 <View className="flex-row gap-2">
-                  <TouchableOpacity
-                    onPress={() => {
-                      alert("Edit functionality coming soon");
-                    }}
-                    className="gap-1 items-center p-2 rounded-lg bg-white/50 flex-row"
-                  >
-                    <Feather name="edit" />
-                    <Text className="text-black text-xs">Edit</Text>
-                  </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => handleDelete(item.id, item.name)}
                     className="gap-1 items-center flex-row p-2 bg-red/10 rounded-lg"
@@ -150,6 +121,7 @@ const Specials = () => {
                   </TouchableOpacity>
                 </View>
               </View>
+              <Text className="right-5 bottom-5 absolute text-xs font-medium text-red">Cutoff time : {formatTime(item.cutoff_time ?? "")}</Text>
             </View>
           ))}
         </View>

@@ -1,7 +1,10 @@
+import { Addon } from "@/types/extras.types";
 import { Category, Meal, MealListRef } from "@/types/meals.types";
 import React, { createContext, useContext, useRef, useState } from "react";
 
 interface GlobalContextType {
+  userId: string;
+  setUserId: React.Dispatch<React.SetStateAction<string>>;
   mobile: string;
   setMobile: React.Dispatch<React.SetStateAction<string>>;
   name: any;
@@ -29,8 +32,10 @@ interface GlobalContextType {
   selectedMeal: Meal | null;
   setSelectedMeal: React.Dispatch<React.SetStateAction<Meal | null>>;
   mealListRef: React.RefObject<MealListRef | null>;
-  isEditing : boolean
-  setIsEditing : React.Dispatch<React.SetStateAction<boolean>>
+  isEditing: boolean;
+  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectedAddon : React.Dispatch<React.SetStateAction<Addon | null>>
+  selectedAddon : Addon | null
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -44,7 +49,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [popupNames, setPopupNames] = useState("");
   const [foodStyle, setFoodStyle] = useState("");
   const [activeStep, setActiveStep] = useState(1);
-const [monthlyPlan, setMonthlyPlan] = useState<string[]>([]);
+  const [monthlyPlan, setMonthlyPlan] = useState<string[]>([]);
   const [kidsPlanSelected, setKidsPlanSelected] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedCategoryName, setSelectedCategoryName] = useState<
@@ -53,7 +58,9 @@ const [monthlyPlan, setMonthlyPlan] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [isEditing,setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
+  const [userId,setUserId] = useState("")
+  const [selectedAddon,setSelectedAddon] = useState<Addon | null>(null)
   const mealListRef = useRef<MealListRef | null>(null);
 
   const values: GlobalContextType = {
@@ -79,13 +86,17 @@ const [monthlyPlan, setMonthlyPlan] = useState<string[]>([]);
     setSelectedCategoryName,
     categories,
     setCategories,
+    userId,
+    setUserId,
     selectedMeal,
     setSelectedMeal,
     selectedUser,
     setSelectedUser,
     mealListRef,
     isEditing,
-    setIsEditing
+    setIsEditing,
+    selectedAddon,
+    setSelectedAddon
   };
 
   return (

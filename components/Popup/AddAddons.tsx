@@ -1,9 +1,10 @@
-import * as FileSystem from "expo-file-system/legacy";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   Animated,
+  Easing,
   Image,
   Modal,
   Platform,
@@ -14,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useExtrasApi } from "@/hooks/useExtrasApi";
 
 interface AddAddonProps {
   open: boolean;
@@ -21,18 +23,24 @@ interface AddAddonProps {
   onSuccess?: () => void;
 }
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
-
 const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [price, setPrice] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [cutoffTime, setCutoffTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [category, setCategory] = useState<"addon" | "kids_meal" | "diet">(
+    "addon"
+  );
+  const [containerWidth, setContainerWidth] = useState(0);
+  const { createAddons, fetchAddons, error, loading } = useExtrasApi();
+  const textAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (open) {
@@ -68,6 +76,28 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
     }
   }, [open, onClose, opacity, translateY]);
 
+  const handleCategoryPress = (
+    option: "addon" | "kids_meal" | "diet",
+    index: number
+  ) => {
+    if (containerWidth === 0) return;
+    const tileWidth = containerWidth / 3;
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: index * tileWidth,
+        duration: 250,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(textAnim, {
+        toValue: index,
+        duration: 250,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }),
+    ]).start(() => setCategory(option));
+  };
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -86,70 +116,51 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
       alert("Please fill all required fields");
       return;
     }
-
-    setUploading(true);
-
     try {
-      let imageBase64 = null;
-
-      if (image) {
-        imageBase64 = await FileSystem.readAsStringAsync(image, {
-          encoding: "base64",
-        });
-      }
-
-      const payload = {
+      const addonData = {
         name: title,
-        description: description,
+        description,
         price: parseFloat(price),
-        image: imageBase64,
+        cutoff_time: cutoffTime.toTimeString().split(" ")[0],
+        category: category,
       };
 
-      console.log("Sending request to:", `${API_URL}/addons`);
+      const success = await createAddons(addonData, image ?? "");
+      if (success) {
+        Animated.parallel([
+          Animated.timing(translateY, {
+            toValue: 300,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setVisible(false);
+          onClose();
+          setTitle("");
+          setDescription("");
+          setImage(null);
+          setPrice("");
+          setCutoffTime(new Date());
+        });
+        const reloadAddons = async () => {
+          await fetchAddons();
+        };
 
-      const response = await fetch(`${API_URL}/addons`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.detail || result.error || "Failed to add addon");
+        reloadAddons();
       }
-
-      alert("Add-on added successfully!");
-
-      onSuccess?.();
-
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 300,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setVisible(false);
-        onClose();
-        setTitle("");
-        setDescription("");
-        setImage(null);
-        setPrice("");
-      });
-    } catch (error: any) {
-      console.error("Error:", error);
-      alert("Something went wrong: " + error.message);
-    } finally {
-      setUploading(false);
+      if (error) {
+        console.error("Error:", error);
+        alert("Something went wrong: " + error);
+      }
+    } catch (err: any) {
+      console.error(err?.message || "Failed to add addons");
     }
+    if (!error) alert("Add-on added successfully!");
   };
 
   if (!visible) return null;
@@ -196,6 +207,86 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         placeholderTextColor="#999"
       />
 
+      <Text className="text-base_color text-[12px] mb-2">Category</Text>
+      <View
+        className="relative mb-4"
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      >
+        <Animated.View
+          style={{
+            position: "absolute",
+            height: 40,
+            width: containerWidth / 3,
+            backgroundColor: "#FF7629",
+            borderRadius: 12,
+            transform: [{ translateX: slideAnim }],
+            zIndex: 0,
+          }}
+        />
+        <View className="flex-row justify-between">
+          {[
+            { label: "Regular", value: "addon" },
+            { label: "Kids", value: "kids_meal" },
+            { label: "Diet", value: "diet" },
+          ].map((option, index) => {
+            const animatedTextColor = textAnim.interpolate({
+              inputRange: [index - 1, index, index + 1],
+              outputRange: ["#222", "#fff", "#222"],
+              extrapolate: "clamp",
+            });
+
+            return (
+              <Pressable
+                key={option.value}
+                onPress={() =>
+                  handleCategoryPress(
+                    option.value as "addon" | "kids_meal" | "diet",
+                    index
+                  )
+                }
+                className="flex-1 mx-1 p-3 rounded-xl items-center"
+                style={{ zIndex: 1 }}
+              >
+                <Animated.Text
+                  style={{
+                    fontWeight: "500",
+                    color: animatedTextColor,
+                  }}
+                >
+                  {option.label}
+                </Animated.Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <Text className="text-base_color text-[12px] mb-2">
+        Order Before Time
+      </Text>
+      <Pressable
+        onPress={() => setShowTimePicker(true)}
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+      >
+        <Text className="text-base_color">
+          {cutoffTime.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </Text>
+      </Pressable>
+      {showTimePicker && (
+        <DateTimePicker
+          value={cutoffTime}
+          mode="time"
+          display="default"
+          onChange={(event, selectedTime) => {
+            setShowTimePicker(false);
+            if (selectedTime) setCutoffTime(selectedTime);
+          }}
+        />
+      )}
+
       <Text className="text-base_color text-[12px] mb-2">Image</Text>
       <Pressable
         onPress={pickImage}
@@ -213,7 +304,7 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         <Pressable
           onPress={onClose}
           className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
-          disabled={uploading}
+          disabled={loading}
         >
           <Text className="text-faded_black text-center font-medium">
             Cancel
@@ -222,11 +313,11 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         <TouchableOpacity
           onPress={handleSubmit}
           className="flex-1 p-4 bg-[#FF7629] rounded-xl"
-          disabled={uploading}
-          style={{ opacity: uploading ? 0.5 : 1 }}
+          disabled={loading}
+          style={{ opacity: loading ? 0.5 : 1 }}
         >
           <Text className="text-white text-center font-medium">
-            {uploading ? "Adding..." : "Add"}
+            {loading ? "Adding..." : "Add"}
           </Text>
         </TouchableOpacity>
       </View>

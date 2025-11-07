@@ -9,9 +9,12 @@ import {
   View,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
+import * as ImagePicker from "expo-image-picker";
 import { useGlobalContext } from "@/context/GlobalContext";
-import { storage } from "@/services/storage";
+import { useMealsAPI } from "@/hooks/useMealsAPI";
+import { mealsAPI } from "@/services/api/meals.api";
 
 interface AddCategoryModalProps {
   open: boolean;
@@ -23,55 +26,79 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   onClose,
 }) => {
   const [categoryName, setCategoryName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const {setPopupNames } = useGlobalContext();
+  const [description, setDescription] = useState("");
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const { setPopupNames } = useGlobalContext();
+  const { createCuisine, error, loading, fetchCuisineDetails } = useMealsAPI();
 
-  const handleAddCategory = async () => {
-  if (!categoryName.trim()) {
-    Alert.alert("Error", "Please enter a category name");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    const tokens = await storage.getTokens();
-    
-    // Create cuisine type only
-    const response = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/admin/cuisine-types/`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${tokens.accessToken}`,
-        },
-        body: JSON.stringify({ 
-          name: categoryName,
-          description: `${categoryName} cuisine meals`,
-          is_active: true 
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Failed to add category: ${error}`);
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission denied",
+        "Permission to access media library is required!"
+      );
+      return;
     }
 
-    Alert.alert(
-      "Success", 
-      "Category created! Please create a meal plan for this cuisine in your database before adding meals."
-    );
-    setCategoryName("");
-    setPopupNames("");
-  } catch (error: any) {
-    console.error("❌ Error:", error);
-    Alert.alert("Error", error.message);
-  } finally {
-    setLoading(false);
-  }
-};
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+      base64: true,
+    });
 
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setImageUri(result.assets[0].uri);
+    }
+  };
+
+  const handleAddCategory = async () => {
+    if (!categoryName.trim()) {
+      Alert.alert("Error", "Please enter a category name");
+      return;
+    }
+    if (!description.trim()) {
+      Alert.alert("Error", "Please enter a description");
+      return;
+    }
+
+    let uploadedImageUrl = "";
+
+    if (imageUri) {
+      try {
+        uploadedImageUrl = await mealsAPI.uploadMealImage(imageUri);
+      } catch (err) {
+        Alert.alert(
+          "Image Upload Failed",
+          "Please try again or choose another image."
+        );
+        console.error("Upload error:", err);
+        return;
+      }
+    }
+
+    const payload = {
+      name: categoryName.trim(),
+      description: description.trim(),
+      image_url: uploadedImageUrl,
+      is_active: true,
+    };
+
+    await createCuisine(payload);
+
+    if (!error) {
+      Alert.alert(
+        "Success",
+        "Category created! Please create a meal plan for this cuisine in your database before adding meals."
+      );
+    }
+    setCategoryName("");
+    setDescription("");
+    setImageUri(null);
+    setPopupNames("");
+    await fetchCuisineDetails();
+  };
 
   return (
     <Modal visible={open} transparent animationType="fade">
@@ -97,6 +124,38 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             placeholderTextColor="#999"
             editable={!loading}
           />
+
+          <Text className="text-base_color text-[12px] mb-2">Description</Text>
+          <TextInput
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Enter description"
+            className="mb-6 p-4 bg-[#F5F5F5] rounded-xl"
+            placeholderTextColor="#999"
+            editable={!loading}
+            multiline
+            numberOfLines={3}
+          />
+
+          <Text className="text-base_color text-[12px] mb-2">Upload Image</Text>
+          <TouchableOpacity
+            onPress={pickImage}
+            className="mb-4 p-4 bg-[#F5F5F5] rounded-xl items-center justify-center"
+            disabled={loading}
+          >
+            <Text className="text-faded_black font-medium">Choose Image</Text>
+          </TouchableOpacity>
+          {imageUri ? (
+            <Image
+              source={{ uri: imageUri }}
+              style={{
+                width: "100%",
+                height: 150,
+                borderRadius: 12,
+                marginBottom: 16,
+              }}
+            />
+          ) : null}
 
           <View className="flex-row gap-3">
             <Pressable

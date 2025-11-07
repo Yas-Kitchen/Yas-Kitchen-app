@@ -1,8 +1,8 @@
-import * as FileSystem from "expo-file-system/legacy";
 import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Animated,
   Image,
   Modal,
@@ -14,6 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useExtrasApi } from "@/hooks/useExtrasApi";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 interface AddSpecialsProps {
   open: boolean;
@@ -21,9 +23,11 @@ interface AddSpecialsProps {
   onSuccess?: () => void;
 }
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose, onSuccess }) => {
+const AddSpecials: React.FC<AddSpecialsProps> = ({
+  open,
+  onClose,
+  onSuccess,
+}) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
@@ -32,7 +36,11 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose, onSuccess }) =
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [price, setPrice] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [cutoffTime, setCutoffTime] = useState(new Date());
+  const [availableDate, setAvailableDate] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const { loading, createSpecial,fetchTodaySpecials } = useExtrasApi();
 
   useEffect(() => {
     if (open) {
@@ -86,69 +94,45 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose, onSuccess }) =
       alert("Please fill all required fields");
       return;
     }
-
-    setUploading(true);
-
     try {
-      let imageBase64 = null;
-
-      if (image) {
-        imageBase64 = await FileSystem.readAsStringAsync(image, {
-          encoding: "base64",
-        });
-      }
-
-      const payload = {
+      const specialData = {
         name: title,
-        description: description,
+        description,
         price: parseFloat(price),
-        image: imageBase64,
+        available_date: availableDate.toISOString().split("T")[0],
+        cutoff_time: cutoffTime.toTimeString().split(" ")[0],
       };
 
-      console.log("Sending request to:", `${API_URL}/specials`);
+      const success = await createSpecial(specialData, image ?? "");
 
-      const response = await fetch(`${API_URL}/specials`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.detail || result.error || "Failed to add special");
+      if (success) {
+        Animated.parallel([
+          Animated.timing(translateY, {
+            toValue: 300,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setVisible(false);
+          onClose();
+          setTitle("");
+          setDescription("");
+          setImage(null);
+          setPrice("");
+          setCutoffTime(new Date());
+          setAvailableDate(new Date());
+          fetchTodaySpecials();
+          onSuccess?.();
+        });
       }
-
-      alert("Special added successfully!");
-
-      onSuccess?.();
-
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 300,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setVisible(false);
-        onClose();
-        setTitle("");
-        setDescription("");
-        setImage(null);
-        setPrice("");
-      });
     } catch (error: any) {
       console.error("Error:", error);
-      alert("Something went wrong: " + error.message);
-    } finally {
-      setUploading(false);
+      Alert.alert("Something went wrong: " + error.message);
     }
   };
 
@@ -196,6 +180,48 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose, onSuccess }) =
         placeholderTextColor="#999"
       />
 
+      <Text className="text-base_color text-[12px] mb-2">Available Date</Text>
+      <Pressable
+        onPress={() => setShowDatePicker(true)}
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+      >
+        <Text className="text-base_color">
+          {availableDate.toISOString().split("T")[0]}
+        </Text>
+      </Pressable>
+      {showDatePicker && (
+        <DateTimePicker
+          value={availableDate}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(false);
+            if (selectedDate) setAvailableDate(selectedDate);
+          }}
+        />
+      )}
+
+      <Text className="text-base_color text-[12px] mb-2">Order Before Time</Text>
+      <Pressable
+        onPress={() => setShowTimePicker(true)}
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+      >
+        <Text className="text-base_color">
+          {cutoffTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        </Text>
+      </Pressable>
+      {showTimePicker && (
+        <DateTimePicker
+          value={cutoffTime}
+          mode="time"
+          display="default"
+          onChange={(event, selectedTime) => {
+            setShowTimePicker(false);
+            if (selectedTime) setCutoffTime(selectedTime);
+          }}
+        />
+      )}
+
       <Text className="text-base_color text-[12px] mb-2">Image</Text>
       <Pressable
         onPress={pickImage}
@@ -213,7 +239,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose, onSuccess }) =
         <Pressable
           onPress={onClose}
           className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
-          disabled={uploading}
+          disabled={loading}
         >
           <Text className="text-faded_black text-center font-medium">
             Cancel
@@ -222,11 +248,11 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({ open, onClose, onSuccess }) =
         <TouchableOpacity
           onPress={handleSubmit}
           className="flex-1 p-4 bg-[#FF7629] rounded-xl"
-          disabled={uploading}
-          style={{ opacity: uploading ? 0.5 : 1 }}
+          disabled={loading}
+          style={{ opacity: loading ? 0.5 : 1 }}
         >
           <Text className="text-white text-center font-medium">
-            {uploading ? "Adding..." : "Add"}
+            {loading ? "Adding..." : "Add"}
           </Text>
         </TouchableOpacity>
       </View>

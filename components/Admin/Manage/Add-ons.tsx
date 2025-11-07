@@ -1,42 +1,33 @@
 import { useGlobalContext } from "@/context/GlobalContext";
+import { useExtrasApi } from "@/hooks/useExtrasApi";
 import { Feather } from "@expo/vector-icons";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from "react-native";
-
-interface Addon {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  available: boolean;
-}
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
+import React, { useEffect } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const Addons = () => {
-  const { setPopupNames } = useGlobalContext();
-  const [addons, setAddons] = useState<Addon[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const { setPopupNames, setSelectedAddon } = useGlobalContext();
+  const { loading, addons, deleteAddon, fetchAddons } = useExtrasApi();
   useEffect(() => {
     fetchAddons();
+    //eslint-disable-next-line
   }, []);
 
-  const fetchAddons = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/addons`);
-      const result = await response.json();
-
-      if (result.success) {
-        setAddons(result.data);
-      }
-    } catch (error) {
-      console.error("Error fetching addons:", error);
-    } finally {
-      setLoading(false);
-    }
+  const formatCutoffTime = (time: string) => {
+    if (!time) return "No cutoff time";
+    const [hourStr, minuteStr] = time.split(":");
+    let hour = parseInt(hourStr, 10);
+    const minute = minuteStr;
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+    return `${hour}:${minute} ${ampm}`;
   };
 
   const handleDelete = async (addonId: string, addonName: string) => {
@@ -52,21 +43,7 @@ const Addons = () => {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            try {
-              const response = await fetch(`${API_URL}/addons/${addonId}`, {
-                method: "DELETE",
-              });
-
-              if (!response.ok) {
-                throw new Error("Failed to delete addon");
-              }
-
-              await fetchAddons();
-              Alert.alert("Success", "Addon deleted successfully");
-            } catch (error) {
-              console.error("Error:", error);
-              Alert.alert("Error", "Something went wrong");
-            }
+            deleteAddon(addonId);
           },
         },
       ]
@@ -121,20 +98,19 @@ const Addons = () => {
                   <Feather name="image" size={40} color="#999" />
                 </View>
               )}
+              <Text className="text-xs font-medium absolute right-5 top-5 text-primary">
+                AED {Number(item.price)}
+              </Text>
               <View className="flex-col w-1/2 gap-2">
-                <View className="flex-row justify-between">
-                  <Text className="text-xs font-semibold">{item.name}</Text>
-                  <Text className="text-xs font-medium text-primary">
-                    AED {item.price.toFixed(2)}
-                  </Text>
-                </View>
+                <Text className="text-sm font-semibold mt-4">{item.name}</Text>
                 <Text className="text-xs text-base_color ">
                   {item.description}
                 </Text>
                 <View className="flex-row gap-2">
                   <TouchableOpacity
                     onPress={() => {
-                      alert("Edit functionality coming soon");
+                      setPopupNames("editaddon");
+                      setSelectedAddon(item);
                     }}
                     className="gap-1 items-center p-2 rounded-lg bg-white/50 flex-row"
                   >
@@ -149,6 +125,12 @@ const Addons = () => {
                     <Text className="text-red text-xs">Delete</Text>
                   </TouchableOpacity>
                 </View>
+                <Text className="text-xs text-red mt-1 absolute bottom-0 right-0">
+                  Cutoff Time :{" "}
+                  {item.cutoff_time
+                    ? formatCutoffTime(item.cutoff_time)
+                    : "No cutoff time"}
+                </Text>
               </View>
             </View>
           ))}
