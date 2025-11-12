@@ -64,6 +64,7 @@ export interface Category {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+  label?: string;
 }
 
 export interface CategoryDropdown extends Category {
@@ -73,7 +74,7 @@ export interface CategoryDropdown extends Category {
 
 // UI Interfaces
 export interface CuisineItemProps {
-  cuisine: CuisineType;
+  cuisine: CuisineType | Category;
   isSelected: boolean;
   onSelect: () => void;
   width: number;

@@ -1,11 +1,15 @@
-import { useMockAddons } from "@/hooks/use-MockAddons";
-import React from "react";
+import { useGlobalContext } from "@/context/GlobalContext";
+import { useExtrasApi } from "@/hooks/useExtrasApi";
+import {
+  addAddonItem,
+  decrementAddon,
+  incrementAddon,
+} from "@/utils/addonCart.util";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Animated,
   Dimensions,
-  Easing,
   Image,
-  Linking,
   Text,
   TouchableOpacity,
   View,
@@ -15,286 +19,238 @@ const AddonsItems = () => {
   const screenWidth = Dimensions.get("window").width;
   const width = Math.min(Math.max(screenWidth * 0.45, 300), 130);
   const height = width * 0.8;
-  const mobile = 8547266801;
 
-  const imageMap: Record<string, any> = {
-    "curd.png": require("../../../assets/User/curd.png"),
-    "chickenfry.png": require("../../../assets/User/chickenfry.png"),
-    "kondattam.png": require("../../../assets/User/kondattam.png"),
-    "pappadam.png": require("../../../assets/User/pappadam.png"),
-    "salad.png": require("../../../assets/User/salad.png"),
+  const { fetchAddons, loading } = useExtrasApi();
+  const { selectedAddonItems, setSelectedAddonItems, cart, setCart } =
+    useGlobalContext();
+  const [items, setItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    const loadAddons = async () => {
+      try {
+        const data = await fetchAddons();
+        if (data && Array.isArray(data)) setItems(data);
+      } catch (err) {
+        console.log("Failed to fetch addons:", err);
+      }
+    };
+    loadAddons();
+    //eslint-disable-next-line
+  }, []);
+
+  const isPastCutoff = (cutoffTime: string) => {
+    if (!cutoffTime) return false;
+    const now = new Date();
+    const [hours, minutes] = cutoffTime.split(":").map(Number);
+    const cutoff = new Date();
+    cutoff.setHours(hours, minutes, 0, 0);
+    return now > cutoff;
   };
 
-  const Addons = useMockAddons();
-  const items = Addons.addons;
-  const [cart, setCart] = React.useState<{ [key: string]: number }>({});
+  const availableItems = items.filter(
+    (item) => !isPastCutoff(item.cutoff_time)
+  );
+  const expiredItems = items.filter((item) => isPastCutoff(item.cutoff_time));
+  const sortedItems = [...availableItems, ...expiredItems];
 
-  const cartAnimation = React.useRef(new Animated.Value(0)).current;
-
-  const quantityAnimations = React.useMemo(() => {
+  const buttonPressAnimations = useMemo(() => {
     const animations: { [key: string]: Animated.Value } = {};
-    items.forEach((item) => {
-      animations[item.id] = new Animated.Value(1);
-    });
+    items.forEach((item) => (animations[item.id] = new Animated.Value(1)));
     return animations;
   }, [items]);
 
-  const buttonPressAnimations = React.useMemo(() => {
+  const quantityAnimations = useMemo(() => {
     const animations: { [key: string]: Animated.Value } = {};
-    items.forEach((item) => {
-      animations[item.id] = new Animated.Value(1);
-    });
+    items.forEach((item) => (animations[item.id] = new Animated.Value(1)));
     return animations;
   }, [items]);
-
-  React.useEffect(() => {
-    const hasItems =
-      Object.keys(cart).filter((key) => cart[key] > 0).length > 0;
-
-    if (hasItems) {
-      Animated.timing(cartAnimation, {
-        toValue: 1,
-        duration: 300,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(cartAnimation, {
-        toValue: 0,
-        duration: 250,
-        easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [cart, cartAnimation]);
-
-  const animateQuantityChange = (itemId: string) => {
-    if (!quantityAnimations[itemId]) return;
-
-    Animated.timing(quantityAnimations[itemId], {
-      toValue: 1.05,
-      duration: 120,
-      easing: Easing.out(Easing.quad),
-      useNativeDriver: true,
-    }).start(() => {
-      Animated.timing(quantityAnimations[itemId], {
-        toValue: 1,
-        duration: 120,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }).start();
-    });
-  };
 
   const animateButtonPress = (itemId: string, callback: () => void) => {
-    if (!buttonPressAnimations[itemId]) {
+    const animation = buttonPressAnimations[itemId];
+    if (!animation) {
       callback();
       return;
     }
 
-    Animated.timing(buttonPressAnimations[itemId], {
+    Animated.timing(animation, {
       toValue: 0.95,
       duration: 80,
-      easing: Easing.out(Easing.quad),
       useNativeDriver: true,
     }).start(() => {
-      Animated.timing(buttonPressAnimations[itemId], {
+      Animated.timing(animation, {
         toValue: 1,
         duration: 80,
-        easing: Easing.out(Easing.quad),
         useNativeDriver: true,
       }).start();
       callback();
     });
   };
 
-  const handleAddToCart = (itemId: string) => {
-    animateButtonPress(itemId, () => {
-      setCart((prev) => ({
-        ...prev,
-        [itemId]: 1,
-      }));
-      animateQuantityChange(itemId);
+  const animateQuantityChange = (itemId: string) => {
+    const animation = quantityAnimations[itemId];
+    if (!animation) return;
+
+    Animated.sequence([
+      Animated.timing(animation, {
+        toValue: 1.3,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animation, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const handleAddToCart = (item: any) => {
+    animateButtonPress(item.id, () => {
+      addAddonItem(
+        cart,
+        selectedAddonItems,
+        setCart,
+        setSelectedAddonItems,
+        item
+      );
     });
   };
 
-  const handleIncrement = (itemId: string) => {
-    animateButtonPress(itemId, () => {
-      setCart((prev) => ({
-        ...prev,
-        [itemId]: (prev[itemId] || 0) + 1,
-      }));
-      animateQuantityChange(itemId);
-    });
+  const handleIncrement = (item: any) => {
+    animateQuantityChange(item.id);
+    incrementAddon(cart, setCart, item.id);
   };
 
-  const handleDecrement = (itemId: string) => {
-    animateButtonPress(itemId, () => {
-      setCart((prev) => ({
-        ...prev,
-        [itemId]: Math.max((prev[itemId] || 1) - 1, 0),
-      }));
-      animateQuantityChange(itemId);
-    });
+  const handleDecrement = (item: any) => {
+    animateQuantityChange(item.id);
+    decrementAddon(
+      cart,
+      selectedAddonItems,
+      setCart,
+      setSelectedAddonItems,
+      item.id
+    );
   };
 
-  const getQuantityAnimation = (itemId: string) => {
-    return quantityAnimations[itemId] || new Animated.Value(1);
-  };
+  if (loading) {
+    return (
+      <View className="items-center justify-center py-10">
+        <Text className="text-base_color">Loading Add-ons...</Text>
+      </View>
+    );
+  }
 
-  const getButtonAnimation = (itemId: string) => {
-    return buttonPressAnimations[itemId] || new Animated.Value(1);
-  };
+  if (items.length === 0) {
+    return (
+      <View className="items-center justify-center py-10">
+        <Text className="text-gray-500">No add-ons available today 😞</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="mt-2 gap-3">
-      {items.map((item) => (
-        <View
-          key={item.id}
-          className="bg-[#EFEDE6] border border-base_color/20 rounded-xl py-5"
-        >
-          <View className="flex-row">
-            <Image style={{ width, height }} source={imageMap[item.image]} />
-            <View className="flex-col">
-              <Text className="text-[14px] font-semibold">{item.name}</Text>
-              <Text className="w-[80%] text-[12px] text-base_color mt-1">
-                {item.description}
-              </Text>
-              {cart[item.id] ? (
-                <View className="flex-row items-center mt-2">
-                  <Animated.View
-                    style={{
-                      transform: [{ scale: getButtonAnimation(item.id) }],
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={() => handleDecrement(item.id)}
-                      className="bg-gray-200 w-8 h-8 rounded-full items-center justify-center"
-                      activeOpacity={0.7}
-                    >
-                      <Text className="text-lg">-</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-
-                  <Animated.Text
-                    style={{
-                      transform: [{ scale: getQuantityAnimation(item.id) }],
-                    }}
-                    className="mx-2 font-semibold"
-                  >
-                    {cart[item.id]}
-                  </Animated.Text>
-
-                  <Animated.View
-                    style={{
-                      transform: [{ scale: getButtonAnimation(item.id) }],
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={() => handleIncrement(item.id)}
-                      className="bg-orange-500 w-8 h-8 rounded-full items-center justify-center"
-                      activeOpacity={0.7}
-                    >
-                      <Text className="text-white text-lg">+</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                </View>
-              ) : (
-                <Animated.View
-                  style={{
-                    transform: [{ scale: getButtonAnimation(item.id) }],
-                  }}
-                >
-                  <TouchableOpacity
-                    onPress={() => handleAddToCart(item.id)}
-                    className="bg-primary/10 w-28 items-center p-2 rounded-xl mt-2"
-                    activeOpacity={0.7}
-                  >
-                    <Text className="text-primary text-[12px]">
-                      Add to Order
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              )}
-            </View>
-            <View className="flex-row items-center gap-1 mr-5 absolute right-0">
-              <Image
-                className="w-2.5 h-2.5"
-                source={require("@assets/Shared/dirham.svg")}
-              />
-              <Text className="text-primary font-medium text-[13px]">
-                {item.price}
-              </Text>
-            </View>
-            <Text className="text-base_color absolute bottom-0 right-3 font-medium text-[9px]">
-              {item.order_deadline}
-            </Text>
-          </View>
-        </View>
-      ))}
-      <Animated.View
-        style={{
-          transform: [
-            {
-              translateY: cartAnimation.interpolate({
-                inputRange: [0, 1],
-                outputRange: [80, 0],
-              }),
-            },
-          ],
-          opacity: cartAnimation.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 1],
-          }),
-        }}
-        className="absolute -bottom-60 left-0 right-0 shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-xl mx-4"
-        pointerEvents={
-          Object.keys(cart).filter((key) => cart[key] > 0).length > 0
-            ? "auto"
-            : "none"
-        }
-      >
-        <View className="absolute left-0 bottom-0 right-0 bg-white shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-xl mx-4">
-          <View>
-            <Text className="text-gray-600">
-              {Object.values(cart).reduce((a, b) => a + b, 0)} items
-            </Text>
-            <Text className="font-semibold text-lg text-black">
-              AED&nbsp;
-              {items.reduce(
-                (total, item) =>
-                  total + (cart[item.id] || 0) * Number(item.price),
-                0
-              )}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={() => {
-              const orderItems = items
-                .filter((item) => cart[item.id])
-                .map(
-                  (item) =>
-                    `${cart[item.id]} ${item.name}${
-                      cart[item.id] > 1 ? "s" : ""
-                    }`
-                )
-                .join(", ");
-              const message = `Hello, I would like to order: ${orderItems}`;
-              const url = `whatsapp://send?phone=+91${mobile}&text=${encodeURIComponent(
-                message
-              )}`;
-              Linking.openURL(url).catch(() => {
-                alert("Make sure WhatsApp is installed on your device");
-              });
-            }}
-            className="bg-orange-500 px-6 py-3 rounded-xl"
-            activeOpacity={0.7}
+      {sortedItems.map((item: any) => {
+        const expired = isPastCutoff(item.cutoff_time);
+        return (
+          <View
+            key={item.id}
+            className={`bg-[#EFEDE6] border border-base_color/20 rounded-xl py-5 ${
+              expired ? "opacity-50 grayscale" : ""
+            }`}
+            pointerEvents={expired ? "none" : "auto"}
           >
-            <Text className="text-white font-semibold">Place Order</Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
+            <View className="flex-row">
+              <Image
+                style={{ width, height }}
+                className="rounded-md p-2"
+                source={{ uri: item.image_url }}
+              />
+              <View className="flex-col">
+                <Text className="text-[14px] font-semibold">{item.name}</Text>
+                <Text className="w-[80%] text-[12px] text-base_color mt-1">
+                  {item.description}
+                </Text>
+
+                {cart[item.id] ? (
+                  <View className="flex-row items-center gap-3 mt-2">
+                    <Animated.View
+                      style={{
+                        transform: [{ scale: buttonPressAnimations[item.id] }],
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => handleDecrement(item)}
+                        className="bg-primary/10 w-8 h-8 items-center justify-center rounded-xl"
+                        activeOpacity={0.7}
+                      >
+                        <Text className="text-primary text-[20px] font-bold">
+                          -
+                        </Text>
+                      </TouchableOpacity>
+                    </Animated.View>
+
+                    <Animated.Text
+                      style={{
+                        transform: [{ scale: quantityAnimations[item.id] }],
+                      }}
+                      className="text-primary font-semibold text-[16px]"
+                    >
+                      {cart[item.id]}
+                    </Animated.Text>
+
+                    <Animated.View
+                      style={{
+                        transform: [{ scale: buttonPressAnimations[item.id] }],
+                      }}
+                    >
+                      <TouchableOpacity
+                        onPress={() => handleIncrement(item)}
+                        className="bg-primary/10 w-8 h-8 items-center justify-center rounded-xl"
+                        activeOpacity={0.7}
+                      >
+                        <Text className="text-primary text-[20px] font-bold">
+                          +
+                        </Text>
+                      </TouchableOpacity>
+                    </Animated.View>
+                  </View>
+                ) : (
+                  <Animated.View
+                    style={{
+                      transform: [{ scale: buttonPressAnimations[item.id] }],
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => handleAddToCart(item)}
+                      className="bg-primary/10 w-28 items-center p-2 rounded-xl mt-2"
+                      activeOpacity={0.7}
+                    >
+                      <Text className="text-primary text-[12px]">
+                        Add to Cart
+                      </Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                )}
+              </View>
+
+              <View className="flex-row items-center gap-1 mr-5 absolute right-0">
+                <Image
+                  className="w-2.5 h-2.5"
+                  source={require("@assets/Shared/dirham.svg")}
+                />
+                <Text className="text-primary font-medium text-[13px]">
+                  {item.price}
+                </Text>
+              </View>
+
+              <Text className="text-base_color absolute bottom-0 right-3 font-medium text-[9px]">
+                {item.cutoff_time}
+              </Text>
+            </View>
+          </View>
+        );
+      })}
     </View>
   );
 };

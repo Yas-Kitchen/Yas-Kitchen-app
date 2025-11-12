@@ -114,7 +114,7 @@ const AddMeal: React.FC<AddMealProps> = ({
 
     // Step 1: Get meal plan
     const planResponse = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/meal-plans/?cuisine_type_id=${categoryId}`,
+      `${process.env.EXPO_PUBLIC_API_URL}meal-plans/category/${categoryId}`,
       {
         headers: { Authorization: `Bearer ${tokens.accessToken}` },
       }
@@ -143,7 +143,7 @@ const AddMeal: React.FC<AddMealProps> = ({
 
     // Step 2: Get meal time ID
     const mealTimesResponse = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/meal-times/`,
+      `${process.env.EXPO_PUBLIC_API_URL}meal-times/`,
       {
         headers: { Authorization: `Bearer ${tokens.accessToken}` },
       }
@@ -166,7 +166,7 @@ const AddMeal: React.FC<AddMealProps> = ({
       formData.append("file", blob, fileName);
 
       const uploadResponse = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/upload/image`,
+        `${process.env.EXPO_PUBLIC_API_URL}upload/image`,
         {
           method: "POST",
           headers: { Authorization: `Bearer ${tokens.accessToken}` },
@@ -184,7 +184,7 @@ const AddMeal: React.FC<AddMealProps> = ({
     console.log("🍽️ Creating meal with cuisine_type_id:", categoryId);
 
     const mealResponse = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/admin/meals/`,
+      `${process.env.EXPO_PUBLIC_API_URL}admin/meal-plans/`,
       {
         method: "POST",
         headers: {
@@ -208,7 +208,7 @@ const AddMeal: React.FC<AddMealProps> = ({
 
     // Step 5: Add to meal plan
     const itemResponse = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/admin/meal-plans/${mealPlanId}/items?meal_id=${meal.id}&day_of_week=${selectedDay.toLowerCase()}&meal_time_id=${mealTime.id}`,
+      `${process.env.EXPO_PUBLIC_API_URL}/admin/meal-plans/${mealPlanId}/items`,
       {
         method: "POST",
         headers: {

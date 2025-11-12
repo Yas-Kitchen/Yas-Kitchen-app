@@ -1,12 +1,13 @@
 import { useGlobalContext } from "@/context/GlobalContext";
+import { useUserAPI } from "@/hooks/useUserAPI";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface LeaveReqProps {
@@ -18,7 +19,21 @@ const EditAdress: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { adress, setAdress } = useGlobalContext();
+  const { address, setAddress } = useGlobalContext();
+  const [updatedAddress, setUpdatedAddress] = useState(address);
+  const { updateUser } = useUserAPI();
+
+  useEffect(() => {
+    if (open) {
+      setUpdatedAddress(address);
+    }
+  }, [open, address]);
+
+  const handleEditAddress = async () => {
+    await updateUser({ address: updatedAddress });
+    setAddress(updatedAddress);
+    onClose();
+  };
 
   useEffect(() => {
     if (open) {
@@ -59,14 +74,14 @@ const EditAdress: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const content = (
     <>
       <Text className="text-faded_black text-[16px] my-5 font-bold">
-        Edit Your Adress
+        Edit Your Address
       </Text>
       <View>
         <TextInput
-          onChangeText={(text) => setAdress(text)}
+          onChangeText={(text) => setUpdatedAddress(text)}
           className="p-5 py-10 h-auto bg-button_bg rounded-2xl"
-          placeholder="Enter your adress"
-          value={adress}
+          placeholder="Enter your address"
+          value={updatedAddress}
         />
       </View>
       <View className="flex-row my-5 gap-2">
@@ -77,7 +92,7 @@ const EditAdress: React.FC<LeaveReqProps> = ({ open, onClose }) => {
           <Text className="text-faded_black text-center">Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => onClose()}
+          onPress={() => handleEditAddress()}
           className="p-6 web:p-4 w-1/2 bg-primary rounded-2xl"
         >
           <Text className="text-white text-center">Continue</Text>

@@ -1,3 +1,4 @@
+import Cart from "@/components/Popup/Cart";
 import FoodSectionWeeklyPlan from "@/components/User/Food/FoodSectionWeeklyPlan";
 import Specials from "@/components/User/Food/Specials";
 import { useRef, useState } from "react";
@@ -7,7 +8,7 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 const Food = () => {
@@ -76,76 +77,79 @@ const Food = () => {
   };
 
   return (
-    <ScrollView>
-      <View className="ios:mt-16 mt-5 mx-5 gap-3">
-        <View className="flex-row gap-2 items-center">
-          <Text className="text-[#212529] font-semibold text-[16px]">
-            Food Section
-          </Text>
-        </View>
-        <View className="flex-row gap-5 items-center justify-center w-full">
-          <Animated.View style={{ transform: [{ scale: weeklyTabScale }] }}>
-            <TouchableOpacity
-              onPress={() => {
-                animateTabPress("weekly");
-                switchTab("weekly");
-              }}
-              className={`${
-                tab === "weekly" ? "bg-primary/10" : " bg-base_color/10"
-              } p-4 rounded-xl`}
-              activeOpacity={0.8}
-            >
-              <Animated.Text
-                style={{
-                  opacity: tab === "weekly" ? 1 : 0.7,
-                }}
-                className={`text-center ${
-                  tab === "weekly"
-                    ? "text-primary font-semibold"
-                    : "text-base_color"
-                } `}
-              >
-                Weekly Plan
-              </Animated.Text>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Animated.View style={{ transform: [{ scale: specialTabScale }] }}>
-            <TouchableOpacity
-              onPress={() => {
-                animateTabPress("special");
-                switchTab("special");
-              }}
-              className={` ${
-                tab === "special" ? "bg-primary/10" : "bg-base_color/10"
-              }  p-4 rounded-xl`}
-              activeOpacity={0.8}
-            >
-              <Animated.Text
-                style={{
-                  opacity: tab === "special" ? 1 : 0.7,
+    <>
+      <ScrollView>
+        <View className="ios:mt-16 mt-5 mx-5 gap-3">
+          <View className="flex-row gap-2 items-center">
+            <Text className="text-[#212529] font-semibold text-[16px]">
+              Food Section
+            </Text>
+          </View>
+          <View className="flex-row gap-5 items-center justify-center w-full">
+            <Animated.View style={{ transform: [{ scale: weeklyTabScale }] }}>
+              <TouchableOpacity
+                onPress={() => {
+                  animateTabPress("weekly");
+                  switchTab("weekly");
                 }}
                 className={`${
-                  tab === "special"
-                    ? "text-primary font-semibold"
-                    : "text-base_color"
-                } text-center`}
+                  tab === "weekly" ? "bg-primary/10" : " bg-base_color/10"
+                } p-4 rounded-xl`}
+                activeOpacity={0.8}
               >
-                Today&apos;s Specials
-              </Animated.Text>
-            </TouchableOpacity>
+                <Animated.Text
+                  style={{
+                    opacity: tab === "weekly" ? 1 : 0.7,
+                  }}
+                  className={`text-center ${
+                    tab === "weekly"
+                      ? "text-primary font-semibold"
+                      : "text-base_color"
+                  } `}
+                >
+                  Weekly Plan
+                </Animated.Text>
+              </TouchableOpacity>
+            </Animated.View>
+
+            <Animated.View style={{ transform: [{ scale: specialTabScale }] }}>
+              <TouchableOpacity
+                onPress={() => {
+                  animateTabPress("special");
+                  switchTab("special");
+                }}
+                className={` ${
+                  tab === "special" ? "bg-primary/10" : "bg-base_color/10"
+                }  p-4 rounded-xl`}
+                activeOpacity={0.8}
+              >
+                <Animated.Text
+                  style={{
+                    opacity: tab === "special" ? 1 : 0.7,
+                  }}
+                  className={`${
+                    tab === "special"
+                      ? "text-primary font-semibold"
+                      : "text-base_color"
+                  } text-center`}
+                >
+                  Today&apos;s Specials
+                </Animated.Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+          <Animated.View
+            style={{
+              opacity: contentOpacity,
+              transform: [{ translateX: contentTranslateX }],
+            }}
+          >
+            {tab === "weekly" ? <FoodSectionWeeklyPlan /> : <Specials />}
           </Animated.View>
         </View>
-        <Animated.View
-          style={{
-            opacity: contentOpacity,
-            transform: [{ translateX: contentTranslateX }],
-          }}
-        >
-          {tab === "weekly" ? <FoodSectionWeeklyPlan /> : <Specials />}
-        </Animated.View>
-      </View>
       </ScrollView>
+      <Cart/>
+    </>
   );
 };
 

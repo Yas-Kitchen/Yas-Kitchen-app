@@ -61,7 +61,7 @@ const SwitchMeals: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const content = (
     <>
       <Text className="text-faded_black text-[16px] font-bold">
-        Change your Food Plan
+        Switch Meals
       </Text>
       <View className="my-4">
         <FoodStyle/>

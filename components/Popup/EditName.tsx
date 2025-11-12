@@ -1,12 +1,13 @@
 import { useGlobalContext } from "@/context/GlobalContext";
+import { useUserAPI } from "@/hooks/useUserAPI";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Platform,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Animated,
+  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 interface LeaveReqProps {
@@ -19,9 +20,18 @@ const EditName: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
   const { name, setName } = useGlobalContext();
+  const [updatedName, setUpdatedName] = useState("");
+  const { updateUser } = useUserAPI();
+
+  const handleUpdateName = async () => {
+    await updateUser({ name: updatedName });
+    setName(updatedName);
+    onClose();
+  };
 
   useEffect(() => {
     if (open) {
+      setUpdatedName(name);
       setVisible(true);
       Animated.parallel([
         Animated.timing(translateY, {
@@ -52,6 +62,7 @@ const EditName: React.FC<LeaveReqProps> = ({ open, onClose }) => {
         onClose();
       });
     }
+    //eslint-disable-next-line
   }, [open, onClose, opacity, translateY]);
 
   if (!visible) return null;
@@ -63,10 +74,10 @@ const EditName: React.FC<LeaveReqProps> = ({ open, onClose }) => {
       </Text>
       <View>
         <TextInput
-          onChangeText={(text) => setName(text)}
+          onChangeText={(text) => setUpdatedName(text)}
           className="p-5 bg-button_bg rounded-2xl"
           placeholder="Enter your name"
-          value={name}
+          value={updatedName}
         />
       </View>
       <View className="flex-row my-5 gap-2">
@@ -77,7 +88,7 @@ const EditName: React.FC<LeaveReqProps> = ({ open, onClose }) => {
           <Text className="text-faded_black text-center">Cancel</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => onClose()}
+          onPress={() => handleUpdateName()}
           className="p-6 web:p-4 w-1/2 bg-primary rounded-2xl"
         >
           <Text className="text-white text-center">Continue</Text>

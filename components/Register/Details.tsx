@@ -60,10 +60,7 @@ const Details = () => {
           session?.progress?.cuisine_selected
         ) {
           setActiveStep(2);
-          if (
-            session?.progress?.plans_selected &&
-            session?.progress?.pricing_confirmed
-          ) {
+          if (session?.progress?.plans_selected) {
             setActiveStep(3);
           }
         } else if (
@@ -170,27 +167,63 @@ const Details = () => {
     }
 
     try {
-      const session = await getOnboardingSession();
-
-      if (
-        session?.status === "in_progress" ||
-        session?.status === "completed"
-      ) {
+      if (isEditing) {
         await updateProfile(name, address);
-        Alert.alert(
-          "Profile Updated",
-          "Your details have been saved successfully!"
-        );
         setActiveStep(3);
-      } else {
-        await startOnboarding();
-        const selectedCuisine = categories.find((c) => c.id === foodStyle);
-        if (selectedCuisine) await selectCuisine(selectedCuisine.id);
-        await profileCompletion(name, address);
-        setActiveStep(2);
+        return;
       }
+
+      // 1️⃣ Ensure a session exists
+      let session = await getOnboardingSession();
+      if (!session || session.status === "not_started") {
+        console.log("🟢 Creating new onboarding session...");
+        await startOnboarding();
+        session = await getOnboardingSession();
+      }
+
+      // 2️⃣ Complete profile only if backend expects that step or step is undefined
+      if (!session?.step || session?.step === "profile_completion") {
+        console.log("🟢 Completing profile...");
+        try {
+          await profileCompletion(name, address);
+        } catch (error: any) {
+          const code = error.response?.data?.detail?.error_code;
+          if (code === "ONBOARDING_014") {
+            console.warn("⚠️ Invalid step (cuisine_selection), using updateProfile fallback...");
+            await updateProfile(name, address);
+          } else {
+            throw error;
+          }
+        }
+        session = await getOnboardingSession();
+      } else if (
+        !session?.progress?.profile_complete &&
+        ["cuisine_selection", "plans_selection"].includes(session?.step)
+      ) {
+        console.log(
+          "⚠️ Backend skipped profile step, using updateProfile instead..."
+        );
+        await updateProfile(name, address);
+        session = await getOnboardingSession();
+      } else {
+        console.log(
+          `⚠️ Skipping profile completion (current step: ${session?.step})`
+        );
+      }
+
+      // 3️⃣ Handle cuisine selection if not done
+      const selectedCuisine = categories.find((c) => c.id === foodStyle);
+      if (selectedCuisine && !session?.progress?.cuisine_selected) {
+        console.log("🟢 Selecting cuisine...");
+        await selectCuisine(selectedCuisine.id);
+        session = await getOnboardingSession();
+      }
+
+      // 4️⃣ Move forward
+      console.log("✅ Onboarding flow completed:", session?.progress);
+      setActiveStep(2);
     } catch (err: any) {
-      console.log("Error during onboarding : ", err);
+      console.log("Error during onboarding:", err);
       Alert.alert("Error", "Something went wrong. Please try again");
     }
   };

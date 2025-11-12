@@ -3,14 +3,34 @@ import MainSetting from "@/components/Profile/MainSetting";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useUserAPI } from "@/hooks/useUserAPI";
+import * as ImagePicker from "expo-image-picker";
 
 const Profile = () => {
-  const { name, mobile, address, foodStyle, monthlyPlan, kidsPlanSelected } =
+  const { name, mobile, address, foodStyle, monthlyPlan, kidsPlanSelected, userProfile } =
     useGlobalContext();
-    console.log(foodStyle,monthlyPlan);
-    
+
+  const [profileImage, setProfileImage] = useState<string | null>(userProfile || null);
+  const [loading, setLoading] = useState(false);
+
+  const { setProfileImage: setProfileImageAPI } = useUserAPI();
+
+   useEffect(() => {
+    if (userProfile) {
+      setProfileImage(userProfile);
+    }
+  }, [userProfile]);
+
   return (
     <ScrollView>
       <View className="ios:mt-16 mt-5 mx-5">
@@ -18,7 +38,46 @@ const Profile = () => {
           Profile
         </Text>
         <View className="mt-5 flex-row gap-4 items-center mb-4">
-          <Image className="w-20 h-20 bg-primary rounded-full " />
+          <TouchableOpacity
+            onPress={async () => {
+              const permissionResult =
+                await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (!permissionResult.granted) {
+                Alert.alert(
+                  "Permission required",
+                  "Please allow access to your gallery."
+                );
+                return;
+              }
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [1, 1],
+                quality: 1,
+              });
+
+              if (!result.canceled) {
+                setLoading(true);
+                const imageUri = result.assets[0].uri;
+                setProfileImage(imageUri);
+                await setProfileImageAPI(imageUri);
+                setProfileImage(imageUri);
+                setLoading(false);
+              }
+            }}
+            className="w-20 h-20 rounded-full bg-primary items-center justify-center overflow-hidden"
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : profileImage ? (
+              <Image
+                source={{ uri: profileImage }}
+                className="w-full h-full rounded-full"
+              />
+            ) : (
+              <Feather name="upload" size={24} color="#fff" />
+            )}
+          </TouchableOpacity>
           <View className="gap-1">
             <Text className="text-[17px] font-semibold">{name}</Text>
             <Text className="text-base_color text-[13px]">{mobile}</Text>
@@ -45,7 +104,7 @@ const Profile = () => {
           <MainSetting
             icon="pizza-outline"
             header="Switch Meals"
-            subheader={`${foodStyle} indian`}
+            subheader={`${foodStyle}`}
           />
           <View className="h-[1px] w-full bg-base_color/10" />
           <MainSetting
@@ -60,14 +119,19 @@ const Profile = () => {
             subheader="Share the flavor!"
           />
         </View>
-        <TouchableOpacity onPress={() => router.push("/")} className="flex-row items-center gap-2 bg-white justify-center p-5 rounded-2xl mt-5">
+        <TouchableOpacity
+          onPress={() => router.push("/")}
+          className="flex-row items-center gap-2 bg-white justify-center p-5 rounded-2xl mt-5"
+        >
           <Feather name="log-out" color={"#FF7629"} size={20} />
           <Text className="text-primary">Logout</Text>
         </TouchableOpacity>
       </View>
-      <View className="h-32"/>
+      <View className="h-32" />
     </ScrollView>
   );
 };
 
 export default Profile;
+
+ 

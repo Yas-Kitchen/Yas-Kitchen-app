@@ -13,14 +13,23 @@ import {
 
 const MonthlyPlan = () => {
   const {
-    monthlyPlan: selectedPlan,
-    setMonthlyPlan,
-    kidsPlanSelected,
-    setKidsPlanSelected,
+    has_diet_plan,
+    setHasDietPlan,
+    has_regular_plan,
+    setHasRegularPlan,
+    has_kids_plan,
+    setHasKidsPlan,
   } = useGlobalContext();
   const { monthlyPlan, fetchPlanDetails, loading } = useMealsAPI();
 
   const animationValues = useRef<{ [key: string]: Animated.Value }>({}).current;
+
+  const ensureAnimation = (key: string) => {
+    if (!animationValues[key]) {
+      animationValues[key] = new Animated.Value(0);
+    }
+    return animationValues[key];
+  };
 
   useEffect(() => {
     fetchPlanDetails();
@@ -37,82 +46,75 @@ const MonthlyPlan = () => {
     return monthlyPlan.find((plan: any) => plan.special);
   }, [monthlyPlan]);
 
-  // Initialize animation values for each plan
   foodPlans.forEach((plan: any) => {
-    if (!animationValues[plan.key]) {
-      animationValues[plan.key] = new Animated.Value(0);
-    }
+    ensureAnimation(plan.key);
   });
 
-  if (kidsPlan && !animationValues["Kids"]) {
-    animationValues["Kids"] = new Animated.Value(0);
-  }
+  ensureAnimation("Kids");
 
   useEffect(() => {
     foodPlans.forEach((plan: any) => {
-      const isSelected = Array.isArray(selectedPlan)
-        ? selectedPlan.includes(plan.key)
-        : selectedPlan === plan.key;
-      Animated.timing(animationValues[plan.key], {
+      const anim = animationValues[plan.key] || ensureAnimation(plan.key);
+      let isSelected = false;
+      if (plan.key === "Diet") {
+        isSelected = has_diet_plan;
+      } else if (plan.key === "Regular") {
+        isSelected = has_regular_plan;
+      }
+      Animated.timing(anim, {
         toValue: isSelected ? 1 : 0,
         duration: 300,
         useNativeDriver: false,
       }).start();
     });
 
-    Animated.timing(animationValues["Kids"], {
-      toValue: kidsPlanSelected ? 1 : 0,
+    const kidsAnim = animationValues["Kids"] || ensureAnimation("Kids");
+    Animated.timing(kidsAnim, {
+      toValue: has_kids_plan ? 1 : 0,
       duration: 300,
       useNativeDriver: false,
     }).start();
 
-    // eslint-disable-next-line 
-  }, [selectedPlan, foodPlans, kidsPlanSelected]);
+    // eslint-disable-next-line
+  }, [has_diet_plan, has_regular_plan, has_kids_plan, foodPlans]);
 
   const handlePress = (plan: any) => {
-    let newSelected: string[] = [];
-    if (plan.key === "Diet" || plan.key === "Regular") {
-      let basePlan = plan.key;
-      if (Array.isArray(selectedPlan) && selectedPlan.includes(plan.key)) {
-        if (kidsPlanSelected) {
-          return;
-        } else {
-          setMonthlyPlan([""]);
-          return;
+    if (plan.key === "Diet") {
+      if (has_diet_plan) {
+        // If Diet is already selected, deselect it and kids plan if no other plan selected
+        setHasDietPlan(false);
+        if (!has_regular_plan) {
+          setHasKidsPlan(false);
         }
       } else {
-        if (kidsPlanSelected) {
-          newSelected = [basePlan, "Kids"];
-        } else {
-          newSelected = [basePlan];
-        }
+        // Select Diet and deselect Regular
+        setHasDietPlan(true);
+        setHasRegularPlan(false);
       }
-      setMonthlyPlan(newSelected);
+      return;
+    }
+    if (plan.key === "Regular") {
+      if (has_regular_plan) {
+        // If Regular is already selected, deselect it and kids plan if no other plan selected
+        setHasRegularPlan(false);
+        if (!has_diet_plan) {
+          setHasKidsPlan(false);
+        }
+      } else {
+        // Select Regular and deselect Diet
+        setHasRegularPlan(true);
+        setHasDietPlan(false);
+      }
       return;
     }
   };
 
   const handleKidsPress = () => {
-    let basePlan = null;
-    if (Array.isArray(selectedPlan)) {
-      basePlan = selectedPlan.find((k) => k === "Diet" || k === "Regular");
-    } else if (selectedPlan === "Diet" || selectedPlan === "Regular") {
-      basePlan = selectedPlan;
+    if (!has_diet_plan && !has_regular_plan) {
+      // Cannot select kids plan if no base plan selected
+      return;
     }
-    if (!kidsPlanSelected) {
-      if (!basePlan) {
-        return;
-      }
-      setKidsPlanSelected(true);
-      setMonthlyPlan([basePlan, "Kids"]);
-    } else {
-      setKidsPlanSelected(false);
-      if (basePlan) {
-        setMonthlyPlan([basePlan]);
-      } else {
-        setMonthlyPlan([""]);
-      }
-    }
+    setHasKidsPlan(!has_kids_plan);
   };
 
   if (loading) {
@@ -135,9 +137,12 @@ const MonthlyPlan = () => {
   return (
     <View className="flex-col">
       {foodPlans.map((plan: any) => {
-        const isSelected = Array.isArray(selectedPlan)
-          ? selectedPlan.includes(plan.key)
-          : selectedPlan === plan.key;
+        let isSelected = false;
+        if (plan.key === "Diet") {
+          isSelected = has_diet_plan;
+        } else if (plan.key === "Regular") {
+          isSelected = has_regular_plan;
+        }
         const screenWidth = Dimensions.get("window").width;
         const width = Math.min(Math.max(screenWidth * 0.45, 200), 110);
         const height = width * 1;
@@ -247,7 +252,7 @@ const MonthlyPlan = () => {
                 </Text>
               </View>
             </View>
-            {kidsPlanSelected ? (
+            {has_kids_plan ? (
               <View className="rounded-[5px] absolute bottom-4 right-3 bg-primary w-5 h-5" />
             ) : (
               <View className="rounded-[5px] absolute bottom-4 right-3 bg-base_color/10 w-5 h-5" />

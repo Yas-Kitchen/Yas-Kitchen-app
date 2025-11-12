@@ -1,22 +1,35 @@
 import { useGlobalContext } from "@/context/GlobalContext";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Linking, Text, TouchableOpacity, View, Alert } from "react-native";
 import PersonalDetails from "./PersonalDetails";
 import SubscriptionPlan from "./SubscriptionPlan";
 import { router } from "expo-router";
 import { useRegisterAPI } from "@/hooks/useRegisterAPI";
+import { getCuisineNameByID } from "@/utils/cuisine.util";
 
 const Review = () => {
   const [loading, setLoading] = useState(false);
-  const { monthlyPlan,userId, name, mobile, address, foodStyle, kidsPlanSelected } =
+  const [planName, setPlanName] = useState<string>("loading...");
+  const { monthlyPlan, userId, name, mobile, address, foodStyle } =
     useGlobalContext();
   const { confirmPrice } = useRegisterAPI();
+  console.log("Food style:", foodStyle);
 
+  useEffect(() => {
+    const fetchCuisineName = async () => {
+      if (foodStyle) {
+        const name = await getCuisineNameByID(foodStyle);
+        setPlanName(name);
+      }
+    };
+    fetchCuisineName();
+  }, [foodStyle]);
+
+  console.log("Plan Name", planName);
   const sendWhatsAppMessage = async () => {
     const phoneNumber = process.env.EXPO_PUBLIC_NUMBER;
-    const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} plan ${
-      kidsPlanSelected ? "with Kids plan and" : ""
-    } with ${foodStyle} Indian style. My address is ${address}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
+    const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} and
+    } with ${planName} Indian style. My address is ${address}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
 
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
       message
@@ -36,7 +49,7 @@ const Review = () => {
     try {
       await confirmPrice(userId);
       console.log(userId);
-      
+
       await sendWhatsAppMessage();
 
       Alert.alert(

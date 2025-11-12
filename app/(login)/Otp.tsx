@@ -23,6 +23,7 @@ const Otp = () => {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const { setUserId } = useGlobalContext();
   const inputRefs = useRef<TextInput[]>([]);
 
   useEffect(() => {
@@ -94,7 +95,7 @@ const Otp = () => {
     setLoading(true);
     try {
       const response = await authAPI.verifyOtp(mobile, otpCode);
-
+      setUserId(response.user?.id);
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       if (response.user?.role === "admin") {
@@ -125,7 +126,6 @@ const Otp = () => {
         router.replace("/(user)/user");
         return;
       }
-      
 
       if (response.user?.status === "initiated") {
         Alert.alert("Welcome!", "Please complete your profile to continue", [

@@ -1,9 +1,11 @@
 import { registerAPI } from "@/services/api/register.api";
 import { useState } from "react";
+import { useUserAPI } from "./useUserAPI";
 
 export const useRegisterAPI = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { updateUserStatus } = useUserAPI();
   const startOnboarding = async () => {
     try {
       setLoading(true);
@@ -56,9 +58,10 @@ export const useRegisterAPI = () => {
     }
   };
 
-  const confirmPrice = async () => {
+  const confirmPrice = async (id: string) => {
     try {
       setLoading(true);
+      await updateUserStatus(id!, "pending");
       const data = await registerAPI.confirmPrice();
       setError(null);
       return data;
@@ -79,6 +82,7 @@ export const useRegisterAPI = () => {
       setLoading(false);
     }
   };
+
   const getOnboardingUserData = async () => {
     setLoading(true);
     setError(null);
@@ -90,6 +94,7 @@ export const useRegisterAPI = () => {
       setError(err?.message || "Failed to get onboarding data");
     }
   };
+
   const getOnboardingSession = async () => {
     setLoading(true);
     setError(null);
@@ -97,6 +102,13 @@ export const useRegisterAPI = () => {
       const data = await registerAPI.getOnboardingSession();
       return data;
     } catch (err: any) {
+      const code = err?.response?.data?.detail?.error_code;
+      if (code === "ONBOARDING_004") {
+        console.debug("⚠️ No active onboarding session found, starting a new one...");
+        await registerAPI.startOnboarding();
+        const newSession = await registerAPI.getOnboardingSession();
+        return newSession;
+      }
       setError(err?.message || "Failed to fetch onboarding session");
     } finally {
       setLoading(false);

@@ -46,6 +46,25 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
 
+     if (error.response?.status === 422) {
+      const validationErrors: any[] = (error.response.data as any).detail || [];
+      
+      console.error("❌ Validation Error (422):");
+      validationErrors.forEach((err) => {
+        const fieldPath = err.loc.join(".");
+        console.error(`   Field: ${fieldPath}`);
+        console.error(`   Message: ${err.msg}`);
+        console.error(`   Input: ${JSON.stringify(err.input)}`);
+      });
+      
+      return Promise.reject(error);
+    }
+
+    if (__DEV__ && (error.response?.status === 404 || (error.response?.data as any)?.code === "ONBOARDING_004")) {
+      console.debug("Expected onboarding error:", error.response?.data || error.message);
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       const refreshToken = await AsyncStorage.getItem("refresh_token");
 

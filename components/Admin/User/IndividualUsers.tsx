@@ -1,5 +1,5 @@
 import { Feather } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -9,18 +9,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useGlobalContext } from "@/context/GlobalContext";
-import axios from "axios";
-import { storage } from "@/services/storage";
-
-interface UserTypes {
-  id?: string;
-  name: string;
-  number: string;
-  category: string;
-  status: string;
-  joindate: string;
-  onStatusChange?: () => void;
-}
+import { useUserAPI } from "@/hooks/useUserAPI";
+import { getCuisineNameByID } from "@/utils/cuisine.util";
+import { UserTypes } from "@/types/user.types";
 
 const IndividualUsers = ({
   id,
@@ -29,14 +20,24 @@ const IndividualUsers = ({
   category,
   status,
   joindate,
+  dietPlan,
   onStatusChange,
+  meal_plan_id
 }: UserTypes) => {
   const { setPopupNames, setSelectedUser } = useGlobalContext();
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
-  const [loading, setLoading] = useState(false);
-
+  const { loading, updateUserStatus, deleteUser } = useUserAPI();
+  const [cuisine, setCuisine] = useState<string | undefined>(undefined);
   const isAdminAccount = name.toLocaleLowerCase() === "admin";
+
+  useEffect(() => {
+    const fetchCuisine = async () => {
+      setCuisine(await getCuisineNameByID(category));
+    };
+    fetchCuisine();
+  }, [category]);
+  
 
   const statusOptions = [
     { value: "active", label: "Active", color: "#16A34A", bg: "#DCFCE7" },
@@ -44,20 +45,19 @@ const IndividualUsers = ({
     { value: "paused", label: "Paused", color: "#DC2626", bg: "#FEE2E2" },
   ];
 
-  const handleEdit = () => {
-    if (setSelectedUser) {
-      setSelectedUser({
-        id,
-        name,
-        number,
-        category,
-        status: currentStatus,
-        joindate,
-      });
-    }
-    setPopupNames("edituser");
-  };
-
+ const handleEdit = () => {
+  if (setSelectedUser) {
+    setSelectedUser({
+      id,
+      name,
+      mobile: number,
+      status: currentStatus,
+      joindate,
+      meal_plan_id: meal_plan_id || category, 
+    });
+  }
+  setPopupNames("edituser");
+};
   const handleStatusChange = async (newStatus: string) => {
     setShowStatusMenu(false);
 
@@ -65,72 +65,11 @@ const IndividualUsers = ({
       return;
     }
 
-    if (isAdminAccount && newStatus === "paused") {
-      Alert.alert(
-        "Cannot Deactivate Admin",
-        "The main admin account cannot be deactivated for security reasons"
-      );
-      return;
-    }
-    setLoading(true);
-    try {
-      const tokens = await storage.getTokens();
-
-      if (!tokens.accessToken) {
-        Alert.alert("Error", "Authentication required");
-        return;
-      }
-
-      let endpoint = "";
-      if (newStatus === "active") {
-        endpoint = `/admin/users/${id}/activate`;
-      } else if (newStatus === "paused") {
-        endpoint = `/admin/users/${id}/deactivate`;
-      } else {
-        Alert.alert("Info", "Cannot set status to pending manually");
-        return;
-      }
-
-      await axios.put(
-        `${process.env.EXPO_PUBLIC_API_URL}${endpoint}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${tokens.accessToken}`,
-          },
-        }
-      );
-
-      setCurrentStatus(newStatus);
-      Alert.alert("Success", `User status changed to ${newStatus}`, [
-        {
-          text: "OK",
-          onPress: () => {
-            if (onStatusChange) onStatusChange();
-          },
-        },
-      ]);
-    } catch (error: any) {
-      console.error(
-        "Status change error:",
-        error.response?.data || error.message
-      );
-      Alert.alert(
-        "Error",
-        error.response?.data?.message || "Failed to change user status"
-      );
-    } finally {
-      setLoading(false);
-    }
+    await updateUserStatus(id!, newStatus);
+    setCurrentStatus(newStatus);
   };
 
   const handleDelete = async () => {
-    if (isAdminAccount) {
-      Alert.alert(
-        "Cannot Delte Admin",
-        "The main admin account cannot be deleted for security reasons"
-      );
-    }
     Alert.alert("Delete User", `Are you sure you want to delete ${name}?`, [
       {
         text: "Cancel",
@@ -140,44 +79,8 @@ const IndividualUsers = ({
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          setLoading(true);
-          try {
-            const tokens = await storage.getTokens();
-
-            if (!tokens.accessToken) {
-              Alert.alert("Error", "Authentication required");
-              return;
-            }
-
-            await axios.delete(
-              `${process.env.EXPO_PUBLIC_API_URL}admin/users/${id}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${tokens.accessToken}`,
-                },
-              }
-            );
-
-            Alert.alert("Success", "User deleted successfully", [
-              {
-                text: "OK",
-                onPress: () => {
-                  if (onStatusChange) onStatusChange();
-                },
-              },
-            ]);
-          } catch (error: any) {
-            console.error(
-              "Delete error:",
-              error.response?.data || error.message
-            );
-            Alert.alert(
-              "Error",
-              error.response?.data?.message || "Failed to delete user"
-            );
-          } finally {
-            setLoading(false);
-          }
+          deleteUser(id!);
+          if (onStatusChange) onStatusChange();
         },
       },
     ]);
@@ -227,13 +130,13 @@ const IndividualUsers = ({
       <Text className="text-base_color text-xs">{number}</Text>
 
       <View className="flex-row items-center gap-4">
-        {!isAdminAccount && (
+        {!isAdminAccount && !dietPlan && (
           <Text className="p-2 rounded-full bg-primary/10 text-primary text-[10px]">
-            {category}
+            {cuisine}
           </Text>
         )}
 
-        {!isAdminAccount && (
+        {!isAdminAccount && !dietPlan && (
           <TouchableOpacity
             onPress={() => setShowStatusMenu(true)}
             className="p-2 rounded-full text-[10px] flex-row items-center gap-1"
@@ -266,7 +169,7 @@ const IndividualUsers = ({
           </TouchableOpacity>
         )}
 
-        {!isAdminAccount && (
+        {!isAdminAccount && !dietPlan && (
           <TouchableOpacity
             onPress={handleDelete}
             className="flex-row bg-primary/10 p-1 rounded-lg items-center gap-1"

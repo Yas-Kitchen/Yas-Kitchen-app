@@ -1,6 +1,7 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import { useMealsAPI } from "@/hooks/useMealsAPI";
 import { CuisineItemProps } from "@/types/meals.types";
+import { getCuisineNameByID } from "@/utils/cuisine.util";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -18,41 +19,33 @@ import Animated, {
 } from "react-native-reanimated";
 
 const FoodStyle = () => {
-  const { foodStyle, setFoodStyle, categories, setCategories } =
-    useGlobalContext();
-  const { fetchCuisineDetails } = useMealsAPI();
-  const [isLoading, setIsLoading] = useState(true);
+  const { setFoodStyle, categories, setCategories } = useGlobalContext();
+  const { fetchCuisineDetails, loading } = useMealsAPI();
+  const [cuisineName, setCuisineName] = useState("");
 
   useEffect(() => {
     const loadCategories = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetchCuisineDetails();
-
-        let cuisineData = [];
-        if (res?.data) {
-          cuisineData = res.data;
-        } else if (Array.isArray(res)) {
-          cuisineData = res;
-        }
-
-        setCategories(cuisineData);
-
-        if (cuisineData.length > 0 && !foodStyle) {
-          setFoodStyle(cuisineData[0].id);
-        }
-      } catch (err) {
-        console.error("Failed to fetch cuisines:", err);
-      } finally {
-        setIsLoading(false);
+      const data = await fetchCuisineDetails();
+      if (data && data.length > 0) {
+        setCategories(data);
       }
     };
-
     loadCategories();
     //eslint-disable-next-line
   }, []);
 
-  if (isLoading) {
+  useEffect(() => {
+    const updateFoodStyle = async () => {
+      if (cuisineName) {
+        const name = await getCuisineNameByID(cuisineName);
+        setFoodStyle(name);
+      }
+    };
+    updateFoodStyle();
+    //eslint-disable-next-line
+  }, [cuisineName]);
+
+  if (loading) {
     return (
       <View className="mt-3 items-center justify-center py-10">
         <ActivityIndicator size="large" color="#FF6F00" />
@@ -92,8 +85,8 @@ const FoodStyle = () => {
           <CuisineItem
             key={cuisine.id}
             cuisine={cuisine}
-            isSelected={foodStyle === cuisine.id}
-            onSelect={() => setFoodStyle(cuisine.id)}
+            isSelected={cuisineName === cuisine.id}
+            onSelect={() => setCuisineName(cuisine.id)}
             width={itemWidth}
             height={itemHeight}
           />

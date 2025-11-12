@@ -14,8 +14,7 @@
       "description": "Curd",
       "price": 30,
       "image": "curd.png",
-      "order_deadline": "Order before 12",
-      "featured": true
+      "order_deadline": "Order before 12"
     },
     {
       "id": "salad",
@@ -23,8 +22,7 @@
       "description": "Salad",
       "price": 25,
       "image": "salad.png",
-      "order_deadline": "Order before 12",
-      "quantity": 1
+      "order_deadline": "Order before 12"
     }
   ]
 }

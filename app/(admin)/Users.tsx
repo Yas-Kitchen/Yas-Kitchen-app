@@ -14,7 +14,7 @@ import {
 import { useUserAPI } from "@/hooks/useUserAPI";
 
 const Users = () => {
-  const { setPopupNames,categories } = useGlobalContext();
+  const { setPopupNames } = useGlobalContext();
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -30,15 +30,14 @@ const Users = () => {
     { value: "south_indian", label: "South Indian", icon: "coffee" },
   ];
 
-  console.log(categories);
-  
-
   useEffect(() => {
     getAllUsers();
+    //eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     applyFilters();
+    //eslint-disable-next-line
   }, [searchQuery, selectedFilter, users]);
 
   const applyFilters = () => {
@@ -91,6 +90,8 @@ const Users = () => {
   }
 
   const hasActiveFilters = searchQuery.trim() || selectedFilter !== "all";
+console.log(users);
+
 
   return (
     <ScrollView>
@@ -198,9 +199,10 @@ const Users = () => {
               id={user.id}
               name={user.name}
               number={user.phone_number}
-              category={user.cuisineName}
+              category={user.cuisine_type_id}
               status={user.status}
               joindate={user.created_at}
+              meal_plan_id={user.meal_plan_id}
               onStatusChange={getAllUsers}
               dietPlan={false}
             />

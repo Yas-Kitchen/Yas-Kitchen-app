@@ -45,7 +45,7 @@ export const registerAPI = {
   },
 
   updateProfile: async (name: string, address: string) => {
-    const response = await api.put(`users/profile`, {
+    const response = await api.put(`onboarding/edit-profile`, {
       name,
       address,
     });

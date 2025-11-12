@@ -6,7 +6,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 type EditProfileType ={
     header : string
     subheader : string
-    icon : string
+    icon : "user" | "map-pin"
 }
 
 const EditProfile = ({header,subheader,icon} : EditProfileType) => {

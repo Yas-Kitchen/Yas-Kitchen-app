@@ -1,13 +1,17 @@
 import { mealsAPI } from "@/services/api/meals.api";
 
-export const getCuisineNameByID = async (
-  cuisineId: string
-): Promise<string> => {
+let cachedCuisines: any[] | null = null;
+
+export const getCuisineNameByID = async (cuisineId: string): Promise<string> => {
   try {
-    const cuisines = await mealsAPI.getCuisineDetails();
-    const match = cuisines?.find((item: { id: string }) => item.id === cuisineId);
+    if (!cachedCuisines) {
+      cachedCuisines = await mealsAPI.getCuisineDetails();
+    }
+
+    const match = cachedCuisines!.find((item) => item.id === cuisineId);
     return match?.name || "Unknown";
-  } catch {
+  } catch (error) {
+    console.error("Failed to get cuisine name:", error);
     return "Unknown";
   }
 };

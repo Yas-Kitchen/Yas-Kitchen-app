@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 const PersonalDetails = () => {
-  const { name, mobile, address, foodStyle, setActiveStep } =
+  const { name, mobile, address, foodStyle, setActiveStep, setIsEditing } =
     useGlobalContext();
   const [cuisine, setCuisine] = useState<string | undefined>(undefined);
   useEffect(() => {
@@ -19,7 +19,12 @@ const PersonalDetails = () => {
         <Text className="font-semibold text-faded_black text-[14px]">
           Personal Details
         </Text>
-        <TouchableOpacity onPress={() => setActiveStep(1)}>
+        <TouchableOpacity
+          onPress={() => {
+            setIsEditing(true);
+            setActiveStep(1);
+          }}
+        >
           <Text className="text-primary font-medium">Edit</Text>
         </TouchableOpacity>
       </View>

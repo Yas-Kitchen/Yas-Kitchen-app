@@ -16,12 +16,7 @@ import {
 } from "react-native";
 import { useExtrasApi } from "@/hooks/useExtrasApi";
 import DateTimePicker from "@react-native-community/datetimepicker";
-
-interface AddSpecialsProps {
-  open: boolean;
-  onClose: () => void;
-  onSuccess?: () => void;
-}
+import { AddSpecialsProps } from "@/types/extras.types";
 
 const AddSpecials: React.FC<AddSpecialsProps> = ({
   open,
