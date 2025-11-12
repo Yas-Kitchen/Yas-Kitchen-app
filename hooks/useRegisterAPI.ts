@@ -26,7 +26,10 @@ export const useRegisterAPI = () => {
       setError(null);
       return data;
     } catch (err: any) {
-      console.log(err?.message || "Profile completion not working");
+      const errorMessage = err?.response?.data?.message || err?.message || "Profile completion failed";
+      console.error("Profile completion error:", errorMessage);
+      setError(errorMessage);
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -87,11 +90,13 @@ export const useRegisterAPI = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = registerAPI.getOnboardingUserData();
+      const data = await registerAPI.getOnboardingUserData();
       return data;
     } catch (err: any) {
       console.error("failed to get onboarding user data :", err);
       setError(err?.message || "Failed to get onboarding data");
+    } finally {
+      setLoading(false);
     }
   };
 

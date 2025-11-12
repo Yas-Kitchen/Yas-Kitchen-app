@@ -212,7 +212,7 @@ const Details = () => {
       }
 
       // 3️⃣ Handle cuisine selection if not done
-      const selectedCuisine = categories.find((c) => c.id === foodStyle);
+      const selectedCuisine = categories.find((c: any) => c.id === foodStyle);
       if (selectedCuisine && !session?.progress?.cuisine_selected) {
         console.log("🟢 Selecting cuisine...");
         await selectCuisine(selectedCuisine.id);
@@ -223,8 +223,9 @@ const Details = () => {
       console.log("✅ Onboarding flow completed:", session?.progress);
       setActiveStep(2);
     } catch (err: any) {
-      console.log("Error during onboarding:", err);
-      Alert.alert("Error", "Something went wrong. Please try again");
+      console.error("Error during onboarding:", err);
+      const errorMessage = err?.response?.data?.message || err?.message || "Something went wrong. Please try again";
+      Alert.alert("Error", errorMessage);
     }
   };
   const getMobileDigitsCount = () => {
