@@ -181,42 +181,25 @@ const Details = () => {
         session = await getOnboardingSession();
       }
 
-      // 2️⃣ Complete profile only if backend expects that step or step is undefined
+      // 2️⃣ Handle cuisine selection FIRST if we're at that step
+      const selectedCuisine = categories.find((c: any) => c.id === foodStyle);
+      if (session?.step === "cuisine_selection" && selectedCuisine) {
+        console.log("🟢 Selecting cuisine first (current step: cuisine_selection)...");
+        await selectCuisine(selectedCuisine.id);
+        session = await getOnboardingSession();
+      }
+
+      // 3️⃣ Complete profile if backend expects that step
       if (!session?.step || session?.step === "profile_completion") {
         console.log("🟢 Completing profile...");
-        try {
-          await profileCompletion(name, address);
-        } catch (error: any) {
-          const code = error.response?.data?.detail?.error_code;
-          if (code === "ONBOARDING_014") {
-            console.warn("⚠️ Invalid step (cuisine_selection), using updateProfile fallback...");
-            await updateProfile(name, address);
-          } else {
-            throw error;
-          }
-        }
+        await profileCompletion(name, address);
         session = await getOnboardingSession();
-      } else if (
-        !session?.progress?.profile_complete &&
-        ["cuisine_selection", "plans_selection"].includes(session?.step)
-      ) {
-        console.log(
-          "⚠️ Backend skipped profile step, using updateProfile instead..."
-        );
+      } else if (session?.step === "plan_selection" && !session?.progress?.profile_complete) {
+        console.log("⚠️ Backend at plan_selection but profile not complete, using updateProfile...");
         await updateProfile(name, address);
         session = await getOnboardingSession();
       } else {
-        console.log(
-          `⚠️ Skipping profile completion (current step: ${session?.step})`
-        );
-      }
-
-      // 3️⃣ Handle cuisine selection if not done
-      const selectedCuisine = categories.find((c: any) => c.id === foodStyle);
-      if (selectedCuisine && !session?.progress?.cuisine_selected) {
-        console.log("🟢 Selecting cuisine...");
-        await selectCuisine(selectedCuisine.id);
-        session = await getOnboardingSession();
+        console.log(`⚠️ Skipping profile completion (current step: ${session?.step})`);
       }
 
       // 4️⃣ Move forward
