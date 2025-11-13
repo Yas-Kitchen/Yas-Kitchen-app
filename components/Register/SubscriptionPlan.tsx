@@ -1,21 +1,8 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import { Text, TouchableOpacity, View } from "react-native";
 
-const SubscriptionPlan = () => {
-  const { monthlyPlan, setActiveStep, setIsEditing } = useGlobalContext();
-  const getPrice = () => {
-    if (!Array.isArray(monthlyPlan)) return 0;
-
-    let price = 0;
-
-    monthlyPlan.forEach((planKey) => {
-      if (planKey === "Regular") price += 80;
-      if (planKey === "Diet") price += 100;
-      if (planKey === "Kids") price += 25;
-    });
-
-    return price;
-  };
+const SubscriptionPlan = ({ plans, price }: { plans: string; price: string }) => {
+  const { setActiveStep, setIsEditing } = useGlobalContext();
 
   return (
     <View className="bg-base_color/10 rounded-2xl p-5">
@@ -38,11 +25,7 @@ const SubscriptionPlan = () => {
             Selected Plan :
           </Text>
           <Text className="ml-2 web:text-[10px]">
-            {Array.isArray(monthlyPlan)
-              ? monthlyPlan.length === 2
-                ? `${monthlyPlan[0]} with ${monthlyPlan[1]} plan`
-                : `${monthlyPlan[0]} plan `
-              : monthlyPlan}
+            {plans || "Loading..."}
           </Text>
         </View>
         <View className="flex-row mt-5">
@@ -50,7 +33,7 @@ const SubscriptionPlan = () => {
             Monthly Price :
           </Text>
           <Text className="mx-2 text-primary web:text-[10px]">
-            {getPrice()}/month
+            {price || "Loading..."}
           </Text>
         </View>
         <View className="flex-row mt-5">

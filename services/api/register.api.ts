@@ -31,7 +31,7 @@ export const registerAPI = {
 
     return response.data;
   },
-  
+
   confirmPrice: async () => {
     const response = await api.post(`onboarding/confirm-pricing`, {
       confirmed: true,
@@ -44,16 +44,38 @@ export const registerAPI = {
     return response.data;
   },
 
-  updateProfile: async (name: string, address: string) => {
+  updateProfile: async (
+    name: string,
+    address: string,
+    cuisine_type_id: string | undefined
+  ) => {
     const response = await api.put(`onboarding/edit-profile`, {
       name,
       address,
+      cuisine_type_id,
     });
+    return response.data;
+  },
+
+  updatePlan: async (planIds: string | string[]) => {
+    const selectedPlans = Array.isArray(planIds)
+      ? planIds.map((p) => p.toLowerCase())
+      : [planIds.toLowerCase()];
+
+    const response = await api.put(`onboarding/edit-plans`, {
+      selected_plans: selectedPlans,
+    });
+
     return response.data;
   },
 
   getOnboardingSession: async () => {
     const response = await api.get(`onboarding/session`);
+    return response.data;
+  },
+
+  getReviewData: async () => {
+    const response = await api.get(`onboarding/review-data`);
     return response.data;
   },
 };

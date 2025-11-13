@@ -27,6 +27,8 @@ const Details = () => {
     categories,
     setFoodStyle,
     isEditing,
+    setIsEditing,
+    activeStep
   } = useGlobalContext();
   const [nameLength, setNameLength] = useState(name?.length || 0);
   const [addressLength, setAddressLength] = useState(address?.length || 0);
@@ -37,37 +39,66 @@ const Details = () => {
     updateProfile,
     getOnboardingSession,
     getOnboardingUserData,
+    loading,
   } = useRegisterAPI();
 
   React.useEffect(() => {
     (async () => {
       try {
-        const onboarding = await getOnboardingUserData();
-
-        if (onboarding?.user) {
-          const userData = onboarding.user;
-          if (userData.name) setName(userData.name);
-          if (userData.address) setAddress(userData.address);
-          if (userData.phone_number) setMobile(userData.phone_number);
-          if (userData.cuisine_type_id) setFoodStyle(userData.cuisine_type_id);
-        }
+        if (activeStep === 3) return;
         if (isEditing) return;
 
-        const session = await getOnboardingSession();
+        let session = null;
 
-        if (
-          session?.progress?.profile_complete &&
-          session?.progress?.cuisine_selected
-        ) {
-          setActiveStep(2);
-          if (session?.progress?.plans_selected) {
-            setActiveStep(3);
+        try {
+          session = await getOnboardingSession();
+        } catch (err: any) {
+          const code =
+            err?.response?.data?.detail?.error_code ||
+            err?.response?.data?.error_code;
+
+          if (code === "ONBOARDING_004") {
+            console.log("No active session, starting a new one...");
+            await startOnboarding();
+            session = await getOnboardingSession();
+          } else {
+            throw err;
           }
-        } else if (
-          onboarding?.user?.cuisine_type_id &&
-          !session?.progress?.cuisine_selected
-        ) {
-          await selectCuisine(onboarding.user.cuisine_type_id);
+        }
+
+        const allowUserLoad =
+          session?.current_step === "profile_completion" ||
+          session?.current_step === "plan_selection" ||
+          session?.current_step === "pricing_confirmation" ||
+          session?.current_step === "completed";
+
+        if (allowUserLoad) {
+          const onboarding = await getOnboardingUserData();
+
+          if (onboarding?.user) {
+            if (onboarding.user.name) setName(onboarding.user.name);
+            if (onboarding.user.address) setAddress(onboarding.user.address);
+            if (onboarding.user.phone_number)
+              setMobile(onboarding.user.phone_number);
+            if (onboarding.user.cuisine_type_id)
+              setFoodStyle(onboarding.user.cuisine_type_id);
+          }
+        }
+
+        switch (session?.current_step) {
+          case "cuisine_selection":
+            setActiveStep(1);
+            break;
+          case "profile_completion":
+          case "plan_selection":
+            if (activeStep < 3) setActiveStep(2);
+            break;
+
+          case "pricing_confirmation":
+            setActiveStep(3);
+            break;
+          default:
+            break;
         }
       } catch (error) {
         console.log("Failed to fetch session or user:", error);
@@ -165,50 +196,59 @@ const Details = () => {
       );
       return;
     }
-
     try {
+      let session = await getOnboardingSession();
+
       if (isEditing) {
-        await updateProfile(name, address);
+        const selectedCuisine = categories.find(
+          (c) => c.id === foodStyle || c.label === foodStyle
+        );
+
+        await updateProfile(
+          name,
+          address,
+          selectedCuisine ? selectedCuisine.id : undefined
+        );
+
+        setIsEditing(false);
         setActiveStep(3);
         return;
       }
 
-      // 1️⃣ Ensure a session exists
-      let session = await getOnboardingSession();
-      if (!session || session.status === "not_started") {
-        console.log("🟢 Creating new onboarding session...");
-        await startOnboarding();
-        session = await getOnboardingSession();
-      }
+      if (session.current_step === "cuisine_selection") {
+        const selectedCuisine = categories.find(
+          (c) => c.id === foodStyle || c.label === foodStyle
+        );
 
-      // 2️⃣ Handle cuisine selection FIRST if we're at that step
-      const selectedCuisine = categories.find((c: any) => c.id === foodStyle);
-      if (session?.step === "cuisine_selection" && selectedCuisine) {
-        console.log("🟢 Selecting cuisine first (current step: cuisine_selection)...");
+        if (!selectedCuisine) {
+          Alert.alert("Error", "Selected cuisine not found.");
+          return;
+        }
+
         await selectCuisine(selectedCuisine.id);
-        session = await getOnboardingSession();
+        await profileCompletion(trimmedName, trimmedAddress);
+
+        setActiveStep(2);
+        return;
+      }
+      if (session.current_step === "profile_completion") {
+        await profileCompletion(trimmedName, trimmedAddress);
+        setActiveStep(2);
+        return;
       }
 
-      // 3️⃣ Complete profile if backend expects that step
-      if (!session?.step || session?.step === "profile_completion") {
-        console.log("🟢 Completing profile...");
-        await profileCompletion(name, address);
-        session = await getOnboardingSession();
-      } else if (session?.step === "plan_selection" && !session?.progress?.profile_complete) {
-        console.log("⚠️ Backend at plan_selection but profile not complete, using updateProfile...");
-        await updateProfile(name, address);
-        session = await getOnboardingSession();
-      } else {
-        console.log(`⚠️ Skipping profile completion (current step: ${session?.step})`);
+      if (session.current_step === "plan_selection") {
+        setActiveStep(2);
+        return;
       }
 
-      // 4️⃣ Move forward
-      console.log("✅ Onboarding flow completed:", session?.progress);
-      setActiveStep(2);
+      if (session.current_step === "pricing_confirmation") {
+        setActiveStep(3);
+        return;
+      }
     } catch (err: any) {
-      console.error("Error during onboarding:", err);
-      const errorMessage = err?.response?.data?.message || err?.message || "Something went wrong. Please try again";
-      Alert.alert("Error", errorMessage);
+      console.log("Error during onboarding : ", err);
+      Alert.alert("Error", "Something went wrong. Please try again");
     }
   };
   const getMobileDigitsCount = () => {
@@ -320,7 +360,7 @@ const Details = () => {
                 !isFormValid ? "text-black/20" : "text-white"
               }`}
             >
-              Continue
+              {loading ? "Loading..." : "Continue"}
             </Text>
           </TouchableOpacity>
         </View>

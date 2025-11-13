@@ -46,6 +46,8 @@ interface GlobalContextType {
   setSelectedSpecialItems: React.Dispatch<React.SetStateAction<any[]>>;
   userProfile: string;
   setUserProfile: React.Dispatch<React.SetStateAction<string>>;
+  monthlyPlan: any[];
+  setMonthlyPlan: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -77,6 +79,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const mealListRef = useRef<MealListRef | null>(null);
   const [selectedSpecialItems, setSelectedSpecialItems] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState("");
+  const [monthlyPlan, setMonthlyPlan] = useState<any[]>([]);
 
   const values: GlobalContextType = {
     mobile,
@@ -122,6 +125,8 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     selectedSpecialItems,
     userProfile,
     setUserProfile,
+    monthlyPlan,
+    setMonthlyPlan,
   };
 
   return (

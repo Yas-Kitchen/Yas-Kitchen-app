@@ -9,11 +9,15 @@ export const useRegisterAPI = () => {
   const startOnboarding = async () => {
     try {
       setLoading(true);
+      console.log("🔥 Calling startOnboarding...");
       const data = await registerAPI.startOnboarding();
+      console.log("✅ startOnboarding Response:", data);
       setError(null);
       return data;
     } catch (err: any) {
+      console.log(" startOnboarding FAILED:", err?.response?.data || err);
       setError(err?.message || "Failed to start onboarding");
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -26,7 +30,10 @@ export const useRegisterAPI = () => {
       setError(null);
       return data;
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || "Profile completion failed";
+      const errorMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Profile completion failed";
       console.error("Profile completion error:", errorMessage);
       setError(errorMessage);
       throw err;
@@ -61,6 +68,19 @@ export const useRegisterAPI = () => {
     }
   };
 
+  const updatePlan = async (planId: string | string[]) => {
+    try {
+      setLoading(true);
+      const data = await registerAPI.updatePlan(planId);
+      setError(null);
+      return data;
+    } catch (err: any) {
+      console.log(err?.message || "Failed to update plan");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const confirmPrice = async (id: string) => {
     try {
       setLoading(true);
@@ -73,10 +93,14 @@ export const useRegisterAPI = () => {
     }
   };
 
-  const updateProfile = async (name: string, address: string) => {
+  const updateProfile = async (
+    name: string,
+    address: string,
+    cuisineId: string | undefined
+  ) => {
     try {
       setLoading(true);
-      const data = await registerAPI.updateProfile(name, address);
+      const data = await registerAPI.updateProfile(name, address, cuisineId);
       setError(null);
       return data;
     } catch (err: any) {
@@ -101,20 +125,51 @@ export const useRegisterAPI = () => {
   };
 
   const getOnboardingSession = async () => {
-    setLoading(true);
-    setError(null);
     try {
+      setLoading(true);
+      setError(null);
+
       const data = await registerAPI.getOnboardingSession();
       return data;
     } catch (err: any) {
       const code = err?.response?.data?.detail?.error_code;
+
       if (code === "ONBOARDING_004") {
-        console.debug("⚠️ No active onboarding session found, starting a new one...");
+        console.debug("No active session, creating one...");
+
         await registerAPI.startOnboarding();
-        const newSession = await registerAPI.getOnboardingSession();
+
+        await new Promise((res) => setTimeout(res, 300));
+
+        const newSession = await registerAPI
+          .getOnboardingSession()
+          .catch((e: any) => {
+            console.log(
+              "Even after creating, session fetch failed:",
+              e?.response?.data || e
+            );
+            throw e;
+          });
+
         return newSession;
       }
+
       setError(err?.message || "Failed to fetch onboarding session");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getReviewData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await registerAPI.getReviewData();
+      return data;
+    } catch (err: any) {
+      console.log("Failed to get Review data", err);
+      setError(err?.message || "Failed to get review data");
     } finally {
       setLoading(false);
     }
@@ -133,5 +188,7 @@ export const useRegisterAPI = () => {
     setError,
     updateProfile,
     getOnboardingSession,
+    getReviewData,
+    updatePlan,
   };
 };

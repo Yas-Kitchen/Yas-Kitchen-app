@@ -46,9 +46,9 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
 
-     if (error.response?.status === 422) {
+    if (error.response?.status === 422) {
       const validationErrors: any[] = (error.response.data as any).detail || [];
-      
+
       console.error("❌ Validation Error (422):");
       validationErrors.forEach((err) => {
         const fieldPath = err.loc.join(".");
@@ -56,12 +56,16 @@ api.interceptors.response.use(
         console.error(`   Message: ${err.msg}`);
         console.error(`   Input: ${JSON.stringify(err.input)}`);
       });
-      
+
       return Promise.reject(error);
     }
 
-    if (__DEV__ && (error.response?.status === 404 || (error.response?.data as any)?.code === "ONBOARDING_004")) {
-      console.debug("Expected onboarding error:", error.response?.data || error.message);
+    const respData: any = error.response?.data;
+
+    const errorCode = respData?.detail?.error_code || respData?.error_code;
+
+    if (errorCode === "ONBOARDING_004") {
+      console.debug("Expected onboarding error:", error.response?.data);
       return Promise.reject(error);
     }
 

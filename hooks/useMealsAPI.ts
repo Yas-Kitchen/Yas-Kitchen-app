@@ -13,6 +13,7 @@ export const useMealsAPI = () => {
     setError(null);
     try {
       const data = await mealsAPI.getCuisineDetails();
+
       let cuisineData = [];
 
       if (Array.isArray(data)) {

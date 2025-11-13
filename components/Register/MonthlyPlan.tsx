@@ -1,6 +1,6 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import { useMealsAPI } from "@/hooks/useMealsAPI";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
@@ -19,8 +19,11 @@ const MonthlyPlan = () => {
     setHasRegularPlan,
     has_kids_plan,
     setHasKidsPlan,
+    monthlyPlan,
+    setMonthlyPlan,
   } = useGlobalContext();
-  const { monthlyPlan, fetchPlanDetails, loading } = useMealsAPI();
+  const { fetchPlanDetails, loading } = useMealsAPI();
+  const [allPlans, setAllPlans] = useState<any[]>([]);
 
   const animationValues = useRef<{ [key: string]: Animated.Value }>({}).current;
 
@@ -32,19 +35,21 @@ const MonthlyPlan = () => {
   };
 
   useEffect(() => {
-    fetchPlanDetails();
-    // eslint-disable-next-line
+    const fetchData = async () => {
+      const data = await fetchPlanDetails();
+      setAllPlans(data);
+    };
+    fetchData();
+    //eslint-disable-next-line
   }, []);
 
   const foodPlans = useMemo(() => {
-    if (!monthlyPlan || !Array.isArray(monthlyPlan)) return [];
-    return monthlyPlan.filter((plan: any) => !plan.special);
-  }, [monthlyPlan]);
+    return allPlans.filter((plan: any) => plan.type === "main");
+  }, [allPlans]);
 
   const kidsPlan = useMemo(() => {
-    if (!monthlyPlan || !Array.isArray(monthlyPlan)) return null;
-    return monthlyPlan.find((plan: any) => plan.special);
-  }, [monthlyPlan]);
+    return allPlans.find((plan: any) => plan.type === "addon");
+  }, [allPlans]);
 
   foodPlans.forEach((plan: any) => {
     ensureAnimation(plan.key);
@@ -55,12 +60,14 @@ const MonthlyPlan = () => {
   useEffect(() => {
     foodPlans.forEach((plan: any) => {
       const anim = animationValues[plan.key] || ensureAnimation(plan.key);
+
       let isSelected = false;
       if (plan.key === "Diet") {
         isSelected = has_diet_plan;
       } else if (plan.key === "Regular") {
         isSelected = has_regular_plan;
       }
+
       Animated.timing(anim, {
         toValue: isSelected ? 1 : 0,
         duration: 300,
@@ -74,20 +81,44 @@ const MonthlyPlan = () => {
       duration: 300,
       useNativeDriver: false,
     }).start();
-
     // eslint-disable-next-line
   }, [has_diet_plan, has_regular_plan, has_kids_plan, foodPlans]);
+
+  useEffect(() => {
+    const selectedPlans: any[] = [];
+
+    if (has_diet_plan) {
+      const dietPlan = allPlans.find((p: any) => p.key === "Diet");
+      if (dietPlan) selectedPlans.push(dietPlan);
+    }
+
+    if (has_regular_plan) {
+      const regularPlan = allPlans.find((p: any) => p.key === "Regular");
+      if (regularPlan) selectedPlans.push(regularPlan);
+    }
+
+    if (has_kids_plan) {
+      const kids = allPlans.find((p: any) => p.key === "Kids");
+      if (kids) selectedPlans.push(kids);
+    }
+
+    const isDifferent =
+      selectedPlans.length !== monthlyPlan.length ||
+      selectedPlans.some((p, i) => p.key !== monthlyPlan[i]?.key);
+
+    if (isDifferent) setMonthlyPlan(selectedPlans);
+    //eslint-disable-next-line
+  }, [has_diet_plan, has_regular_plan, has_kids_plan, allPlans]);
+
 
   const handlePress = (plan: any) => {
     if (plan.key === "Diet") {
       if (has_diet_plan) {
-        // If Diet is already selected, deselect it and kids plan if no other plan selected
         setHasDietPlan(false);
         if (!has_regular_plan) {
           setHasKidsPlan(false);
         }
       } else {
-        // Select Diet and deselect Regular
         setHasDietPlan(true);
         setHasRegularPlan(false);
       }
@@ -95,13 +126,11 @@ const MonthlyPlan = () => {
     }
     if (plan.key === "Regular") {
       if (has_regular_plan) {
-        // If Regular is already selected, deselect it and kids plan if no other plan selected
         setHasRegularPlan(false);
         if (!has_diet_plan) {
           setHasKidsPlan(false);
         }
       } else {
-        // Select Regular and deselect Diet
         setHasRegularPlan(true);
         setHasDietPlan(false);
       }
@@ -111,7 +140,6 @@ const MonthlyPlan = () => {
 
   const handleKidsPress = () => {
     if (!has_diet_plan && !has_regular_plan) {
-      // Cannot select kids plan if no base plan selected
       return;
     }
     setHasKidsPlan(!has_kids_plan);
@@ -173,7 +201,7 @@ const MonthlyPlan = () => {
               <View className="overflow bg-[#F0F1EB] pr-10 flex-row">
                 <Image
                   style={{ height, width }}
-                  source={{ uri: plan.image }}
+                  source={{ uri: plan.image_url }}
                   className="max-w-28 max-h-32 web:max-w-24 web:max-h-24"
                 />
                 <View className="flex-row pt-6 gap-1 ml-2 w-[75%]">
@@ -231,7 +259,7 @@ const MonthlyPlan = () => {
                 height: Dimensions.get("window").width * 0.25,
                 width: Dimensions.get("window").width * 0.25,
               }}
-              source={{ uri: kidsPlan.image }}
+              source={{ uri: kidsPlan.image_url }}
             />
             <View className="flex-row gap-1 pt-4">
               <View className="flex-col w-1/2">

@@ -31,6 +31,7 @@ const FoodStyle = () => {
       }
     };
     loadCategories();
+    
     //eslint-disable-next-line
   }, []);
 

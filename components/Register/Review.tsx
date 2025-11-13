@@ -6,31 +6,60 @@ import SubscriptionPlan from "./SubscriptionPlan";
 import { router } from "expo-router";
 import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 import { getCuisineNameByID } from "@/utils/cuisine.util";
+import { ReviewData } from "@/types/register.types";
 
 const Review = () => {
   const [loading, setLoading] = useState(false);
   const [planName, setPlanName] = useState<string>("loading...");
-  const { monthlyPlan, userId, name, mobile, address, foodStyle } =
-    useGlobalContext();
-  const { confirmPrice } = useRegisterAPI();
-  console.log("Food style:", foodStyle);
+  const [data, setData] = useState<ReviewData | null>(null);
+  const { userId, activeStep } = useGlobalContext();
+  const { confirmPrice, getReviewData } = useRegisterAPI();
+
+  const PLAN_NAME_MAP: Record<string, string> = {
+    regular: "Regular Plan",
+    diet: "Diet Plan",
+    kids: "Kids Plan",
+  };
+
+  const user = data?.user;
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        if (activeStep === 3) {
+          const reviewData = await getReviewData();
+          setData(reviewData);
+        }
+      } catch (err) {
+        console.log("Error loading review:", err);
+      }
+    };
+
+    load();
+    //eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const fetchCuisineName = async () => {
-      if (foodStyle) {
-        const name = await getCuisineNameByID(foodStyle);
+      if (data?.cuisine.id) {
+        const name = await getCuisineNameByID(data?.cuisine.id);
         setPlanName(name);
       }
     };
     fetchCuisineName();
-  }, [foodStyle]);
+  }, [data]);
 
-  console.log("Plan Name", planName);
+  const formattedPlanName = (data?.plans.selected_plans || [])
+    .map((key) => PLAN_NAME_MAP[key] || key)
+    .join(" with ");
+
+  const formattedPrice = data?.plans.pricing_breakdown?.total_cost
+    ? `${data.plans.pricing_breakdown.total_cost} AED/month`
+    : "0 AED";
+
   const sendWhatsAppMessage = async () => {
     const phoneNumber = process.env.EXPO_PUBLIC_NUMBER;
-    const message = `Hello, my name is ${name}. I would like to subscribe to the ${monthlyPlan} and
-    } with ${planName} Indian style. My address is ${address}, and my mobile number is ${mobile}. Please let me know the next steps to book the plan.`;
-
+    const message = `Hello, my name is ${data?.user.name}. I would like to subscribe to the ${formattedPlanName} plan under ${planName} cuisine. My address is ${data?.user.address}, and my mobile number is ${data?.user.phone_number}`;
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
       message
     )}`;
@@ -48,8 +77,6 @@ const Review = () => {
   const handleContinue = async () => {
     try {
       await confirmPrice(userId);
-      console.log(userId);
-
       await sendWhatsAppMessage();
 
       Alert.alert(
@@ -76,8 +103,13 @@ const Review = () => {
       <Text className="text-faded_black text-[16px] font-semibold">
         Review your information
       </Text>
-      <PersonalDetails />
-      <SubscriptionPlan />
+      <PersonalDetails
+        name={user?.name}
+        mobile={user?.phone_number}
+        address={user?.address}
+        foodStyle={planName}
+      />
+      <SubscriptionPlan plans={formattedPlanName} price={formattedPrice} />
       <TouchableOpacity
         onPress={handleContinue}
         disabled={loading}

@@ -102,19 +102,19 @@ const Index = () => {
         <Stepper activeStep={activeStep} />
 
         <View style={{ minHeight: 400, position: "relative" }}>
-          {(activeStep === 1 || activeStep === 0 || activeStep === 2) && (
+          {activeStep === 1 && (
             <Animated.View style={detailsStyle}>
               <Details />
             </Animated.View>
           )}
 
-          {(activeStep === 2 || activeStep === 1 || activeStep === 3) && (
+          {activeStep === 2 && (
             <Animated.View style={planStyle}>
               <Plan />
             </Animated.View>
           )}
 
-          {(activeStep === 3 || activeStep === 2) && (
+          {activeStep === 3 && (
             <Animated.View style={reviewStyle}>
               <Review />
             </Animated.View>

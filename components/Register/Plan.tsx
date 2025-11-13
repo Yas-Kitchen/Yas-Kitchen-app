@@ -3,11 +3,20 @@ import { Text, TouchableOpacity, View } from "react-native";
 import MonthlyPlan from "./MonthlyPlan";
 import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 const Plan = () => {
-  const { setActiveStep, monthlyPlan: selectedPlan } = useGlobalContext();
-  const { selectPlan } = useRegisterAPI();
+  const {
+    setActiveStep,
+    monthlyPlan: selectedPlan,
+    isEditing,
+  } = useGlobalContext();
+  const { selectPlan, updatePlan, loading } = useRegisterAPI();
   const handleContinue = async () => {
-    if (selectedPlan) {
-      await selectPlan(selectedPlan);
+    if (isEditing) {
+      await updatePlan(selectedPlan.map((p) => p.key.toLowerCase()));
+      setActiveStep(3);
+      return;
+    }
+    if (selectedPlan.length > 0) {
+      await selectPlan(selectedPlan.map((p) => p.key.toLowerCase()));
     }
     setActiveStep(3);
   };
@@ -31,7 +40,9 @@ const Plan = () => {
           }}
           className="bg-primary mt-5 w-1/2 p-5 rounded-2xl"
         >
-          <Text className="text-center text-white">Continue</Text>
+          <Text className="text-center text-white">
+            {loading ? "Loading..." : "Continue"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
