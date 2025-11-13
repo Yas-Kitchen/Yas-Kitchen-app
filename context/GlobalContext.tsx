@@ -48,6 +48,7 @@ interface GlobalContextType {
   setUserProfile: React.Dispatch<React.SetStateAction<string>>;
   monthlyPlan: any[];
   setMonthlyPlan: React.Dispatch<React.SetStateAction<any[]>>;
+  getMonthlyPlanText: () => string;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -80,6 +81,14 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedSpecialItems, setSelectedSpecialItems] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState("");
   const [monthlyPlan, setMonthlyPlan] = useState<any[]>([]);
+
+  const getMonthlyPlanText = () => {
+    if (has_regular_plan && has_kids_plan) return "Kids plan with Regular";
+    if (has_regular_plan) return "Regular Plan";
+    if (has_diet_plan) return "Diet Plan";
+    if (has_kids_plan) return "Kids Plan"; // If backend ever sends it alone
+    return "No plan selected";
+  };
 
   const values: GlobalContextType = {
     mobile,
@@ -127,6 +136,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     setUserProfile,
     monthlyPlan,
     setMonthlyPlan,
+    getMonthlyPlanText,
   };
 
   return (

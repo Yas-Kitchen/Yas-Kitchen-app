@@ -12,8 +12,16 @@ import { ScrollView, Text, View } from "react-native";
 const Home = () => {
   const menu = useMockMenu();
   const { fetchUserData, user, loading } = useUserAPI();
-  const { setName, setAddress, setFoodStyle, setMobile, setUserProfile } =
-    useGlobalContext();
+  const {
+    setName,
+    setAddress,
+    setHasDietPlan,
+    setHasKidsPlan,
+    setHasRegularPlan,
+    setFoodStyle,
+    setMobile,
+    setUserProfile,
+  } = useGlobalContext();
 
   const currentDate = new Date();
   const weekName = currentDate
@@ -35,6 +43,9 @@ const Home = () => {
         const foodStyle = await getCuisineNameByID(user.cuisine_type_id);
         setFoodStyle(foodStyle);
         setUserProfile(user.profile_image_url);
+        setHasDietPlan(user.has_diet_plan);
+        setHasRegularPlan(user.has_regular_plan);
+        setHasKidsPlan(user.has_kids_plan);
       }
     };
     loadUser();

@@ -9,9 +9,9 @@ export const useRegisterAPI = () => {
   const startOnboarding = async () => {
     try {
       setLoading(true);
-      console.log("🔥 Calling startOnboarding...");
+      console.log("Calling startOnboarding...");
       const data = await registerAPI.startOnboarding();
-      console.log("✅ startOnboarding Response:", data);
+      console.log("startOnboarding Response:", data);
       setError(null);
       return data;
     } catch (err: any) {

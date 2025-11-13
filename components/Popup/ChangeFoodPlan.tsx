@@ -1,13 +1,13 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import React, { useEffect, useRef, useState } from "react";
 import {
-    Animated,
-    Linking,
-    Platform,
-    Pressable,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Linking,
+  Platform,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import MonthlyPlan from "../Register/MonthlyPlan";
 
@@ -20,7 +20,7 @@ const ChangeFoodPlan: React.FC<LeaveReqProps> = ({ open, onClose }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
-  const { monthlyPlan, kidsPlanSelected } = useGlobalContext();
+  const { getMonthlyPlanText, has_kids_plan } = useGlobalContext();
 
   useEffect(() => {
     if (open) {
@@ -76,9 +76,11 @@ const ChangeFoodPlan: React.FC<LeaveReqProps> = ({ open, onClose }) => {
         <TouchableOpacity
           className="p-6 w-1/2 bg-primary rounded-2xl"
           onPress={() => {
-            const message = kidsPlanSelected
-              ? `Hi! I want to choose ${monthlyPlan} plan with kids plan`
-              : `Hi! I want to choose the following plan: ${monthlyPlan}`;
+            const planText = getMonthlyPlanText();
+
+            const message = has_kids_plan
+              ? `Hi! I want to update my plan to: ${planText} (including Kids Plan)`
+              : `Hi! I want to update my plan to: ${planText}`;
 
             const phoneNumber = "918547266801";
             const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(

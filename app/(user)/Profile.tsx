@@ -17,15 +17,17 @@ import { useUserAPI } from "@/hooks/useUserAPI";
 import * as ImagePicker from "expo-image-picker";
 
 const Profile = () => {
-  const { name, mobile, address, foodStyle, monthlyPlan, kidsPlanSelected, userProfile } =
+  const { name, mobile, address, foodStyle, getMonthlyPlanText, userProfile } =
     useGlobalContext();
 
-  const [profileImage, setProfileImage] = useState<string | null>(userProfile || null);
+  const [profileImage, setProfileImage] = useState<string | null>(
+    userProfile || null
+  );
   const [loading, setLoading] = useState(false);
 
   const { setProfileImage: setProfileImageAPI } = useUserAPI();
 
-   useEffect(() => {
+  useEffect(() => {
     if (userProfile) {
       setProfileImage(userProfile);
     }
@@ -96,9 +98,7 @@ const Profile = () => {
           <MainSetting
             icon="fast-food-outline"
             header="Monthly Food Plan"
-            subheader={
-              kidsPlanSelected ? `Kidsplan with ${monthlyPlan}` : monthlyPlan
-            }
+            subheader={getMonthlyPlanText()}
           />
           <View className="h-[1px] w-full bg-base_color/10" />
           <MainSetting
@@ -133,5 +133,3 @@ const Profile = () => {
 };
 
 export default Profile;
-
- 
