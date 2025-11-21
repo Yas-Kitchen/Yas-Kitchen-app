@@ -44,9 +44,53 @@ export interface Meal {
   updated_at: string;
 }
 
+export interface WeeklyMenuMeal {
+  meal_id: string;
+  slot_id?: string;
+  name: string;
+  description?: string;
+  availability?: string;
+  rating?: number;
+  image?: string | null;
+}
+
+export type WeeklyMenuDay = Record<string, WeeklyMenuMeal | undefined>;
+
+export type WeeklyMenu = Record<string, WeeklyMenuDay>;
+
+export interface MealPlan {
+  id: string;
+  name: string;
+  description?: string | null;
+  category_id: string;
+  cuisine_type_id: string;
+  price: string | number;
+  is_active: boolean;
+  weekly_menu: WeeklyMenu;
+}
+
+export interface AggregatedWeeklyMenuMeal extends WeeklyMenuMeal {
+  mealPlanId: string;
+}
+
+export type AggregatedWeeklyMenu = Record<
+  string,
+  Record<string, AggregatedWeeklyMenuMeal | undefined>
+>;
+
+export interface SelectedMealDetails {
+  mealId: string;
+  mealPlanId: string;
+  day: string;
+  timeSlot: string;
+  name: string;
+  description?: string;
+  image?: string | null;
+}
+
 //  Meal List Interfaces
 export interface MealListProps {
-  meals: Meal[];
+  weeklyMenu: AggregatedWeeklyMenu;
   loading: boolean;
   onDeleteMeal: (mealPlanId: string, itemId: string) => void;
 }

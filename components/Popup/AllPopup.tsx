@@ -9,11 +9,10 @@ import EditName from "./EditName";
 import SwitchMeals from "./Switchmeals";
 import AddCategoryModal from "./AddCategoryModal";
 import AddUser from "./AddUser";
-// import EditMeal from "./EditMeal";
 import AddAddon from "./AddAddons";
 import EditUser from "./EditUser";
 import EditAddon from "./EditAddon";
-import AddOnCart from "./Cart";
+import EditMeal from "./EditMeal";
 
 const AllPopup = () => {
   const { popupNames, setPopupNames, selectedCategory, mealListRef } =
@@ -43,7 +42,8 @@ const AllPopup = () => {
       <AddMeal
         open={popupNames === "addmeal"}
         onClose={() => setPopupNames("")}
-        categoryId={selectedCategory}
+        categoryId="8143039e-b302-48a9-958e-0f68560e4bb6"
+        cuisineId={selectedCategory}
         onSuccess={() => mealListRef.current?.refresh()}
       />
       <AddSpecials
@@ -58,10 +58,10 @@ const AllPopup = () => {
         open={popupNames === "adduser"}
         onClose={() => setPopupNames("")}
       />
-      {/* <EditMeal
+      <EditMeal
         open={popupNames === "editmeal"}
         onClose={() => setPopupNames("")}
-      /> */}
+      />
 
       <EditUser
         open={popupNames === "edituser"}

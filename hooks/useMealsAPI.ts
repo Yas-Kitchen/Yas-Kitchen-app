@@ -1,12 +1,14 @@
+import { useGlobalContext } from "@/context/GlobalContext";
 import { mealsAPI } from "@/services/api/meals.api";
-import { CuisineCreate } from "@/types/meals.types";
+import { CuisineCreate, MealPlan } from "@/types/meals.types";
 import { useState } from "react";
 
 export const useMealsAPI = () => {
-  const [meals, setMeals] = useState<any[]>();
+  const [meals, setMeals] = useState<MealPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [monthlyPlan, setMonthlyPlan] = useState<any[]>([]);
+  const { selectedCategory } = useGlobalContext();
 
   const fetchCuisineDetails = async () => {
     setLoading(true);
@@ -62,32 +64,48 @@ export const useMealsAPI = () => {
     }
   };
 
-  const fetchMeals = async (categoryId: string, cuisineId: string) => {
+  const fetchMeals = async (categoryKey: string, cuisineId: string) => {
     setLoading(true);
     setError(null);
-
     try {
-      const plans = await mealsAPI.getMealsByCategory(
-        categoryId || "",
-        cuisineId || ""
+      const data = await mealsAPI.getMealsByCategory(
+        categoryKey,
+        cuisineId,
+        true
       );
-
-      if (!Array.isArray(plans) || plans.length === 0) {
-        setMeals([]);
-        setLoading(false);
-        return;
-      }
-      const mealPlanId = plans[0].id;
-      const planDetails = await mealsAPI.getMealPlanDetails(mealPlanId);
-      console.log("category id:", categoryId, "meal plan :", planDetails);
-
-      setMeals({
-        ...planDetails[categoryId],
-        mealPlanId,
-      });
+      const parsedMeals = Array.isArray(data) ? data : data?.data ?? [];
+      setMeals(parsedMeals);
     } catch (err: any) {
-      console.log("fetchMeals error", err);
-      setError(err?.message || "Failed to fetch meals");
+      console.error("Failed to fetch meal plan:", err);
+      console.error("Error details:", {
+        message: err?.message,
+        response: err?.response?.data,
+        status: err?.response?.status,
+        categoryKey,
+        cuisineId,
+      });
+      setError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to get meal plan"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createMealPlan = async (payload: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await mealsAPI.createMealPlan(payload);
+      if (selectedCategory) {
+        await fetchMeals("regular", selectedCategory);
+      }
+      return response;
+    } catch (err: any) {
+      setError(err?.message || "Failed to create meal plan");
+      console.error("Create meal plan error", err);
     } finally {
       setLoading(false);
     }
@@ -107,12 +125,19 @@ export const useMealsAPI = () => {
     }
   };
 
-  const deleteMeals = async (mealPlanId: string, itemId: string) => {
+  const deleteMeals = async (mealPlanId: string, itemId?: string) => {
     setLoading(true);
     setError(null);
+
     try {
-      await mealsAPI.deleteMealPlan(itemId);
-      await fetchMeals("regular", mealPlanId);
+      if (itemId) {
+        await mealsAPI.deleteMealPlanItem(mealPlanId, itemId);
+      } else {
+        await mealsAPI.deleteMealPlan(mealPlanId);
+      }
+      if (selectedCategory) {
+        await fetchMeals("regular", selectedCategory);
+      }
     } catch (err: any) {
       console.log("DeleteMeal error", err);
       setError(err?.message || "Failed to delete meal");
@@ -120,7 +145,6 @@ export const useMealsAPI = () => {
       setLoading(false);
     }
   };
-
   const getCategories = async () => {
     setLoading(true);
     setError(null);
@@ -151,14 +175,11 @@ export const useMealsAPI = () => {
   };
 
   const updateMeal = async (
-    mealPlanId: string,
-    itemId: string,
+    mealId: string,
     data: {
       name?: string;
       description?: string;
       image?: string | null;
-      availability?: string;
-      userId?: string;
     }
   ) => {
     setLoading(true);
@@ -170,13 +191,15 @@ export const useMealsAPI = () => {
       }
 
       const payload = {
-        name: data.name,
-        description: data.description,
-        ...(imageUrl && { image: imageUrl }),
+        ...(data.name && { name: data.name }),
+        ...(data.description && { description: data.description }),
+        ...(imageUrl && { image_url: imageUrl }),
       };
 
-      await mealsAPI.updateMealPlan(mealPlanId, itemId, payload);
-      await fetchMeals("regular", mealPlanId);
+      await mealsAPI.updateMeal(mealId, payload);
+      if (selectedCategory) {
+        await fetchMeals("regular", selectedCategory);
+      }
     } catch (err: any) {
       console.log("Update Meal error", err);
       setError(err?.message || "Failed to update meal");
@@ -197,5 +220,6 @@ export const useMealsAPI = () => {
     monthlyPlan,
     getCategories,
     deleteCuisine,
+    createMealPlan,
   };
 };

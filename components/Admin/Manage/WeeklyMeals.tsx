@@ -1,17 +1,42 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Text, TouchableOpacity, View, Alert } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import MealList from "./MealList";
+import { AggregatedWeeklyMenu, CategoryDropdown } from "@/types/meals.types";
 import { useMealsAPI } from "@/hooks/useMealsAPI";
-import { CategoryDropdown } from "@/types/meals.types";
+
+const DAYS_OF_WEEK = [
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+  "sunday",
+] as const;
+
+const getEmptyWeeklyMenu = (): AggregatedWeeklyMenu =>
+  DAYS_OF_WEEK.reduce((acc, day) => {
+    acc[day] = {};
+    return acc;
+  }, {} as AggregatedWeeklyMenu);
 
 const WeeklyMeals = () => {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryDropdown[]>([]);
 
-  const { setPopupNames, selectedCategory, setSelectedCategory, mealListRef } =
+  const {
+    setPopupNames,
+    selectedCategory,
+    setSelectedCategory,
+    mealListRef,
+    setCurrentWeeklyMenu,
+    cuisineRefreshKey,
+    mealRefreshKey,
+    setMealRefreshKey,
+  } =
     useGlobalContext();
   const {
     fetchMeals,
@@ -24,10 +49,29 @@ const WeeklyMeals = () => {
 
   useEffect(() => {
     if (selectedCategory) {
-      fetchMeals("Regular", selectedCategory);
+      fetchMeals("regular", selectedCategory);
     }
     // eslint-disable-next-line
-  }, [selectedCategory]);
+  }, [selectedCategory, mealRefreshKey]);
+
+  useEffect(() => {
+    if (!mealListRef) return;
+
+    mealListRef.current = {
+      refresh: () => {
+        if (selectedCategory) {
+          setMealRefreshKey(Date.now());
+        }
+      },
+    };
+
+    return () => {
+      if (mealListRef) {
+        mealListRef.current = null;
+      }
+    };
+    //eslint-disable-next-line
+  }, [fetchMeals, mealListRef, selectedCategory]);
 
   useEffect(() => {
     const loadCuisines = async () => {
@@ -53,7 +97,45 @@ const WeeklyMeals = () => {
 
     loadCuisines();
     //eslint-disable-next-line
-  }, []);
+  }, [cuisineRefreshKey]);
+
+  const aggregatedWeeklyMenu = useMemo(() => {
+    const base = getEmptyWeeklyMenu();
+
+    if (!meals || meals.length === 0) {
+      return base;
+    }
+
+    meals.forEach((plan) => {
+      const menu = plan?.weekly_menu ?? {};
+      Object.entries(menu).forEach(([dayKey, dayMeals]) => {
+        const normalizedDay = dayKey.toLowerCase();
+        if (!base[normalizedDay]) {
+          base[normalizedDay] = {};
+        }
+
+        Object.entries(dayMeals ?? {}).forEach(([slotKey, meal]) => {
+          if (!meal) return;
+          base[normalizedDay][slotKey] = {
+            ...meal,
+            mealPlanId: plan.id,
+          };
+        });
+      });
+    });
+
+    return base;
+  }, [meals]);
+
+  const hasAnyMeals = useMemo(() => {
+    return Object.values(aggregatedWeeklyMenu).some(
+      (dayMeals) => Object.keys(dayMeals).length > 0
+    );
+  }, [aggregatedWeeklyMenu]);
+
+  useEffect(() => {
+    setCurrentWeeklyMenu(aggregatedWeeklyMenu);
+  }, [aggregatedWeeklyMenu, setCurrentWeeklyMenu]);
 
   return (
     <>
@@ -195,27 +277,34 @@ const WeeklyMeals = () => {
       </View>
 
       <View className="mt-5">
-        {loading ? (
-          <Text className="text-gray-400 text-center mt-10">
-            Loading categories...
-          </Text>
-        ) : categories.length === 0 ? (
-          <View className="items-center justify-center mt-10">
-            <Feather name="folder-plus" size={48} color="#ddd" />
-            <Text className="text-gray-400 text-center mt-4 text-base">
-              No categories yet
+        {categories.length === 0 ? (
+          loading ? (
+            <Text className="text-gray-400 text-center mt-10">
+              Loading categories...
             </Text>
-            <Text className="text-gray-400 text-center text-sm">
-              Create your first category to get started
-            </Text>
-          </View>
+          ) : (
+            <View className="items-center justify-center mt-10">
+              <Feather name="folder-plus" size={48} color="#ddd" />
+              <Text className="text-gray-400 text-center mt-4 text-base">
+                No categories yet
+              </Text>
+              <Text className="text-gray-400 text-center text-sm">
+                Create your first category to get started
+              </Text>
+            </View>
+          )
         ) : selectedCategory ? (
-          <MealList
-            meals={meals}
-            loading={loading}
-            onDeleteMeal={deleteMeals}
-            ref={mealListRef}
-          />
+          hasAnyMeals || loading ? (
+            <MealList
+              weeklyMenu={aggregatedWeeklyMenu}
+              loading={loading}
+              onDeleteMeal={deleteMeals}
+            />
+          ) : (
+            <Text className="text-gray-400 text-center mt-10">
+              No meals added for this cuisine yet
+            </Text>
+          )
         ) : (
           <Text className="text-gray-400 text-center mt-10">
             Select a category to view meals

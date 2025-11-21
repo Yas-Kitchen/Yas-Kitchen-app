@@ -28,7 +28,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const [categoryName, setCategoryName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const { setPopupNames } = useGlobalContext();
+  const { setPopupNames, setCuisineRefreshKey } = useGlobalContext();
   const { createCuisine, error, loading, fetchCuisineDetails } = useMealsAPI();
 
   const pickImage = async () => {
@@ -98,6 +98,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     setImageUri(null);
     setPopupNames("");
     await fetchCuisineDetails();
+    setCuisineRefreshKey(Date.now());
   };
 
   return (

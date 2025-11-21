@@ -2,6 +2,10 @@ import { CuisineCreate } from "@/types/meals.types";
 import api from "../api";
 
 export const mealsAPI = {
+  createMealPlan: async (data: any) => {
+    const response = await api.post(`admin/meal-plans/`, data);
+    return response.data;
+  },
   getCuisineDetails: async () => {
     const response = await api.get(`cuisine-types/`);
     return response.data;
@@ -10,35 +14,41 @@ export const mealsAPI = {
     const response = await api.post(`admin/cuisine-types/`, data);
     return response.data;
   },
-  getMealsByCategory: async (categoryId: string, cuisineId: string) => {
+  getMealsByCategory: async (
+    categoryId: string,
+    cuisineId: string,
+    includeMenu = true
+  ) => {
     const params = {
       category: categoryId || null,
       cuisine_id: cuisineId || null,
+      include_menu: includeMenu,
       active_only: true,
     };
     const response = await api.get("meal-plans/", { params });
     return response.data;
   },
-  getMealPlanDetails: async (planId: string) => {
-    const response = await api.get(`meal-plans/${planId}`);
+  getWeeklyMeals: async (mealPlanId: string) => {
+    const response = await api.get(`meal-plans/${mealPlanId}`);
     return response.data;
   },
   getPlanDetails: async () => {
     const response = await api.get("onboarding/available-plans");
     return response.data;
   },
-  deleteMealPlan: async (itemId: string) => {
-    const response = await api.delete(`admin/meals/${itemId}`);
+  deleteMealPlan: async (mealPlanId: string) => {
+    const response = await api.delete(`admin/meal-plans/${mealPlanId}`);
+    return response.data;
+  },
+  deleteMealPlanItem: async (mealPlanId: string, mealId: string) => {
+    const response = await api.delete(`admin/meal-plans/${mealPlanId}/items/${mealId}`);
     return response.data;
   },
   deleteCuisine: async (cuisineId: string) => {
     await api.delete(`admin/cuisine-types/${cuisineId}`);
   },
-  updateMealPlan: async (mealPlanId: string, itemId: any, data: any) => {
-    const response = await api.put(
-      `admin/meal-plans/${mealPlanId}/items/${itemId}`,
-      data
-    );
+  updateMeal: async (mealId: string, data: any) => {
+    const response = await api.put(`admin/meals/${mealId}`, data);
     return response.data;
   },
   getCategories: async () => {

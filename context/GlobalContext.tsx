@@ -1,5 +1,11 @@
 import { Addon } from "@/types/extras.types";
-import { Category, Meal, MealListRef } from "@/types/meals.types";
+import {
+  AggregatedWeeklyMenu,
+  Category,
+  Meal,
+  MealListRef,
+  SelectedMealDetails,
+} from "@/types/meals.types";
 import React, { createContext, useContext, useRef, useState } from "react";
 
 interface GlobalContextType {
@@ -33,8 +39,10 @@ interface GlobalContextType {
   setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
   selectedUser: any;
   setSelectedUser: React.Dispatch<React.SetStateAction<any>>;
-  selectedMeal: Meal | null;
-  setSelectedMeal: React.Dispatch<React.SetStateAction<Meal | null>>;
+  selectedMeal: SelectedMealDetails | null;
+  setSelectedMeal: React.Dispatch<
+    React.SetStateAction<SelectedMealDetails | null>
+  >;
   mealListRef: React.RefObject<MealListRef | null>;
   isEditing: boolean;
   setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
@@ -49,6 +57,14 @@ interface GlobalContextType {
   monthlyPlan: any[];
   setMonthlyPlan: React.Dispatch<React.SetStateAction<any[]>>;
   getMonthlyPlanText: () => string;
+  currentWeeklyMenu: AggregatedWeeklyMenu;
+  setCurrentWeeklyMenu: React.Dispatch<
+    React.SetStateAction<AggregatedWeeklyMenu>
+  >;
+  cuisineRefreshKey: number;
+  setCuisineRefreshKey: React.Dispatch<React.SetStateAction<number>>;
+  mealRefreshKey: number;
+  setMealRefreshKey: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -70,7 +86,9 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     string | null
   >(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedMeal, setSelectedMeal] = useState<Meal | null>(null);
+  const [selectedMeal, setSelectedMeal] = useState<SelectedMealDetails | null>(
+    null
+  );
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [userId, setUserId] = useState("");
@@ -81,6 +99,10 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedSpecialItems, setSelectedSpecialItems] = useState<any[]>([]);
   const [userProfile, setUserProfile] = useState("");
   const [monthlyPlan, setMonthlyPlan] = useState<any[]>([]);
+  const [currentWeeklyMenu, setCurrentWeeklyMenu] =
+    useState<AggregatedWeeklyMenu>({} as AggregatedWeeklyMenu);
+  const [cuisineRefreshKey, setCuisineRefreshKey] = useState(Date.now());
+  const [mealRefreshKey, setMealRefreshKey] = useState(Date.now());
 
   const getMonthlyPlanText = () => {
     if (has_regular_plan && has_kids_plan) return "Kids plan with Regular";
@@ -137,6 +159,12 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     monthlyPlan,
     setMonthlyPlan,
     getMonthlyPlanText,
+    currentWeeklyMenu,
+    setCurrentWeeklyMenu,
+    cuisineRefreshKey,
+    setCuisineRefreshKey,
+    mealRefreshKey,
+    setMealRefreshKey,
   };
 
   return (
