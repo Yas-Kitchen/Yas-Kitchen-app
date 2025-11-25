@@ -16,8 +16,13 @@ const UserMealPlan = ({
   onDeleteMeal,
   userName,
 }: MealListProps) => {
-  const { setPopupNames, setSelectedMeal, setUserMealOpen, setSelectedUser } =
-    useGlobalContext();
+  const {
+    setPopupNames,
+    setSelectedMeal,
+    setUserMealOpen,
+    setSelectedUser,
+    setSelectedDietUser,
+  } = useGlobalContext();
 
   if (loading) {
     return (
@@ -36,6 +41,7 @@ const UserMealPlan = ({
               onPress={() => {
                 setUserMealOpen(false);
                 setSelectedUser(null);
+                setSelectedDietUser(null);
               }}
               className="p-2 bg-gray-100 rounded-full"
             >

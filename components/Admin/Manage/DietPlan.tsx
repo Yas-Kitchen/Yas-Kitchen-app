@@ -26,11 +26,16 @@ const DietPlan = () => {
   } = useDietPlanAPI();
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [userMealOpen, setUserMealOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<DietUser | null>(null);
   const [weeklyMenu, setWeeklyMenu] = useState<any>({});
 
-  const { setPopupNames } = useGlobalContext();
+  const {
+    setPopupNames,
+    userMealOpen,
+    setUserMealOpen,
+    selectedUser,
+    setSelectedUser,
+    setSelectedDietUser,
+  } = useGlobalContext();
 
   useEffect(() => {
     const getDietUser = async () => {
@@ -96,6 +101,7 @@ const DietPlan = () => {
                   onPress={() => {
                     setPopupNames("createdietplan");
                     setSelectedUser(selectedUser);
+                    setSelectedDietUser(selectedUser);
                   }}
                   className="mt-6 bg-primary px-6 py-3 rounded-xl flex-row items-center gap-2"
                 >
@@ -209,6 +215,7 @@ const DietPlan = () => {
               onStatusChange={() => {}}
               onPress={() => {
                 setSelectedUser(user);
+                setSelectedDietUser(user);
                 setUserMealOpen(true);
               }}
             />
