@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated, Linking } from "react-native";
 import { useGlobalContext } from "@/context/GlobalContext";
+import { orderAPI } from "@/services/api/orders.api";
 
 const Cart = () => {
   const { cart, selectedAddonItems, selectedSpecialItems } = useGlobalContext();
@@ -26,20 +27,48 @@ const Cart = () => {
     0
   );
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     if (!hasItems) return;
 
-    const orderList = activeItems
-      .filter((item) => cart[item.id])
-      .map((item) => `${cart[item.id]} x ${item.name} (AED ${item.price})`)
-      .join(", ");
+    try {
+      // Create order in backend
+      const addonIds = selectedAddonItems
+        .filter((item: any) => cart[item.id])
+        .map((item: any) => item.id);
 
-    const message = `Hello, I would like to order the following items: ${orderList}. Total AED ${totalPrice}`;
-    const url = `whatsapp://send?phone=+91${mobile}&text=${encodeURIComponent(
-      message
-    )}`;
+      const specialIds = selectedSpecialItems
+        .filter((item: any) => cart[item.id])
+        .map((item: any) => item.id);
 
-    Linking.openURL(url).catch(() => alert("Install WhatsApp to continue"));
+      // Assuming only one special for now, or pick the first one if multiple
+      // The backend model has today_special_id (single)
+      const todaySpecialId = specialIds.length > 0 ? specialIds[0] : undefined;
+
+      await orderAPI.createOrder({
+        order_date: new Date().toISOString().split("T")[0],
+        today_special_id: todaySpecialId,
+        addon_ids: addonIds,
+        total_amount: totalPrice,
+      });
+
+      // Proceed to WhatsApp
+      const orderList = activeItems
+        .filter((item: any) => cart[item.id])
+        .map(
+          (item: any) => `${cart[item.id]} x ${item.name} (AED ${item.price})`
+        )
+        .join(", ");
+
+      const message = `Hello, I would like to order the following items: ${orderList}. Total AED ${totalPrice}`;
+      const url = `whatsapp://send?phone=+91${mobile}&text=${encodeURIComponent(
+        message
+      )}`;
+
+      Linking.openURL(url).catch(() => alert("Install WhatsApp to continue"));
+    } catch (error) {
+      console.error("Failed to create order:", error);
+      alert("Failed to place order. Please try again.");
+    }
   };
 
   return (

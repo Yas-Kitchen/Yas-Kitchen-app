@@ -132,7 +132,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
       // Fetch existing plan to check for duplicates and to merge
       let existingPlan = null;
       try {
-        existingPlan = await getUserDietPlan(selectedDietUser);
+        existingPlan = await getUserDietPlan(selectedDietUser.id);
       } catch (error: any) {
         // If user has no plan (404), that's okay - we'll create one
         if (error.response?.status !== 404) {
@@ -168,7 +168,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
           },
         };
 
-        await updateDietPlan(selectedDietUser, {
+        await updateDietPlan(selectedDietUser.id, {
           weekly_menu: updatedWeeklyMenu,
         });
       } else {
@@ -188,7 +188,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         };
 
         if (onSuccess) {
-          await createDietPlan(selectedDietUser, mealPayload);
+          await createDietPlan(selectedDietUser.id, mealPayload);
         }
       }
 
