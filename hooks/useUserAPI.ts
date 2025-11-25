@@ -1,50 +1,12 @@
 import api from "@/services/api";
 import { userAPI } from "@/services/api/user.api";
-import { supabase } from "@/lib/supabase";
+import { UserTypes } from "@/types/user.types";
 import { useState } from "react";
 import { Alert } from "react-native";
 
-type AdminUserRecord = {
-  id: string;
-  name: string;
-  phone_number: string;
-  cuisine_type_id: string | null;
-  status?: string;
-  created_at?: string;
-  has_diet_plan?: boolean;
-  has_regular_plan?: boolean;
-  has_kids_plan?: boolean;
-  profile_image_url?: string | null;
-};
-
-const hydrateUsers = (records: AdminUserRecord[] = []) =>
-  records.map((record) => ({
-    ...record,
-    status: record.status ?? "pending",
-    has_diet_plan: Boolean(record.has_diet_plan),
-    has_regular_plan: Boolean(record.has_regular_plan),
-    has_kids_plan: Boolean(record.has_kids_plan),
-    created_at: record.created_at ?? new Date().toISOString(),
-  }));
-
-const fetchUsersFromSupabase = async () => {
-  const { data, error } = await supabase
-    .from("users")
-    .select(
-      "id,name,phone_number,cuisine_type_id,status,created_at,has_diet_plan,has_regular_plan,has_kids_plan,profile_image_url"
-    )
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    throw error;
-  }
-
-  return data ?? [];
-};
-
 export const useUserAPI = () => {
   const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<AdminUserRecord[]>([]);
+  const [users, setUsers] = useState<UserTypes[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
 
@@ -68,25 +30,10 @@ export const useUserAPI = () => {
       setError(null);
 
       const usersResponse = await userAPI.getAllUser();
-      setUsers(hydrateUsers(usersResponse));
+      setUsers(usersResponse);
     } catch (err: any) {
       console.log("Failed to fetch all users", err);
       setError(err?.message || "Unable to load users");
-
-      try {
-        const supabaseUsers = await fetchUsersFromSupabase();
-        if (supabaseUsers.length) {
-          Alert.alert(
-            "Temporary fallback",
-            "Admin users endpoint failed, so data is being loaded directly from Supabase."
-          );
-          setUsers(hydrateUsers(supabaseUsers));
-          return;
-        }
-      } catch (supabaseErr: any) {
-        console.error("Supabase fallback failed", supabaseErr);
-      }
-
       Alert.alert(
         "Users unavailable",
         err?.response?.data?.detail?.message ||

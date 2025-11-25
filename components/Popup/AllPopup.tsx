@@ -13,6 +13,7 @@ import AddAddon from "./AddAddons";
 import EditUser from "./EditUser";
 import EditAddon from "./EditAddon";
 import EditMeal from "./EditMeal";
+import AddDietMeals from "./AddDietMeals";
 
 const AllPopup = () => {
   const { popupNames, setPopupNames, selectedCategory, mealListRef } =
@@ -74,6 +75,13 @@ const AllPopup = () => {
       <EditAddon
         open={popupNames === "editaddon"}
         onClose={() => setPopupNames("")}
+      />
+      <AddDietMeals
+        open={popupNames === "createdietplan"}
+        onClose={() => setPopupNames("")}
+        categoryId="8143039e-b302-48a9-958e-0f68560e4bb6"
+        cuisineId={selectedCategory}
+        onSuccess={() => mealListRef.current?.refresh()}
       />
     </>
   );

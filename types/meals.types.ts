@@ -93,6 +93,7 @@ export interface MealListProps {
   weeklyMenu: AggregatedWeeklyMenu;
   loading: boolean;
   onDeleteMeal: (mealPlanId: string, itemId: string) => void;
+  userName?: string;
 }
 
 export interface MealListRef {
@@ -123,4 +124,12 @@ export interface CuisineItemProps {
   onSelect: () => void;
   width: number;
   height: number;
+}
+
+export interface AddMealProps {
+  open: boolean;
+  onClose: () => void;
+  categoryId: string | null;
+  cuisineId: string | null;
+  onSuccess?: () => void | undefined;
 }

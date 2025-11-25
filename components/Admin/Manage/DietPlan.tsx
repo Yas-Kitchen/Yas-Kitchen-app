@@ -8,71 +8,122 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
+import IndividualDietUsers from "../User/IndividualDietUsers";
+import UserMealPlan from "../User/UserMealPlan";
+import { useDietPlanAPI } from "@/hooks/useDietPlanAPI";
+import { DietUser } from "@/types/user.types";
+import { useGlobalContext } from "@/context/GlobalContext";
 
 const DietPlan = () => {
-  const { getAllUsers, users } = useUserAPI();
+  const {
+    listDietUsers,
+    dietUsers,
+    getUserDietPlan,
+    userDietPlan,
+    loading: mealPlanLoading,
+  } = useDietPlanAPI();
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [userMealOpen, setUserMealOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<DietUser | null>(null);
+  const [weeklyMenu, setWeeklyMenu] = useState<any>({});
+
+  const { setPopupNames } = useGlobalContext();
 
   useEffect(() => {
-    const getDietUses = async () => {
-      await getAllUsers();
-      console.log("Diet scheme : ",users);
+    const getDietUser = async () => {
+      await listDietUsers();
     };
-    getDietUses();
+    getDietUser();
   }, []);
 
-  const [filteredUsers, setFilteredUsers] = useState([
-    {
-      id: "1",
-      name: "John Doe",
-      number: "9876543210",
-      category: "North Indian",
-      status: "active",
-      joindate: "2025-10-01",
-    },
-  ]);
-  const [searchQuery, setSearchQuery] = useState("");
+  console.log("dietUsers", dietUsers);
 
-  const userss = [
-    {
-      id: "1",
-      name: "John Doe",
-      number: "9876543210",
-      category: "North Indian",
-      status: "active",
-      joindate: "2025-10-01",
-    },
-  ];
+  useEffect(() => {
+    if (selectedUser) {
+      getUserDietPlan(selectedUser.id);
+    }
+  }, [selectedUser]);
 
-  const applyFilters = (query: string) => {
-    let result = [...userss];
+  useEffect(() => {
+    if (userDietPlan?.weekly_menu) {
+      setWeeklyMenu(userDietPlan.weekly_menu);
+    } else {
+      setWeeklyMenu({});
+    }
+  }, [userDietPlan]);
 
-    if (query.trim()) {
-      const lowerQuery = query.toLowerCase();
-      result = result.filter(
-        (user) =>
-          user.name.toLowerCase().includes(lowerQuery) ||
-          user.number.toLowerCase().includes(lowerQuery) ||
-          user.category.toLowerCase().includes(lowerQuery) ||
-          user.status.toLowerCase().includes(lowerQuery)
-      );
+  useEffect(() => {
+    const DietUsers = dietUsers.filter((u) => u.has_diet_plan === true);
+
+    if (!searchQuery.trim()) {
+      setFilteredUsers(DietUsers);
+      return;
     }
 
-    setFilteredUsers(result);
-  };
+    const lower = searchQuery.toLowerCase();
+    const searched = DietUsers.filter(
+      (u) =>
+        u.name?.toLowerCase().includes(lower) ||
+        u.phone_number?.toLowerCase().includes(lower)
+    );
+
+    setFilteredUsers(searched);
+  }, [searchQuery, dietUsers]);
 
   const clearSearch = () => {
     setSearchQuery("");
-    setFilteredUsers(users);
   };
 
   const hasActiveFilters = searchQuery.trim();
+
+  if (userMealOpen && selectedUser) {
+    return (
+      <View className="flex-1 ">
+        <View className="flex-1 p-4">
+          {!userDietPlan && !mealPlanLoading ? (
+            <View className="flex-1 items-center justify-center p-8">
+              <View className="p-6 rounded-2xl items-center w-full">
+                <Text className="text-lg font-semibold mt-4 text-center">
+                  No Diet Plan Found
+                </Text>
+                <Text className="text-base_color text-sm mt-2 text-center">
+                  This user doesn't have a personalized diet plan yet.
+                </Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    setPopupNames("createdietplan");
+                    setSelectedUser(selectedUser);
+                  }}
+                  className="mt-6 bg-primary px-6 py-3 rounded-xl flex-row items-center gap-2"
+                >
+                  <Feather name="plus" size={20} color="#FFFFFF" />
+                  <Text className="text-white font-semibold">
+                    Create Diet Plan
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ) : (
+            <UserMealPlan
+              loading={mealPlanLoading}
+              weeklyMenu={weeklyMenu}
+              onDeleteMeal={() => {}}
+              userName={selectedUser.name}
+            />
+          )}
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView>
       <View className="gap-3">
         <View className="flex-row justify-between items-center">
-          <Text className="text-[17px] font-semibold">Add-ons</Text>
+          <Text className="text-[17px] font-semibold">Diet Plan</Text>
           {hasActiveFilters && (
             <TouchableOpacity onPress={clearSearch}>
               <Text className="text-primary text-xs font-semibold">
@@ -82,7 +133,7 @@ const DietPlan = () => {
           )}
         </View>
 
-        <View className="flex-row justify-between gap-3 mt-5">
+        <View className="flex-row justify-between gap-3 mt-1">
           <View className="flex-1 relative">
             <TextInput
               className="p-4 pr-10 bg-white border text-xs border-base_color/10 rounded-xl"
@@ -90,7 +141,6 @@ const DietPlan = () => {
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
-                applyFilters(text);
               }}
             />
             {searchQuery.length > 0 ? (
@@ -118,7 +168,7 @@ const DietPlan = () => {
 
         <View className="flex-row justify-between items-center">
           <Text className="text-xs text-base_color">
-            Showing {filteredUsers.length} of {users.length} users
+            Showing {filteredUsers.length} of {dietUsers.length} users
           </Text>
         </View>
 
@@ -148,16 +198,19 @@ const DietPlan = () => {
           </View>
         ) : (
           filteredUsers.map((user) => (
-            <IndividualUsers
+            <IndividualDietUsers
               key={user.id}
               id={user.id}
               name={user.name}
-              number={user.number}
+              number={user.phone_number}
               category={user.category}
               status={user.status}
-              joindate={user.joindate}
+              joindate={user.created_at}
               onStatusChange={() => {}}
-              dietPlan={true}
+              onPress={() => {
+                setSelectedUser(user);
+                setUserMealOpen(true);
+              }}
             />
           ))
         )}

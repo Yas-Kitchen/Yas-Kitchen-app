@@ -15,7 +15,7 @@ import { useUserAPI } from "@/hooks/useUserAPI";
 
 const Users = () => {
   const { setPopupNames } = useGlobalContext();
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState("all");
@@ -90,8 +90,6 @@ const Users = () => {
   }
 
   const hasActiveFilters = searchQuery.trim() || selectedFilter !== "all";
-console.log(users);
-
 
   return (
     <ScrollView>

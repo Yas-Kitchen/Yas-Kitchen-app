@@ -14,12 +14,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useMealsAPI } from "@/hooks/useMealsAPI";
 import { mealsAPI } from "@/services/api/meals.api";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { AddMealProps } from "@/types/meals.types";
+import { useDietPlanAPI } from "@/hooks/useDietPlanAPI";
 
-const AddMeal: React.FC<AddMealProps> = ({
+const AddDietMeals: React.FC<AddMealProps> = ({
   open,
   onClose,
   categoryId,
@@ -37,8 +37,9 @@ const AddMeal: React.FC<AddMealProps> = ({
   const [showDayPicker, setShowDayPicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const { createMealPlan } = useMealsAPI();
+  const { createDietPlan, updateDietPlan, getUserDietPlan } = useDietPlanAPI();
   const { currentWeeklyMenu, setMealRefreshKey } = useGlobalContext();
+  const { selectedDietUser } = useGlobalContext();
 
   const days = [
     "Monday",
@@ -99,7 +100,7 @@ const AddMeal: React.FC<AddMealProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!selectedDay || !selectedTime || !title || !categoryId || !cuisineId) {
+    if (!selectedDay || !selectedTime || !title) {
       Alert.alert("Error", "Please fill all required fields");
       return;
     }
@@ -114,48 +115,83 @@ const AddMeal: React.FC<AddMealProps> = ({
 
     const dayKey = selectedDay.toLowerCase();
     const timeKey = selectedTime.toLowerCase();
-    const existingMeal = currentWeeklyMenu?.[dayKey]?.[timeKey];
 
-    if (existingMeal) {
-      Alert.alert(
-        "Meal already exists",
-        `A meal is already scheduled for ${selectedDay} ${selectedTime}. Please edit or delete it before adding another.`
-      );
-      return;
-    }
+    // We'll check for existing meal after fetching the latest plan to be safe
+    // or rely on currentWeeklyMenu if we trust it.
+    // For now, let's trust the fetch we are about to do or the context if it's updated.
+    // However, to be robust, let's fetch the plan first.
 
     setUploading(true);
-    let uploadedImageUrl: string | null = image;
-
-    if (image && !image.startsWith("http")) {
-      uploadedImageUrl = await mealsAPI.uploadMealImage(image);
-    }
-
     try {
-      const mealPayload = {
-        name: `${selectedDay} ${selectedTime} Meal`,
-        cuisine_type_id: cuisineId,
-        description: `Meal for ${selectedDay} ${selectedTime}`,
-        price: 0.01,
-        category_id: categoryId,
-        is_active: true,
-        weekly_menu: {
-          [selectedDay.toLowerCase()]: {
-            [selectedTime.toLowerCase()]: {
-              meal_id: null,
-              name: title,
-              description: description,
-              availability: "available",
-              rating: 0,
-              image: uploadedImageUrl,
-            },
-          },
-        },
+      let uploadedImageUrl: string | null = image;
+
+      if (image && !image.startsWith("http")) {
+        uploadedImageUrl = await mealsAPI.uploadMealImage(image);
+      }
+
+      // Fetch existing plan to check for duplicates and to merge
+      let existingPlan = null;
+      try {
+        existingPlan = await getUserDietPlan(selectedDietUser);
+      } catch (error: any) {
+        // If user has no plan (404), that's okay - we'll create one
+        if (error.response?.status !== 404) {
+          throw error; // Re-throw if it's not a 404
+        }
+      }
+
+      if (existingPlan && existingPlan.weekly_menu?.[dayKey]?.[timeKey]) {
+        Alert.alert(
+          "Meal already exists",
+          `A meal is already scheduled for ${selectedDay} ${selectedTime}. Please edit or delete it before adding another.`
+        );
+        setUploading(false);
+        return;
+      }
+
+      const newMeal = {
+        meal_id: null,
+        name: title,
+        description: description,
+        availability: "available",
+        rating: 0,
+        image: uploadedImageUrl,
       };
 
-      if (onSuccess) {
-        await createMealPlan(mealPayload);
+      if (existingPlan) {
+        // Update existing plan
+        const updatedWeeklyMenu = {
+          ...existingPlan.weekly_menu,
+          [dayKey]: {
+            ...existingPlan.weekly_menu?.[dayKey],
+            [timeKey]: newMeal,
+          },
+        };
+
+        await updateDietPlan(selectedDietUser, {
+          weekly_menu: updatedWeeklyMenu,
+        });
+      } else {
+        // Create new plan
+        const mealPayload = {
+          name: `${selectedDay} ${selectedTime} Meal`,
+          cuisine_type_id: cuisineId || undefined,
+          description: `Meal for ${selectedDay} ${selectedTime}`,
+          price: 0.01,
+          category_id: categoryId || undefined,
+          is_active: true,
+          weekly_menu: {
+            [dayKey]: {
+              [timeKey]: newMeal,
+            },
+          },
+        };
+
+        if (onSuccess) {
+          await createDietPlan(selectedDietUser, mealPayload);
+        }
       }
+
       setMealRefreshKey(Date.now());
 
       setSelectedDay("");
@@ -347,4 +383,4 @@ const AddMeal: React.FC<AddMealProps> = ({
   );
 };
 
-export default AddMeal;
+export default AddDietMeals;

@@ -65,6 +65,10 @@ interface GlobalContextType {
   setCuisineRefreshKey: React.Dispatch<React.SetStateAction<number>>;
   mealRefreshKey: number;
   setMealRefreshKey: React.Dispatch<React.SetStateAction<number>>;
+  selectedDietUser: any;
+  setSelectedDietUser: React.Dispatch<React.SetStateAction<any>>;
+  userMealOpen: boolean;
+  setUserMealOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -103,6 +107,8 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     useState<AggregatedWeeklyMenu>({} as AggregatedWeeklyMenu);
   const [cuisineRefreshKey, setCuisineRefreshKey] = useState(Date.now());
   const [mealRefreshKey, setMealRefreshKey] = useState(Date.now());
+  const [selectedDietUser, setSelectedDietUser] = useState<any>(null);
+  const [userMealOpen, setUserMealOpen] = useState(false);
 
   const getMonthlyPlanText = () => {
     if (has_regular_plan && has_kids_plan) return "Kids plan with Regular";
@@ -165,6 +171,10 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     setCuisineRefreshKey,
     mealRefreshKey,
     setMealRefreshKey,
+    selectedDietUser,
+    setSelectedDietUser,
+    userMealOpen,
+    setUserMealOpen,
   };
 
   return (
