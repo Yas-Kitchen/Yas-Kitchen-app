@@ -9,6 +9,7 @@ import { Feather } from "@expo/vector-icons";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { MealListProps } from "@/types/meals.types";
 import ImageWithSkeleton from "@/components/shared/ImageWithSkeleton";
+import { useMemo } from "react";
 
 const UserMealPlan = ({
   loading,
@@ -16,6 +17,18 @@ const UserMealPlan = ({
   onDeleteMeal,
   userName,
 }: MealListProps) => {
+  const totalPrice = useMemo(() => {
+    let total = 0;
+    Object.values(weeklyMenu || {}).forEach((dayMeals: any) => {
+      Object.values(dayMeals || {}).forEach((meal: any) => {
+        if (meal?.price) {
+          total += Number(meal.price);
+        }
+      });
+    });
+    return total;
+  }, [weeklyMenu]);
+
   const {
     setPopupNames,
     setSelectedMeal,
@@ -47,7 +60,12 @@ const UserMealPlan = ({
             >
               <Feather name="arrow-left" size={20} color="#212529" />
             </TouchableOpacity>
-            <Text className="text-lg font-semibold">{userName}'s Menu</Text>
+            <View>
+              <Text className="text-lg font-semibold">{userName}'s Menu</Text>
+              <Text className="text-sm text-base_color">
+                Total Price: {totalPrice.toFixed(2)} AED
+              </Text>
+            </View>
           </View>
           <TouchableOpacity
             onPress={() => setPopupNames("createdietplan")}

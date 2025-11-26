@@ -33,6 +33,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
   const [selectedTime, setSelectedTime] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [showDayPicker, setShowDayPicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -156,6 +157,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         availability: "available",
         rating: 0,
         image: uploadedImageUrl,
+        price: parseFloat(price) || 0,
       };
 
       if (existingPlan) {
@@ -198,6 +200,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
       setSelectedTime("");
       setTitle("");
       setDescription("");
+      setPrice("");
       setImage(null);
 
       onClose();
@@ -312,6 +315,16 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         numberOfLines={4}
         textAlignVertical="top"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        placeholderTextColor="#999"
+      />
+
+      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <TextInput
+        value={price}
+        onChangeText={setPrice}
+        placeholder="Enter price"
+        keyboardType="numeric"
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 

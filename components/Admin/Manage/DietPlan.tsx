@@ -44,8 +44,6 @@ const DietPlan = () => {
     getDietUser();
   }, []);
 
-  console.log("dietUsers", dietUsers);
-
   useEffect(() => {
     if (selectedUser) {
       getUserDietPlan(selectedUser.id);
