@@ -66,36 +66,6 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
     }
   }, [open, onClose, opacity, translateY]);
 
-  // useEffect(() => {
-  //   // Fetch categories on mount
-  //   const fetchCategories = async () => {
-  //     try {
-  //       const tokens = await storage.getTokens();
-  //       const response = await fetch(
-  //         `${process.env.EXPO_PUBLIC_API_URL}cuisine-types/`,
-  //         {
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //             Authorization: `Bearer ${tokens.accessToken}`,
-  //           },
-  //         }
-  //       );
-  //       const data = await response.json();
-  //       if (response.ok) {
-  //         setCategories(data);
-  //       } else {
-  //         console.error("Failed to fetch categories:", data);
-  //         alert("Failed to fetch categories");
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching categories:", error);
-  //       alert("Error fetching categories");
-  //     }
-  //   };
-
-  //   fetchCategories();
-  // }, []);
-
   const handleSubmit = async () => {
     if (!name || !number || !selectedCategory) {
       alert("Please fill all required fields");

@@ -12,10 +12,9 @@ export const storage = {
       const items: [string, string][] = [[KEYS.ACCESS_TOKEN, accessToken]];
       if (refreshToken) items.push([KEYS.REFRESH_TOKEN, refreshToken]);
       await AsyncStorage.multiSet(items);
-      console.log("Tokens saved successfully");
     } catch (error) {
-      console.error('Error saving tokens : ' , error);
-      throw error
+      console.error("Error saving tokens : ", error);
+      throw error;
     }
   },
 

@@ -117,11 +117,6 @@ const AddDietMeals: React.FC<AddMealProps> = ({
     const dayKey = selectedDay.toLowerCase();
     const timeKey = selectedTime.toLowerCase();
 
-    // We'll check for existing meal after fetching the latest plan to be safe
-    // or rely on currentWeeklyMenu if we trust it.
-    // For now, let's trust the fetch we are about to do or the context if it's updated.
-    // However, to be robust, let's fetch the plan first.
-
     setUploading(true);
     try {
       let uploadedImageUrl: string | null = image;
@@ -130,14 +125,12 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         uploadedImageUrl = await mealsAPI.uploadMealImage(image);
       }
 
-      // Fetch existing plan to check for duplicates and to merge
       let existingPlan = null;
       try {
         existingPlan = await getUserDietPlan(selectedDietUser.id);
       } catch (error: any) {
-        // If user has no plan (404), that's okay - we'll create one
         if (error.response?.status !== 404) {
-          throw error; // Re-throw if it's not a 404
+          throw error;
         }
       }
 
@@ -161,7 +154,6 @@ const AddDietMeals: React.FC<AddMealProps> = ({
       };
 
       if (existingPlan) {
-        // Update existing plan
         const updatedWeeklyMenu = {
           ...existingPlan.weekly_menu,
           [dayKey]: {
@@ -174,7 +166,6 @@ const AddDietMeals: React.FC<AddMealProps> = ({
           weekly_menu: updatedWeeklyMenu,
         });
       } else {
-        // Create new plan
         const mealPayload = {
           name: `${selectedDay} ${selectedTime} Meal`,
           cuisine_type_id: cuisineId || undefined,

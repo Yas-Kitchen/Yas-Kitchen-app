@@ -19,6 +19,11 @@ export interface Order {
     phone_number: string;
     profile_image_url?: string;
   };
+  items?: {
+    name: string;
+    category: string;
+    price: number;
+  }[];
 }
 
 export const orderAPI = {

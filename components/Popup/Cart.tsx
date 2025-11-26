@@ -4,7 +4,8 @@ import { useGlobalContext } from "@/context/GlobalContext";
 import { orderAPI } from "@/services/api/orders.api";
 
 const Cart = () => {
-  const { cart, selectedAddonItems, selectedSpecialItems } = useGlobalContext();
+  const { cart, setCart, selectedAddonItems, selectedSpecialItems } =
+    useGlobalContext();
   const mobile = 8547266801;
   const cartAnimation = useRef(new Animated.Value(0)).current;
 
@@ -31,17 +32,14 @@ const Cart = () => {
     if (!hasItems) return;
 
     try {
-      // Create order in backend
       const addonIds = selectedAddonItems
         .filter((item: any) => cart[item.id])
-        .map((item: any) => item.id);
+        .flatMap((item: any) => Array(cart[item.id]).fill(item.id));
 
       const specialIds = selectedSpecialItems
         .filter((item: any) => cart[item.id])
-        .map((item: any) => item.id);
+        .flatMap((item: any) => Array(cart[item.id]).fill(item.id));
 
-      // Assuming only one special for now, or pick the first one if multiple
-      // The backend model has today_special_id (single)
       const todaySpecialId = specialIds.length > 0 ? specialIds[0] : undefined;
 
       await orderAPI.createOrder({
@@ -51,7 +49,8 @@ const Cart = () => {
         total_amount: totalPrice,
       });
 
-      // Proceed to WhatsApp
+      setCart({});
+
       const orderList = activeItems
         .filter((item: any) => cart[item.id])
         .map(

@@ -1,12 +1,41 @@
 import ThisMonth from "@/components/Admin/Dashboard/ThisMonth";
 import Today from "@/components/Admin/Dashboard/Today";
-import { useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import ThisWeek from "../../components/Admin/Dashboard/ThisWeek";
 import Orders from "@/components/Admin/Dashboard/Orders";
+import { useDashboardApi } from "@/hooks/useDashboardApi";
 
 const Dashboard = () => {
+  const { getDashboardStats, data, loading, error } = useDashboardApi();
   const [active, setActive] = useState("orders");
+  const [weekStart, setWeekStart] = useState("");
+  const [weekEnd, setWeekEnd] = useState("");
+  const [monthStart, setMonthStart] = useState("");
+  const [monthEnd, setMonthEnd] = useState("");
+
+  useEffect(() => {
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    const todayDate = `${year}-${month}-${day}`;
+
+    getDashboardStats({
+      today: todayDate,
+      weekStart: weekStart,
+      weekEnd: weekEnd,
+      monthStart: monthStart,
+      monthEnd: monthEnd,
+    });
+  }, [weekStart, weekEnd, monthStart, monthEnd]);
+
   return (
     <ScrollView>
       <View className="mt-16 mx-5">
@@ -59,15 +88,26 @@ const Dashboard = () => {
             </Text>
           </TouchableOpacity>
         </View>
-        {active === "orders" ? (
-          <Orders />
-        ) : active === "today" ? (
-          <Today />
-        ) : active === "thisweek" ? (
-          <ThisWeek />
-        ) : (
-          <ThisMonth />
-        )}
+        <View className="min-h-[300px]">
+          {loading && (
+            <View className="absolute inset-0 z-50 justify-center items-center bg-white/50 w-full h-full">
+              <ActivityIndicator size="large" color="#F97316" />
+            </View>
+          )}
+          {active === "orders" ? (
+            <Orders />
+          ) : active === "today" ? (
+            <Today data={data} />
+          ) : active === "thisweek" ? (
+            <ThisWeek data={data} setStart={setWeekStart} setEnd={setWeekEnd} />
+          ) : (
+            <ThisMonth
+              data={data}
+              setStart={setMonthStart}
+              setEnd={setMonthEnd}
+            />
+          )}
+        </View>
       </View>
       <View className="h-36" />
     </ScrollView>

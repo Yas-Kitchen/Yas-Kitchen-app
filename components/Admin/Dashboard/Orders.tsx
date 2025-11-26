@@ -74,6 +74,39 @@ const Orders = () => {
         </Text>
       </View>
 
+      {/* Order Items Details */}
+      {item.items && item.items.length > 0 && (
+        <View className="mt-3 bg-gray-50 p-3 rounded-xl">
+          {Object.values(
+            item.items.reduce((acc: any, curr) => {
+              if (!acc[curr.name]) {
+                acc[curr.name] = { ...curr, count: 0, total: 0 };
+              }
+              acc[curr.name].count += 1;
+              acc[curr.name].total += curr.price;
+              return acc;
+            }, {})
+          ).map((orderItem: any, index) => (
+            <View
+              key={index}
+              className="flex-row justify-between mb-1 last:mb-0"
+            >
+              <Text className="text-gray-700 font-medium text-sm">
+                {orderItem.count} x {orderItem.name}
+              </Text>
+              <View className="flex-row items-center gap-2">
+                <Text className="text-gray-500 text-xs bg-gray-200 px-2 py-0.5 rounded-md">
+                  {orderItem.category}
+                </Text>
+                <Text className="text-gray-700 font-medium text-sm">
+                  AED {orderItem.total}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      )}
+
       <View className="mt-4 pt-4 border-t border-gray-100 flex-row gap-3">
         <TouchableOpacity
           onPress={() => handleUpdateStatus(item.id, "confirmed")}

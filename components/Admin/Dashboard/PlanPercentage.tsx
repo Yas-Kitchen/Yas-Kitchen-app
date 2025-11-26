@@ -4,20 +4,23 @@ import { Text, View } from "react-native";
 type PlanTypes = {
   northPercentage: number;
   southPercentage: number;
-  kidsMeal: number;
+  diet: number;
 };
 
 const PlanPercentage = ({
   northPercentage,
   southPercentage,
-  kidsMeal,
+  diet,
 }: PlanTypes) => {
   return (
     <View className="bg-white rounded-2xl p-5 gap-2">
       <Text className="text-[16px] font-semibold">Plan Distribution</Text>
       <View className="flex-row justify-between">
-        <Text className="text-[12px] text-base_color">North Indian</Text>
-        <Text className="text-[12px] text-base_color">432 ({northPercentage}%)</Text>
+        <Text className="text-[12px] text-base_color">Regular</Text>
+        <Text className="text-[12px] text-base_color">
+          {" "}
+          ({northPercentage}%)
+        </Text>
       </View>
       <View className="w-full bg-base_color/10 h-5 rounded-2xl relative">
         <View
@@ -26,9 +29,9 @@ const PlanPercentage = ({
         />
       </View>
       <View className="flex-row justify-between">
-        <Text className="text-[12px] text-base_color">South Indian</Text>
+        <Text className="text-[12px] text-base_color">Diet</Text>
         <Text className="text-[12px] text-base_color">
-          432 ({southPercentage}%)
+          ({southPercentage}%)
         </Text>
       </View>
       <View className="w-full bg-base_color/10 h-5 overflow-hidden rounded-2xl relative">
@@ -38,13 +41,13 @@ const PlanPercentage = ({
         />
       </View>
       <View className="flex-row justify-between">
-        <Text className="text-[12px] text-base_color">Kids Plan</Text>
-        <Text className="text-[12px] text-base_color">43 ({kidsMeal}%)</Text>
+        <Text className="text-[12px] text-base_color">Kids</Text>
+        <Text className="text-[12px] text-base_color"> ({diet}%)</Text>
       </View>
       <View className="w-full bg-base_color/10 z-1 h-5 overflow-hidden rounded-2xl relative">
         <View
           className="bg-[#22C55E] absolute rounded-2xl h-5"
-          style={{ width: `${kidsMeal}%` }}
+          style={{ width: `${diet}%` }}
         />
       </View>
     </View>

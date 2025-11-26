@@ -1,25 +1,44 @@
-import React from "react";
 import { Text, View } from "react-native";
 import QuickSettings from "../Home/QuickSettings";
 import PlanPercentage from "./PlanPercentage";
 import TopAddons from "./TopAddons";
 import TotalRevenue from "./TotalRevenue";
+import { DashboardData } from "@/types/dashboard.types";
 
-const Today = () => {
+const Today = ({ data }: { data: DashboardData | null }) => {
   return (
     <View className="gap-5">
       <View className="flex-row justify-evenly">
-        <QuickSettings header="Active Users" icon="users" number={128} />
-        <QuickSettings header="Special Orders" icon="list" number={45} />
+        <QuickSettings
+          header="Active Users"
+          icon="users"
+          number={data?.today?.active_users || 0}
+        />
+        <QuickSettings
+          header="Special Orders"
+          icon="list"
+          number={data?.today?.special_orders_count || 0}
+        />
       </View>
-      <TotalRevenue total="15,540" reg_total="13,328" add_total="2,352" />
-      <PlanPercentage northPercentage={30} southPercentage={70} kidsMeal={18} />
+      <TotalRevenue
+        total={data?.today?.revenue || "0"}
+        reg_total={data?.today?.regular_revenue || "0"}
+        add_total={data?.today?.addon_revenue || "0"}
+        label="Special Orders"
+      />
       <View className="bg-white rounded-2xl p-5 gap-3">
         <Text className="text-[16px]">Top Add-on items</Text>
-        <TopAddons productName="Chicken Fry" orders={18} />
-        <TopAddons productName="Egg curry" orders={5} />
-        <TopAddons productName="Pappadam" orders={8} />
-        <TopAddons productName="Curd" orders={10} />
+        {data?.today?.popular_items && data.today.popular_items.length > 0 ? (
+          data.today.popular_items.map((item: any, index: number) => (
+            <TopAddons
+              key={index}
+              productName={item.product_name}
+              orders={item.orders}
+            />
+          ))
+        ) : (
+          <Text className="text-gray-500 text-center">No popular items</Text>
+        )}
       </View>
     </View>
   );

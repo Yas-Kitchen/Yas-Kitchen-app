@@ -22,11 +22,13 @@ const IndividualUsers = ({
   joindate,
   dietPlan,
   onStatusChange,
-  meal_plan_id
+  meal_plan_id,
 }: UserTypes) => {
   const { setPopupNames, setSelectedUser } = useGlobalContext();
   const [showStatusMenu, setShowStatusMenu] = useState(false);
-  const [currentStatus, setCurrentStatus] = useState(status);
+  const [currentStatus, setCurrentStatus] = useState(
+    status === "inactive" ? "paused" : status
+  );
   const { loading, updateUserStatus, deleteUser } = useUserAPI();
   const [cuisine, setCuisine] = useState<string | undefined>(undefined);
   const isAdminAccount = name.toLocaleLowerCase() === "admin";
@@ -37,27 +39,25 @@ const IndividualUsers = ({
     };
     fetchCuisine();
   }, [category]);
-  
 
   const statusOptions = [
     { value: "active", label: "Active", color: "#16A34A", bg: "#DCFCE7" },
-    { value: "pending", label: "Pending", color: "#CA8A04", bg: "#FEF9C3" },
     { value: "paused", label: "Paused", color: "#DC2626", bg: "#FEE2E2" },
   ];
 
- const handleEdit = () => {
-  if (setSelectedUser) {
-    setSelectedUser({
-      id,
-      name,
-      mobile: number,
-      status: currentStatus,
-      joindate,
-      meal_plan_id: meal_plan_id || category, 
-    });
-  }
-  setPopupNames("edituser");
-};
+  const handleEdit = () => {
+    if (setSelectedUser) {
+      setSelectedUser({
+        id,
+        name,
+        mobile: number,
+        status: currentStatus,
+        joindate,
+        meal_plan_id: meal_plan_id || category,
+      });
+    }
+    setPopupNames("edituser");
+  };
   const handleStatusChange = async (newStatus: string) => {
     setShowStatusMenu(false);
 
