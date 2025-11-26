@@ -180,6 +180,7 @@ export const useMealsAPI = () => {
       name?: string;
       description?: string;
       image?: string | null;
+      price?: number;
     }
   ) => {
     setLoading(true);
@@ -194,6 +195,7 @@ export const useMealsAPI = () => {
         ...(data.name && { name: data.name }),
         ...(data.description && { description: data.description }),
         ...(imageUrl && { image_url: imageUrl }),
+        ...(data.price !== undefined && { price: data.price }),
       };
 
       await mealsAPI.updateMeal(mealId, payload);

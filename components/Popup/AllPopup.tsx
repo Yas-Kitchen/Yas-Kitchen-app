@@ -16,8 +16,13 @@ import EditMeal from "./EditMeal";
 import AddDietMeals from "./AddDietMeals";
 
 const AllPopup = () => {
-  const { popupNames, setPopupNames, selectedCategory, mealListRef } =
-    useGlobalContext();
+  const {
+    popupNames,
+    setPopupNames,
+    selectedCategory,
+    mealListRef,
+    setMealRefreshKey,
+  } = useGlobalContext();
   return (
     <>
       <ChangeFoodPlan
@@ -62,6 +67,7 @@ const AllPopup = () => {
       <EditMeal
         open={popupNames === "editmeal"}
         onClose={() => setPopupNames("")}
+        onSuccess={() => setMealRefreshKey(Date.now())}
       />
 
       <EditUser

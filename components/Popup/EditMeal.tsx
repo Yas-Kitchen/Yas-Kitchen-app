@@ -31,6 +31,7 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
   const { updateMeal } = useMealsAPI();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -38,6 +39,7 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
     if (selectedMeal && open) {
       setTitle(selectedMeal.name ?? "");
       setDescription(selectedMeal.description ?? "");
+      setPrice(selectedMeal.price?.toString() ?? "");
       setImage(selectedMeal.image ?? null);
     }
   }, [selectedMeal, open]);
@@ -103,14 +105,12 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
     setUploading(true);
 
     try {
-      await updateMeal(
-        selectedMeal.mealId,
-        {
-          name: title.trim(),
-          description,
-          image: image || null,
-        }
-      );
+      await updateMeal(selectedMeal.mealId, {
+        name: title.trim(),
+        description,
+        price: parseFloat(price) || 0,
+        image: image || null,
+      });
 
       Alert.alert("Success", "Meal updated successfully!");
 
@@ -132,6 +132,7 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
         onClose();
         setTitle("");
         setDescription("");
+        setPrice("");
         setImage(null);
       });
     } catch (error: any) {
@@ -185,6 +186,16 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
         numberOfLines={4}
         textAlignVertical="top"
         className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        placeholderTextColor="#999"
+      />
+
+      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <TextInput
+        value={price}
+        onChangeText={setPrice}
+        placeholder="Enter price"
+        keyboardType="numeric"
+        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 

@@ -8,12 +8,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from "react-native";
 import IndividualDietUsers from "../User/IndividualDietUsers";
 import UserMealPlan from "../User/UserMealPlan";
 import { useDietPlanAPI } from "@/hooks/useDietPlanAPI";
-import { DietUser } from "@/types/user.types";
 import { useGlobalContext } from "@/context/GlobalContext";
 
 const DietPlan = () => {
@@ -22,6 +20,7 @@ const DietPlan = () => {
     dietUsers,
     getUserDietPlan,
     userDietPlan,
+    updateDietPlan,
     loading: mealPlanLoading,
   } = useDietPlanAPI();
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
@@ -35,6 +34,8 @@ const DietPlan = () => {
     selectedUser,
     setSelectedUser,
     setSelectedDietUser,
+    mealRefreshKey,
+    setMealRefreshKey,
   } = useGlobalContext();
 
   useEffect(() => {
@@ -48,7 +49,7 @@ const DietPlan = () => {
     if (selectedUser) {
       getUserDietPlan(selectedUser.id);
     }
-  }, [selectedUser]);
+  }, [selectedUser, mealRefreshKey]);
 
   useEffect(() => {
     if (userDietPlan?.weekly_menu) {
@@ -57,6 +58,44 @@ const DietPlan = () => {
       setWeeklyMenu({});
     }
   }, [userDietPlan]);
+
+  const handleDeleteMeal = async (mealPlanId: string, mealId: string) => {
+    if (!userDietPlan || !userDietPlan.weekly_menu) return;
+
+    // Create a deep copy of the weekly menu to modify
+    const updatedWeeklyMenu = JSON.parse(
+      JSON.stringify(userDietPlan.weekly_menu)
+    );
+    let found = false;
+
+    // Find and remove the meal
+    for (const day in updatedWeeklyMenu) {
+      const dayMeals = updatedWeeklyMenu[day];
+      for (const time in dayMeals) {
+        if (dayMeals[time].mealPlanId === mealPlanId) {
+          delete dayMeals[time];
+          // If day is empty, you might want to keep it or delete it.
+          // Keeping it is safer for structure.
+          found = true;
+          break;
+        }
+      }
+      if (found) break;
+    }
+
+    if (found) {
+      try {
+        await updateDietPlan(selectedUser.id, {
+          weekly_menu: updatedWeeklyMenu,
+        });
+        setMealRefreshKey(Date.now());
+      } catch (error) {
+        console.error("Failed to delete meal", error);
+        // Alert is not imported, but we can use console for now or import it if needed.
+        // Alert IS imported in the file.
+      }
+    }
+  };
 
   useEffect(() => {
     const DietUsers = dietUsers.filter((u) => u.has_diet_plan === true);
@@ -114,7 +153,7 @@ const DietPlan = () => {
             <UserMealPlan
               loading={mealPlanLoading}
               weeklyMenu={weeklyMenu}
-              onDeleteMeal={() => {}}
+              onDeleteMeal={handleDeleteMeal}
               userName={selectedUser.name}
             />
           )}

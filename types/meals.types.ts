@@ -52,6 +52,7 @@ export interface WeeklyMenuMeal {
   availability?: string;
   rating?: number;
   image?: string | null;
+  price?: number;
 }
 
 export type WeeklyMenuDay = Record<string, WeeklyMenuMeal | undefined>;
@@ -86,6 +87,7 @@ export interface SelectedMealDetails {
   name: string;
   description?: string;
   image?: string | null;
+  price?: number;
 }
 
 //  Meal List Interfaces

@@ -9,7 +9,6 @@ import { Feather } from "@expo/vector-icons";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { MealListProps } from "@/types/meals.types";
 import ImageWithSkeleton from "@/components/shared/ImageWithSkeleton";
-import { useMemo } from "react";
 
 const UserMealPlan = ({
   loading,
@@ -17,18 +16,6 @@ const UserMealPlan = ({
   onDeleteMeal,
   userName,
 }: MealListProps) => {
-  const totalPrice = useMemo(() => {
-    let total = 0;
-    Object.values(weeklyMenu || {}).forEach((dayMeals: any) => {
-      Object.values(dayMeals || {}).forEach((meal: any) => {
-        if (meal?.price) {
-          total += Number(meal.price);
-        }
-      });
-    });
-    return total;
-  }, [weeklyMenu]);
-
   const {
     setPopupNames,
     setSelectedMeal,
@@ -62,9 +49,6 @@ const UserMealPlan = ({
             </TouchableOpacity>
             <View>
               <Text className="text-lg font-semibold">{userName}'s Menu</Text>
-              <Text className="text-sm text-base_color">
-                Total Price: {totalPrice.toFixed(2)} AED
-              </Text>
             </View>
           </View>
           <TouchableOpacity
@@ -118,10 +102,10 @@ const UserMealPlan = ({
                       >
                         <ImageWithSkeleton
                           uri={meal.image}
-                          containerClassName="h-40 w-44 max-h-40 max-w-44 mr-3 rounded-xl"
+                          containerClassName="h-36 w-40 max-h-36 max-w-40 mr-3 rounded-xl"
                           imageClassName="h-full w-full rounded-xl"
                         />
-                        <Text className="text-primary text-xs font-medium absolute top-5 right-5">
+                        <Text className="text-primary text-xs font-medium absolute top-0 right-5">
                           {timeSlot}
                         </Text>
                         <View className="flex-col gap-3 justify-center flex-1">
@@ -143,6 +127,7 @@ const UserMealPlan = ({
                                   name: meal.name,
                                   description: meal.description,
                                   image: meal.image,
+                                  price: meal.price,
                                   day,
                                   timeSlot,
                                 });
