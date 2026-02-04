@@ -4,7 +4,7 @@ const API_CONFIG = {
   BASE_URL:
     Constants.expoConfig?.extra?.apiUrl ||
     process.env.EXPO_PUBLIC_API_URL ||
-    "http://localhost:8000/api/v1/",
+    "http://127.0.0.1:8000/api/v1/",
   TIMEOUT: 10000,
 };
 

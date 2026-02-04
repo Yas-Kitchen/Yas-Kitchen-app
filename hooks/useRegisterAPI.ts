@@ -50,6 +50,7 @@ export const useRegisterAPI = () => {
       return data;
     } catch (err: any) {
       setError(err?.message || "Failed to fetch cuisine details");
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -63,6 +64,7 @@ export const useRegisterAPI = () => {
       return data;
     } catch (err: any) {
       console.log(err?.message || "Failed to select plan");
+      throw err;
     } finally {
       setLoading(false);
     }

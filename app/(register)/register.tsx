@@ -92,11 +92,11 @@ const Index = () => {
 
   return (
     <ScrollView>
-      <View className="mt-20 mx-5">
-        <Text className="text-center text-[20px] font-bold text-faded_black">
+      <View className="font-poppins mt-20 mx-5">
+        <Text className="text-center text-[20px] font-poppins-bold text-faded_black">
           Complete Registration
         </Text>
-        <Text className="text-center text-[13px] mt-2 text-base">
+        <Text className="font-poppins text-center text-[13px] mt-2 text-base">
           Tell us a bit about yourself
         </Text>
         <Stepper activeStep={activeStep} />

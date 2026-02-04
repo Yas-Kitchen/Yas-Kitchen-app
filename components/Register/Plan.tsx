@@ -22,25 +22,25 @@ const Plan = () => {
   };
 
   return (
-    <View className="bg-white rounded-2xl mt-10 p-5 pt-8">
-      <Text className="text-base text-[12px]">Choose your monthly plan</Text>
+    <View className="font-poppins bg-white rounded-2xl mt-10 p-5 pt-8">
+      <Text className="font-poppins text-base text-[12px]">Choose your monthly plan</Text>
       <MonthlyPlan />
-      <View className="flex-row gap-3 mr-3">
+      <View className="font-poppins flex-row gap-3 mr-3">
         <TouchableOpacity
           onPress={() => {
             setActiveStep(1);
           }}
-          className="bg-base_color/10 mt-5 p-5 w-1/2 rounded-2xl"
+          className="font-poppins bg-base_color/10 mt-5 p-5 w-1/2 rounded-2xl"
         >
-          <Text className="text-center text-black">Back</Text>
+          <Text className="font-poppins text-center text-black">Back</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => {
             handleContinue();
           }}
-          className="bg-primary mt-5 w-1/2 p-5 rounded-2xl"
+          className="font-poppins bg-primary mt-5 w-1/2 p-5 rounded-2xl"
         >
-          <Text className="text-center text-white">
+          <Text className="font-poppins text-center text-white">
             {loading ? "Loading..." : "Continue"}
           </Text>
         </TouchableOpacity>

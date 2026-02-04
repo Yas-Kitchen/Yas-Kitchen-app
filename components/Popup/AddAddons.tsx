@@ -167,8 +167,8 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
 
   const content = (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-faded_black text-[20px] font-bold">
+      <View className="font-poppins flex-row items-center justify-between mb-6">
+        <Text className="text-faded_black text-[20px] font-poppins-bold">
           Add New Add-on
         </Text>
         <Pressable onPress={onClose}>
@@ -176,16 +176,16 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Title</Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
         placeholder="Enter add-on title"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -193,23 +193,23 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         multiline
         numberOfLines={4}
         textAlignVertical="top"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
         placeholderTextColor="#999"
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Price (AED)</Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
         placeholder="Enter Price"
         keyboardType="decimal-pad"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Category</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Category</Text>
       <View
-        className="relative mb-4"
+        className="font-poppins relative mb-4"
         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
       >
         <Animated.View
@@ -223,7 +223,7 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
             zIndex: 0,
           }}
         />
-        <View className="flex-row justify-between">
+        <View className="font-poppins flex-row justify-between">
           {[
             { label: "Regular", value: "addon" },
             { label: "Kids", value: "kids_meal" },
@@ -244,7 +244,7 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
                     index
                   )
                 }
-                className="flex-1 mx-1 p-3 rounded-xl items-center"
+                className="font-poppins flex-1 mx-1 p-3 rounded-xl items-center"
                 style={{ zIndex: 1 }}
               >
                 <Animated.Text
@@ -261,62 +261,87 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         </View>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
         Order Before Time
       </Text>
-      <Pressable
-        onPress={() => setShowTimePicker(true)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
-      >
-        <Text className="text-base_color">
-          {cutoffTime.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
+      {Platform.OS === "web" ? (
+        <View className="font-poppins mb-4 bg-[#F5F5F5] rounded-xl overflow-hidden">
+          {React.createElement("input", {
+            type: "time",
+            value: cutoffTime.toTimeString().split(" ")[0].substring(0, 5),
+            onChange: (e: any) => {
+              const [hours, minutes] = e.target.value.split(":");
+              const newDate = new Date(cutoffTime);
+              newDate.setHours(parseInt(hours), parseInt(minutes));
+              setCutoffTime(newDate);
+            },
+            style: {
+              padding: 16,
+              fontSize: 16,
+              border: "none",
+              backgroundColor: "transparent",
+              outline: "none",
+              width: "100%",
+            },
           })}
-        </Text>
-      </Pressable>
-      {showTimePicker && (
-        <DateTimePicker
-          value={cutoffTime}
-          mode="time"
-          display="default"
-          onChange={(event, selectedTime) => {
-            setShowTimePicker(false);
-            if (selectedTime) setCutoffTime(selectedTime);
-          }}
-        />
+        </View>
+      ) : (
+        <>
+          <Pressable
+            onPress={() => setShowTimePicker(true)}
+            className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+          >
+            <Text className="font-poppins text-base_color">
+              {cutoffTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
+          </Pressable>
+          {showTimePicker && (
+            <DateTimePicker
+              value={cutoffTime}
+              mode="time"
+              display="default"
+              onChange={(event, selectedTime) => {
+                setShowTimePicker(false);
+                if (selectedTime) setCutoffTime(selectedTime);
+              }}
+            />
+          )}
+        </>
       )}
 
-      <Text className="text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
       <Pressable
         onPress={pickImage}
-        className="mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="w-12 h-12 rounded-lg" />
+          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
         ) : (
-          <Text className="text-base_color">Upload Image</Text>
+          <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
         <Feather name="upload" size={20} color="#666" />
       </Pressable>
 
-      <View className="flex-row gap-3 mb-4">
+      <View className="font-poppins flex-row gap-3 mb-4">
         <Pressable
           onPress={onClose}
-          className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
           disabled={loading}
         >
-          <Text className="text-faded_black text-center font-medium">
+          <Text className="text-faded_black text-center font-poppins-medium">
             Cancel
           </Text>
         </Pressable>
         <TouchableOpacity
           onPress={handleSubmit}
-          className="flex-1 p-4 bg-[#FF7629] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
           disabled={loading}
           style={{ opacity: loading ? 0.5 : 1 }}
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-poppins-medium">
             {loading ? "Adding..." : "Add"}
           </Text>
         </TouchableOpacity>
@@ -327,8 +352,8 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
   if (Platform.OS === "web") {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white rounded-3xl p-6 w-[90%] max-w-[500px] max-h-[90%]">
+        <View className="font-poppins flex-1 justify-center items-center bg-black/50">
+          <View className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px] max-h-[90%]">
             {content}
           </View>
         </View>
@@ -338,14 +363,14 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="flex-1 bg-black/50 justify-end">
+      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{
               transform: [{ translateY }],
               opacity,
             }}
-            className="bg-white rounded-t-3xl p-6"
+            className="font-poppins bg-white rounded-t-3xl p-6"
           >
             {content}
           </Animated.View>

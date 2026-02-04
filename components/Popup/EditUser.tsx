@@ -13,6 +13,8 @@ import { Feather } from "@expo/vector-icons";
 import { useUserAPI } from "@/hooks/useUserAPI";
 import { useMealsAPI } from "@/hooks/useMealsAPI";
 
+import { useGlobalContext } from "@/context/GlobalContext";
+
 interface EditUserProps {
   open: boolean;
   onClose: () => void;
@@ -27,11 +29,20 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
+  const { selectedUser } = useGlobalContext();
 
-  const [name, setName] = useState(userData?.name || "");
-  const [number, setNumber] = useState(userData?.mobile || "");
+  const [name, setName] = useState(userData?.name || selectedUser?.name || "");
+  const [number, setNumber] = useState(
+    userData?.mobile || selectedUser?.mobile || ""
+  );
   const [selectedPlans, setSelectedPlans] = useState<string[]>(
-    userData?.meal_plan_id ? [userData.meal_plan_id] : []
+    userData?.meal_plan_id
+      ? [userData.meal_plan_id]
+      : selectedUser?.meal_plan_id
+        ? Array.isArray(selectedUser.meal_plan_id)
+          ? selectedUser.meal_plan_id
+          : [selectedUser.meal_plan_id]
+        : []
   );
   const [uploading, setUploading] = useState(false);
   const { getCategories, monthlyPlan } = useMealsAPI();
@@ -55,8 +66,8 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
         Array.isArray(userData?.meal_plan_id)
           ? userData.meal_plan_id
           : userData?.meal_plan_id
-          ? [userData.meal_plan_id]
-          : []
+            ? [userData.meal_plan_id]
+            : []
       );
 
       Animated.parallel([
@@ -137,8 +148,12 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
         meal_plan_id: selectedPlans,
       };
 
-      await updateCategories(userId);
-      alert("User meal plan updated successfully!");
+      if (selectedUser?.id) {
+        await updateCategories(selectedUser.id);
+        alert("User meal plan updated successfully!");
+      } else {
+        alert("User ID not found");
+      }
 
       Animated.parallel([
         Animated.timing(translateY, {
@@ -167,8 +182,8 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
 
   const content = (
     <>
-      <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-faded_black text-[20px] font-bold">
+      <View className="font-poppins flex-row items-center justify-between mb-6">
+        <Text className="text-faded_black text-[20px] font-poppins-bold">
           Edit User Plan
         </Text>
         <Pressable onPress={onClose}>
@@ -176,7 +191,7 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-3">
+      <Text className="font-poppins text-base_color text-[12px] mb-3">
         Choose Monthly Plan
       </Text>
 
@@ -205,34 +220,33 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
           >
             <Pressable onPress={() => handlePlanPress(plan)}>
               {plan.special ? (
-                <View className="flex-row items-center bg-[#F0F1EB] rounded-xl p-4">
+                <View className="font-poppins flex-row items-center bg-[#F0F1EB] rounded-xl p-4">
                   <Image
                     style={{ height: 90, width: 90 }}
                     source={{ uri: plan.image_url }}
                   />
-                  <View className="ml-4 flex-1">
-                    <Text className="text-[16px] font-semibold">
+                  <View className="font-poppins ml-4 flex-1">
+                    <Text className="text-[16px] font-poppins-semibold">
                       {plan.name}
                     </Text>
-                    <Text className="text-base_color text-[12px] mt-1">
+                    <Text className="font-poppins text-base_color text-[12px] mt-1">
                       {plan.description}
                     </Text>
-                    <View className="flex-row items-center mt-2">
+                    <View className="font-poppins flex-row items-center mt-2">
                       <Image
-                        className="w-[10px] h-[10px]"
+                        className="font-poppins w-[10px] h-[10px]"
                         source={require("@assets/Shared/dirham.svg")}
                       />
-                      <Text className="text-primary font-semibold ml-1">
+                      <Text className="text-primary font-poppins-semibold ml-1">
                         {plan.price} /mo
                       </Text>
                     </View>
                   </View>
                   <View
-                    className={`rounded-[5px] w-5 h-5 ${
-                      selectedPlans.includes(plan.id)
-                        ? "bg-primary"
-                        : "bg-base_color/10"
-                    }`}
+                    className={`rounded-[5px] w-5 h-5 ${selectedPlans.includes(plan.id)
+                      ? "bg-primary"
+                      : "bg-base_color/10"
+                      }`}
                   />
                 </View>
               ) : (
@@ -241,31 +255,30 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
                     style={{ height: 110, width: 110 }}
                     source={{ uri: plan.image_url }}
                   />
-                  <View className="flex-row pt-6 gap-1 ml-2 flex-1">
-                    <View className="flex-col w-1/2">
-                      <Text className="text-[14px] font-semibold">
+                  <View className="font-poppins flex-row pt-6 gap-1 ml-2 flex-1">
+                    <View className="font-poppins flex-col w-1/2">
+                      <Text className="text-[14px] font-poppins-semibold">
                         {plan.name}
                       </Text>
-                      <Text className="text-base_color text-[12px] text-regular flex-1">
+                      <Text className="font-poppins text-base_color text-[12px] text-regular flex-1">
                         {plan.description}
                       </Text>
                     </View>
-                    <View className="flex-row text-center items-baseline gap-1 w-1/2">
+                    <View className="font-poppins flex-row text-center items-baseline gap-1 w-1/2">
                       <Image
-                        className="w-[10px] h-[10px]"
+                        className="font-poppins w-[10px] h-[10px]"
                         source={require("@assets/Shared/dirham.svg")}
                       />
-                      <Text className="text-primary font-semibold">
+                      <Text className="text-primary font-poppins-semibold">
                         {plan.price} /mo
                       </Text>
                     </View>
                   </View>
                   <View
-                    className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
-                      selectedPlans.includes(plan.id)
-                        ? "bg-primary"
-                        : "bg-base_color/10"
-                    }`}
+                    className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${selectedPlans.includes(plan.id)
+                      ? "bg-primary"
+                      : "bg-base_color/10"
+                      }`}
                   />
                 </View>
               )}
@@ -273,26 +286,26 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
           </Animated.View>
         ))
       ) : (
-        <Text className="text-base_color mt-2">No plans available</Text>
+        <Text className="font-poppins text-base_color mt-2">No plans available</Text>
       )}
 
-      <View className="flex-row gap-3 mb-4 mt-6">
+      <View className="font-poppins flex-row gap-3 mb-4 mt-6">
         <Pressable
           onPress={onClose}
-          className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
           disabled={uploading}
         >
-          <Text className="text-faded_black text-center font-medium">
+          <Text className="text-faded_black text-center font-poppins-medium">
             Cancel
           </Text>
         </Pressable>
         <TouchableOpacity
           onPress={handleSubmit}
-          className="flex-1 p-4 bg-[#FF7629] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
           disabled={uploading}
           style={{ opacity: uploading ? 0.5 : 1 }}
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-poppins-medium">
             {uploading ? "Updating..." : "Save Changes"}
           </Text>
         </TouchableOpacity>
@@ -303,8 +316,8 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
   if (Platform.OS === "web") {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white rounded-3xl p-6 w-[90%] max-w-[500px] max-h-[90%]">
+        <View className="font-poppins flex-1 justify-center items-center bg-black/50">
+          <View className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px] max-h-[90%]">
             {content}
           </View>
         </View>
@@ -314,14 +327,14 @@ const EditUser: React.FC<EditUserProps> = ({ open, onClose, userData }) => {
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="flex-1 bg-black/50 justify-end">
+      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{
               transform: [{ translateY }],
               opacity,
             }}
-            className="bg-white rounded-t-3xl p-6"
+            className="font-poppins bg-white rounded-t-3xl p-6"
           >
             {content}
           </Animated.View>

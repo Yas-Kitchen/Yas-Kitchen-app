@@ -66,26 +66,26 @@ const WeeklyPlan = () => {
   }
 
   return (
-    <View className="bg-white p-5 rounded-2xl">
-      <View className="flex-row gap-2 items-center">
+    <View className="font-poppins bg-white p-5 rounded-2xl">
+      <View className="font-poppins flex-row gap-2 items-center">
         <Feather name="calendar" size={19} color={"#FF7629"} />
-        <Text className="text-[16px] font-semibold">Weekly Meal Plan</Text>
+        <Text className="text-[16px] font-poppins-semibold">Weekly Meal Plan</Text>
       </View>
-      <View className="mt-5 gap-3">
+      <View className="font-poppins mt-5 gap-3">
         {upcomingDays.map((day, index) => (
           <View
             key={index}
-            className="p-5 flex-col justify-between border border-base_color/20 rounded-xl"
+            className="font-poppins p-5 flex-col justify-between border border-base_color/20 rounded-xl"
           >
-            <View className="flex-row justify-between">
-              <Text className="font-semibold text-[14px]">{day.dayName}</Text>
-              <Text className="text-base_color font-medium text-[12px]">
+            <View className="font-poppins flex-row justify-between">
+              <Text className="font-poppins-semibold text-[14px]">{day.dayName}</Text>
+              <Text className="text-base_color font-poppins-medium text-[12px]">
                 {day.date} {day.month}
               </Text>
             </View>
-            <View className="mt-1 gap-1">
-              <Text className="text-[12px]">Lunch: {day.lunch}</Text>
-              <Text className="text-[12px]">Dinner: {day.dinner}</Text>
+            <View className="font-poppins mt-1 gap-1">
+              <Text className="font-poppins text-[12px]">Lunch: {day.lunch}</Text>
+              <Text className="font-poppins text-[12px]">Dinner: {day.dinner}</Text>
             </View>
           </View>
         ))}

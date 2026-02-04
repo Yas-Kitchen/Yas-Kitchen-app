@@ -1,16 +1,17 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import React, { useState } from "react";
 import {
-  Alert,
-  Keyboard,
+  View,
   KeyboardAvoidingView,
   Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
 } from "react-native";
+import { useAlert } from "@/context/AlertContext";
+import { router } from "expo-router";
 import FoodStyle from "./FoodStyle";
 import { useRegisterAPI } from "@/hooks/useRegisterAPI";
 
@@ -28,8 +29,10 @@ const Details = () => {
     setFoodStyle,
     isEditing,
     setIsEditing,
-    activeStep
+    activeStep,
+    userData
   } = useGlobalContext();
+  const { showAlert } = useAlert();
   const [nameLength, setNameLength] = useState(name?.length || 0);
   const [addressLength, setAddressLength] = useState(address?.length || 0);
   const {
@@ -41,6 +44,12 @@ const Details = () => {
     getOnboardingUserData,
     loading,
   } = useRegisterAPI();
+
+  React.useEffect(() => {
+    if (!mobile && userData?.phone_number) {
+      setMobile(userData.phone_number);
+    }
+  }, [userData, mobile]);
 
   React.useEffect(() => {
     (async () => {
@@ -56,9 +65,10 @@ const Details = () => {
           const code =
             err?.response?.data?.detail?.error_code ||
             err?.response?.data?.error_code;
+          const status = err?.response?.status;
 
-          if (code === "ONBOARDING_004") {
-            console.log("No active session, starting a new one...");
+          if (code === "ONBOARDING_004" || status === 403 || status === 401) {
+            console.log("No active session or auth error, starting a new one...");
             await startOnboarding();
             session = await getOnboardingSession();
           } else {
@@ -67,6 +77,7 @@ const Details = () => {
         }
 
         const allowUserLoad =
+          session?.current_step === "cuisine_selection" ||
           session?.current_step === "profile_completion" ||
           session?.current_step === "plan_selection" ||
           session?.current_step === "pricing_confirmation" ||
@@ -76,8 +87,13 @@ const Details = () => {
           const onboarding = await getOnboardingUserData();
 
           if (onboarding?.user) {
-            if (onboarding.user.name) setName(onboarding.user.name);
-            if (onboarding.user.address) setAddress(onboarding.user.address);
+            // Only set name if it's not the phone number (which is default sometimes)
+            if (onboarding.user.name && onboarding.user.name !== onboarding.user.phone_number) {
+              setName(onboarding.user.name);
+            }
+            if (onboarding.user.address && onboarding.user.address !== "Pending") {
+              setAddress(onboarding.user.address);
+            }
             if (onboarding.user.phone_number)
               setMobile(onboarding.user.phone_number);
             if (onboarding.user.cuisine_type_id)
@@ -118,8 +134,7 @@ const Details = () => {
   };
 
   const handleMobileChange = (text: string) => {
-    const cleaned = text.replace(/[^\d+]/g, "");
-    setMobile(cleaned);
+    setMobile(text);
   };
 
   const handleContinue = async () => {
@@ -128,7 +143,7 @@ const Details = () => {
     const trimmedMobile = mobile?.trim() || "";
 
     if (!trimmedName || !trimmedAddress || !trimmedMobile) {
-      Alert.alert(
+      showAlert(
         "Missing Information",
         "Please fill in all fields to continue."
       );
@@ -136,7 +151,7 @@ const Details = () => {
     }
 
     if (trimmedName.length < 2) {
-      Alert.alert(
+      showAlert(
         "Invalid Name",
         "Please enter your full name (at least 2 characters)."
       );
@@ -144,7 +159,7 @@ const Details = () => {
     }
 
     if (/^User\s*\d+$/i.test(trimmedName)) {
-      Alert.alert(
+      showAlert(
         "Invalid Name",
         "Please enter your real name, not a placeholder."
       );
@@ -152,7 +167,7 @@ const Details = () => {
     }
 
     if (trimmedAddress.length < 10) {
-      Alert.alert(
+      showAlert(
         "Incomplete Address",
         "Please enter your complete delivery address (at least 10 characters).\n\nExample: House No, Street Name, City"
       );
@@ -160,44 +175,42 @@ const Details = () => {
     }
 
     if (/address\s*not\s*provided/i.test(trimmedAddress)) {
-      Alert.alert(
+      showAlert(
         "Invalid Address",
         "Please enter your real delivery address."
       );
       return;
     }
 
-    let validMobile = trimmedMobile;
-    if (validMobile.startsWith("+91")) {
-      const digitsAfterCode = validMobile.substring(3);
-      if (digitsAfterCode.length !== 10) {
-        Alert.alert(
-          "Invalid Mobile Number",
-          "Please enter a valid mobile number: +91 followed by 10 digits."
-        );
-        return;
-      }
-    } else if (validMobile.startsWith("91") && validMobile.length === 12) {
-      validMobile = "+" + validMobile;
-    } else if (/^\d{10}$/.test(validMobile)) {
-      validMobile = "+91" + validMobile;
-    } else {
-      Alert.alert(
+    // Relaxed mobile validation
+    if (trimmedMobile.length < 7) {
+      showAlert(
         "Invalid Mobile Number",
-        "Please enter a valid 10-digit mobile number."
+        "Please enter a valid mobile number."
       );
       return;
     }
 
     if (!foodStyle) {
-      Alert.alert(
+      showAlert(
         "Missing Selection",
         "Please select a food style to continue."
       );
       return;
     }
     try {
-      let session = await getOnboardingSession();
+      // Don't restart onboarding on every click. Just check session.
+      let session;
+      try {
+        session = await getOnboardingSession();
+      } catch (e: any) {
+        if (e?.response?.data?.detail?.error_code === "ONBOARDING_004") {
+          await startOnboarding();
+          session = await getOnboardingSession();
+        } else {
+          throw e;
+        }
+      }
 
       if (isEditing) {
         const selectedCuisine = categories.find(
@@ -221,11 +234,15 @@ const Details = () => {
         );
 
         if (!selectedCuisine) {
-          Alert.alert("Error", "Selected cuisine not found.");
+          showAlert("Error", "Selected cuisine not found.");
           return;
         }
 
+        console.log("Selecting cuisine:", selectedCuisine);
         await selectCuisine(selectedCuisine.id);
+
+        // After successful cuisine selection, we can proceed to profile completion
+        // But we should verify we are ready
         await profileCompletion(trimmedName, trimmedAddress);
 
         setActiveStep(2);
@@ -248,123 +265,123 @@ const Details = () => {
       }
     } catch (err: any) {
       console.log("Error during onboarding : ", err);
-      Alert.alert("Error", "Something went wrong. Please try again");
+      // Show alert for other errors too
+      if (err?.response?.status === 400) {
+        showAlert("Error", err?.response?.data?.message || "Invalid request. Please check your inputs.");
+      } else if (err?.response?.status === 403 || err?.response?.status === 401) {
+        showAlert("Session Expired", "Please login again to continue.", [
+          {
+            text: "OK",
+            onPress: () => {
+              router.replace("/");
+            },
+          },
+        ]);
+        return;
+      } else {
+        showAlert("Error", "An unexpected error occurred. Please try again.");
+      }
     }
-  };
-  const getMobileDigitsCount = () => {
-    if (!mobile) return 0;
-    if (mobile.startsWith("+91")) {
-      return mobile.substring(3).length;
-    }
-    if (mobile.startsWith("91")) {
-      return mobile.substring(2).length;
-    }
-    return mobile.length;
   };
 
-  const mobileDigits = getMobileDigitsCount();
+
   const isFormValid =
     name?.trim().length >= 2 &&
     address?.trim().length >= 10 &&
-    mobileDigits === 10;
+    mobile?.length >= 7;
+
+  const content = (
+    <View className="font-poppins bg-white rounded-2xl mt-10 p-5 pt-8">
+      <Text className="font-poppins text-base_color text-[12px]">Select Food Style</Text>
+      <FoodStyle />
+
+      <View className="font-poppins mt-3 gap-1">
+        <Text className="font-poppins-medium text-[11px] text-base_color">
+          Full Name *
+        </Text>
+        <TextInput
+          onChangeText={handleNameChange}
+          placeholder="Enter your full name"
+          className="font-poppins p-5 border border-base_color/30 rounded-2xl"
+          value={name}
+          autoCapitalize="words"
+          maxLength={50}
+          style={{ fontSize: 16 }}
+        />
+        <Text
+          className={`text-[10px] mb-2 ${nameLength < 2 ? "text-red-500" : "text-green-600"
+            }`}
+        >
+          {nameLength}/50 characters {nameLength < 2 && "(minimum 2 required)"}
+        </Text>
+        <Text className="font-poppins-medium text-[11px] text-base_color">
+          Delivery Address *
+        </Text>
+        <TextInput
+          onChangeText={handleAddressChange}
+          placeholder="House No, Street, Landmark, City"
+          className="font-poppins p-5 border border-base_color/30 rounded-2xl"
+          value={address}
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+          maxLength={200}
+          style={{ fontSize: 16 }}
+        />
+        <Text
+          className={`text-[10px] mb-2 ${addressLength < 10 ? "text-red-500" : "text-green-600"
+            }`}
+        >
+          {addressLength}/200 characters{" "}
+          {addressLength < 10 && "(minimum 10 required)"}
+        </Text>
+
+        <Text className="font-poppins-medium text-[11px] text-base_color">
+          Mobile Number *
+        </Text>
+        <TextInput
+          editable={false}
+          selectTextOnFocus={false}
+          placeholder="Enter mobile number"
+          className="font-poppins p-5 border border-base_color/30 rounded-2xl bg-gray-100 text-gray-500"
+          value={mobile}
+          keyboardType="phone-pad"
+          style={{ fontSize: 16 }}
+        />
+        <Text
+          className={`text-[10px] mb-2 ${!mobile || mobile.length < 7 ? "text-red-500" : "text-green-600"}`}
+        >
+          {mobile ? mobile.length : 0} digits (min 7)
+        </Text>
+      </View>
+
+      <TouchableOpacity
+        onPress={handleContinue}
+        className={`mt-5 p-5 rounded-2xl ${!isFormValid ? "bg-primary/10" : "bg-primary"
+          }`}
+        disabled={!isFormValid}
+      >
+        <Text
+          className={`text-center font-poppins-semibold ${!isFormValid ? "text-black/20" : "text-white"
+            }`}
+        >
+          {loading ? "Loading..." : "Continue"}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View className="bg-white rounded-2xl mt-10 p-5 pt-8">
-          <Text className="text-base_color text-[12px]">Select Food Style</Text>
-          <FoodStyle />
-
-          <View className="mt-3 gap-1">
-            <Text className="font-medium text-[11px] text-base_color">
-              Full Name *
-            </Text>
-            <TextInput
-              onChangeText={handleNameChange}
-              placeholder="Enter your full name"
-              className="p-5 border border-base_color/30 rounded-2xl"
-              value={name}
-              autoCapitalize="words"
-              maxLength={50}
-            />
-            <Text
-              className={`text-[10px] mb-2 ${
-                nameLength < 2 ? "text-red-500" : "text-green-600"
-              }`}
-            >
-              {nameLength}/50 characters{" "}
-              {nameLength < 2 && "(minimum 2 required)"}
-            </Text>
-            <Text className="font-medium text-[11px] text-base_color">
-              Delivery Address *
-            </Text>
-            <TextInput
-              onChangeText={handleAddressChange}
-              placeholder="House No, Street, Landmark, City"
-              className="p-5 border border-base_color/30 rounded-2xl"
-              value={address}
-              multiline
-              numberOfLines={3}
-              textAlignVertical="top"
-              maxLength={200}
-            />
-            <Text
-              className={`text-[10px] mb-2 ${
-                addressLength < 10 ? "text-red-500" : "text-green-600"
-              }`}
-            >
-              {addressLength}/200 characters{" "}
-              {addressLength < 10 && "(minimum 10 required)"}
-            </Text>
-
-            <Text className="font-medium text-[11px] text-base_color">
-              Mobile Number *
-            </Text>
-            <View className="flex-row items-center border border-base_color/30 rounded-2xl">
-              <Text className="pl-5 text-base_color/60">+91</Text>
-              <TextInput
-                onChangeText={handleMobileChange}
-                placeholder="10-digit mobile number"
-                className="flex-1 p-5"
-                value={
-                  mobile?.startsWith("+91")
-                    ? mobile.substring(3)
-                    : mobile?.startsWith("91")
-                    ? mobile.substring(2)
-                    : mobile
-                }
-                keyboardType="phone-pad"
-                maxLength={10}
-              />
-            </View>
-            <Text
-              className={`text-[10px] mb-2 ${
-                mobileDigits !== 10 ? "text-red-500" : "text-green-600"
-              }`}
-            >
-              {mobileDigits}/10 digits {mobileDigits !== 10 && "(10 required)"}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={handleContinue}
-            className={`mt-5 p-5 rounded-2xl ${
-              !isFormValid ? "bg-primary/10" : "bg-primary"
-            }`}
-            disabled={!isFormValid}
-          >
-            <Text
-              className={`text-center font-semibold ${
-                !isFormValid ? "text-black/20" : "text-white"
-              }`}
-            >
-              {loading ? "Loading..." : "Continue"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableWithoutFeedback>
+      {Platform.OS === "web" ? (
+        content
+      ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+          {content}
+        </TouchableWithoutFeedback>
+      )}
     </KeyboardAvoidingView>
   );
 };

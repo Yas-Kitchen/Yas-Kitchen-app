@@ -134,22 +134,22 @@ const AddonsItems = () => {
 
   if (loading) {
     return (
-      <View className="items-center justify-center py-10">
-        <Text className="text-base_color">Loading Add-ons...</Text>
+      <View className="font-poppins items-center justify-center py-10">
+        <Text className="font-poppins text-base_color">Loading Add-ons...</Text>
       </View>
     );
   }
 
   if (items.length === 0) {
     return (
-      <View className="items-center justify-center py-10">
-        <Text className="text-gray-500">No add-ons available today 😞</Text>
+      <View className="font-poppins items-center justify-center py-10">
+        <Text className="font-poppins text-gray-500">No add-ons available today 😞</Text>
       </View>
     );
   }
 
   return (
-    <View className="mt-2 gap-3">
+    <View className="font-poppins mt-2 gap-3">
       {sortedItems.map((item: any) => {
         const expired = isPastCutoff(item.cutoff_time);
         return (
@@ -160,20 +160,20 @@ const AddonsItems = () => {
             }`}
             pointerEvents={expired ? "none" : "auto"}
           >
-            <View className="flex-row">
+            <View className="font-poppins flex-row">
               <Image
                 style={{ width, height }}
-                className="rounded-md p-2"
+                className="font-poppins rounded-md p-2"
                 source={{ uri: item.image_url }}
               />
-              <View className="flex-col">
-                <Text className="text-[14px] font-semibold">{item.name}</Text>
-                <Text className="w-[80%] text-[12px] text-base_color mt-1">
+              <View className="font-poppins flex-col">
+                <Text className="text-[14px] font-poppins-semibold">{item.name}</Text>
+                <Text className="font-poppins w-[80%] text-[12px] text-base_color mt-1">
                   {item.description}
                 </Text>
 
                 {cart[item.id] ? (
-                  <View className="flex-row items-center gap-3 mt-2">
+                  <View className="font-poppins flex-row items-center gap-3 mt-2">
                     <Animated.View
                       style={{
                         transform: [{ scale: buttonPressAnimations[item.id] }],
@@ -181,10 +181,10 @@ const AddonsItems = () => {
                     >
                       <TouchableOpacity
                         onPress={() => handleDecrement(item)}
-                        className="bg-primary/10 w-8 h-8 items-center justify-center rounded-xl"
+                        className="font-poppins bg-primary/10 w-8 h-8 items-center justify-center rounded-xl"
                         activeOpacity={0.7}
                       >
-                        <Text className="text-primary text-[20px] font-bold">
+                        <Text className="text-primary text-[20px] font-poppins-bold">
                           -
                         </Text>
                       </TouchableOpacity>
@@ -194,7 +194,7 @@ const AddonsItems = () => {
                       style={{
                         transform: [{ scale: quantityAnimations[item.id] }],
                       }}
-                      className="text-primary font-semibold text-[16px]"
+                      className="text-primary font-poppins-semibold text-[16px]"
                     >
                       {cart[item.id]}
                     </Animated.Text>
@@ -206,10 +206,10 @@ const AddonsItems = () => {
                     >
                       <TouchableOpacity
                         onPress={() => handleIncrement(item)}
-                        className="bg-primary/10 w-8 h-8 items-center justify-center rounded-xl"
+                        className="font-poppins bg-primary/10 w-8 h-8 items-center justify-center rounded-xl"
                         activeOpacity={0.7}
                       >
-                        <Text className="text-primary text-[20px] font-bold">
+                        <Text className="text-primary text-[20px] font-poppins-bold">
                           +
                         </Text>
                       </TouchableOpacity>
@@ -223,10 +223,10 @@ const AddonsItems = () => {
                   >
                     <TouchableOpacity
                       onPress={() => handleAddToCart(item)}
-                      className="bg-primary/10 w-28 items-center p-2 rounded-xl mt-2"
+                      className="font-poppins bg-primary/10 w-28 items-center p-2 rounded-xl mt-2"
                       activeOpacity={0.7}
                     >
-                      <Text className="text-primary text-[12px]">
+                      <Text className="font-poppins text-primary text-[12px]">
                         Add to Cart
                       </Text>
                     </TouchableOpacity>
@@ -234,17 +234,17 @@ const AddonsItems = () => {
                 )}
               </View>
 
-              <View className="flex-row items-center gap-1 mr-5 absolute right-0">
+              <View className="font-poppins flex-row items-center gap-1 mr-5 absolute right-0">
                 <Image
-                  className="w-2.5 h-2.5"
+                  className="font-poppins w-2.5 h-2.5"
                   source={require("@assets/Shared/dirham.svg")}
                 />
-                <Text className="text-primary font-medium text-[13px]">
+                <Text className="text-primary font-poppins-medium text-[13px]">
                   {item.price}
                 </Text>
               </View>
 
-              <Text className="text-base_color absolute bottom-0 right-3 font-medium text-[9px]">
+              <Text className="text-base_color absolute bottom-0 right-3 font-poppins-medium text-[9px]">
                 {item.cutoff_time}
               </Text>
             </View>

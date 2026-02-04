@@ -37,6 +37,11 @@ export const orderAPI = {
     return response.data;
   },
 
+  getTodayOrders: async () => {
+    const response = await api.get("/orders/today");
+    return response.data;
+  },
+
   updateOrderStatus: async (orderId: string, status: string) => {
     const response = await api.patch(
       `/orders/${orderId}/status?status=${status}`

@@ -15,15 +15,15 @@ const TotalRevenue = ({
   label = "Regular Plan",
 }: RevenueTypes) => {
   return (
-    <View className="bg-white rounded-2xl p-5 gap-3">
-      <Text className="text-[16px] font-semibold">Total Revenue</Text>
-      <Text className="text-primary text-[26px]">{total} AED</Text>
-      <View className="bg-base_color/10 h-[1px] w-full" />
-      <View className="flex-row justify-between">
+    <View className="font-poppins bg-white rounded-2xl p-5 gap-3">
+      <Text className="text-[16px] font-poppins-semibold">Total Revenue</Text>
+      <Text className="font-poppins text-primary text-[26px]">{total} AED</Text>
+      <View className="font-poppins bg-base_color/10 h-[1px] w-full" />
+      <View className="font-poppins flex-row justify-between">
         <Text>{label}</Text>
         <Text>{reg_total} AED</Text>
       </View>
-      <View className="flex-row justify-between">
+      <View className="font-poppins flex-row justify-between">
         <Text>Add-on item&apos;s</Text>
         <Text>{add_total} AED</Text>
       </View>

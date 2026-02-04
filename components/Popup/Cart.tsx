@@ -88,24 +88,24 @@ const Cart = () => {
         ],
         opacity: cartAnimation,
       }}
-      className="bg-white shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-2xl mx-4 mb-4"
+      className="font-poppins bg-white shadow-lg shadow-black/20 p-4 flex-row justify-between items-center rounded-2xl mx-4 mb-4"
       pointerEvents={hasItems ? "auto" : "none"}
     >
       <View>
-        <Text className="text-gray-600">
+        <Text className="font-poppins text-gray-600">
           {totalItems} item{totalItems > 1 ? "s" : ""}
         </Text>
-        <Text className="font-semibold text-lg text-black">
+        <Text className="font-poppins-semibold text-lg text-black">
           AED {totalPrice}
         </Text>
       </View>
 
       <TouchableOpacity
         onPress={handlePlaceOrder}
-        className="bg-orange-500 px-6 py-3 rounded-xl"
+        className="font-poppins bg-orange-500 px-6 py-3 rounded-xl"
         activeOpacity={0.7}
       >
-        <Text className="text-white font-semibold">Place Order</Text>
+        <Text className="text-white font-poppins-semibold">Place Order</Text>
       </TouchableOpacity>
     </Animated.View>
   );

@@ -8,6 +8,9 @@ import { getCuisineNameByID } from "@/utils/cuisine.util";
 import { Feather } from "@expo/vector-icons";
 import React, { useEffect } from "react";
 import { ScrollView, Text, View } from "react-native";
+import MealSkeleton from "@/components/User/Home/MealSkeleton";
+import WeeklyPlanSkeleton from "@/components/User/Home/WeeklyPlanSkeleton";
+import Skeleton from "@/components/common/Skeleton";
 
 const Home = () => {
   const menu = useMockMenu();
@@ -54,45 +57,58 @@ const Home = () => {
 
   return (
     <ScrollView>
-      <View className="ios:mt-16 mt-5 mx-5 gap-8">
+      <View className="font-poppins ios:mt-16 mt-5 mx-5 gap-8">
         <Greetings loading={loading} />
-        <View className="gap-5">
-          <Text className="font-semibold text-[17px] text-faded_black">
+        <View className="font-poppins gap-5">
+          <Text className="font-poppins-semibold text-[17px] text-faded_black">
             Today&apos;s Meal&apos;s
           </Text>
-          <TodaysMeal
-            name={todaysMenu.lunch.name}
-            description={todaysMenu.lunch.description}
-            rating={todaysMenu.lunch.rating}
-            availability={todaysMenu.lunch.availability}
-            lunch={true}
-            image={todaysMenu.lunch.image}
-          />
-          <TodaysMeal
-            name={todaysMenu.dinner.name}
-            description={todaysMenu.dinner.description}
-            rating={todaysMenu.dinner.rating}
-            availability={todaysMenu.dinner.availability}
-            lunch={false}
-            image={todaysMenu.dinner.image}
-          />
+          {loading ? (
+            <>
+              <MealSkeleton />
+              <MealSkeleton />
+            </>
+          ) : (
+            <>
+              <TodaysMeal
+                name={todaysMenu.lunch.name}
+                description={todaysMenu.lunch.description}
+                rating={todaysMenu.lunch.rating}
+                availability={todaysMenu.lunch.availability}
+                lunch={true}
+                image={todaysMenu.lunch.image}
+              />
+              <TodaysMeal
+                name={todaysMenu.dinner.name}
+                description={todaysMenu.dinner.description}
+                rating={todaysMenu.dinner.rating}
+                availability={todaysMenu.dinner.availability}
+                lunch={false}
+                image={todaysMenu.dinner.image}
+              />
+            </>
+          )}
         </View>
-        <View className="gap-3">
-          <View className="flex-row justify-between">
-            <Text className="font-semibold text-[17px] text-faded_black">
+        <View className="font-poppins gap-3">
+          <View className="font-poppins flex-row justify-between">
+            <Text className="font-poppins-semibold text-[17px] text-faded_black">
               This Week
             </Text>
-            <View className="flex-row items-center">
-              <Text className="text-primary text-[12px font-medium]">
-                Full plan
-              </Text>
-              <Feather name="chevron-right" color={"#FF7629"} size={15} />
-            </View>
+            {loading ? (
+              <Skeleton width={60} height={16} />
+            ) : (
+              <View className="font-poppins flex-row items-center">
+                <Text className="text-primary text-[12px font-poppins-medium]">
+                  Full plan
+                </Text>
+                <Feather name="chevron-right" color={"#FF7629"} size={15} />
+              </View>
+            )}
           </View>
-          <WeeklyPlan />
+          {loading ? <WeeklyPlanSkeleton /> : <WeeklyPlan />}
         </View>
       </View>
-      <View className="h-32" />
+      <View className="font-poppins h-32" />
     </ScrollView>
   );
 };

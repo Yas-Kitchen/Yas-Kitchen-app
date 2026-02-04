@@ -128,8 +128,8 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
 
   const content = (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-faded_black text-[20px] font-bold">
+      <View className="font-poppins flex-row items-center justify-between mb-6">
+        <Text className="text-faded_black text-[20px] font-poppins-bold">
           Add New User
         </Text>
         <Pressable onPress={onClose}>
@@ -137,29 +137,29 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Name</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Name</Text>
       <TextInput
         value={name}
         onChangeText={setName}
         placeholder="Enter name"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Number</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Number</Text>
       <TextInput
         value={number}
         onChangeText={setNumber}
         placeholder="Enter number"
         keyboardType="phone-pad"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Meal Type</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Meal Type</Text>
       <Pressable
         onPress={() => setShowCategoryPicker(!showCategoryPicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         <Text className={selectedCategory ? "text-black" : "text-base_color"}>
           {selectedCategory || "Select Meal Type"}
@@ -168,7 +168,7 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
       </Pressable>
 
       {showCategoryPicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <View className="font-poppins mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
           {categories.map((category) => (
             <Pressable
               key={category}
@@ -176,12 +176,12 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
                 setSelectedCategory(category);
                 setShowCategoryPicker(false);
               }}
-              className="p-4 border-b border-gray-100"
+              className="font-poppins p-4 border-b border-gray-100"
             >
               <Text
                 className={
                   selectedCategory === category
-                    ? "text-primary font-semibold"
+                    ? "text-primary font-poppins-semibold"
                     : "text-black"
                 }
               >
@@ -192,23 +192,23 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
         </View>
       )}
 
-      <View className="flex-row gap-3 mb-4">
+      <View className="font-poppins flex-row gap-3 mb-4">
         <Pressable
           onPress={onClose}
-          className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
           disabled={uploading}
         >
-          <Text className="text-faded_black text-center font-medium">
+          <Text className="text-faded_black text-center font-poppins-medium">
             Cancel
           </Text>
         </Pressable>
         <TouchableOpacity
           onPress={handleSubmit}
-          className="flex-1 p-4 bg-[#FF7629] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
           disabled={uploading}
           style={{ opacity: uploading ? 0.5 : 1 }}
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-poppins-medium">
             {uploading ? "Adding..." : "Add"}
           </Text>
         </TouchableOpacity>
@@ -219,8 +219,8 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
   if (Platform.OS === "web") {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white rounded-3xl p-6 w-[90%] max-w-[500px] max-h-[90%]">
+        <View className="font-poppins flex-1 justify-center items-center bg-black/50">
+          <View className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px] max-h-[90%]">
             {content}
           </View>
         </View>
@@ -230,14 +230,14 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="flex-1 bg-black/50 justify-end">
+      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{
               transform: [{ translateY }],
               opacity,
             }}
-            className="bg-white rounded-t-3xl p-6"
+            className="font-poppins bg-white rounded-t-3xl p-6"
           >
             {content}
           </Animated.View>

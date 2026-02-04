@@ -79,13 +79,13 @@ const Food = () => {
   return (
     <>
       <ScrollView>
-        <View className="ios:mt-16 mt-5 mx-5 gap-3">
-          <View className="flex-row gap-2 items-center">
-            <Text className="text-[#212529] font-semibold text-[16px]">
+        <View className="font-poppins ios:mt-16 mt-5 mx-5 gap-3">
+          <View className="font-poppins flex-row gap-2 items-center">
+            <Text className="text-[#212529] font-poppins-semibold text-[16px]">
               Food Section
             </Text>
           </View>
-          <View className="flex-row gap-5 items-center justify-center w-full">
+          <View className="font-poppins flex-row gap-5 items-center justify-center w-full">
             <Animated.View style={{ transform: [{ scale: weeklyTabScale }] }}>
               <TouchableOpacity
                 onPress={() => {
@@ -103,7 +103,7 @@ const Food = () => {
                   }}
                   className={`text-center ${
                     tab === "weekly"
-                      ? "text-primary font-semibold"
+                      ? "text-primary font-poppins-semibold"
                       : "text-base_color"
                   } `}
                 >
@@ -129,7 +129,7 @@ const Food = () => {
                   }}
                   className={`${
                     tab === "special"
-                      ? "text-primary font-semibold"
+                      ? "text-primary font-poppins-semibold"
                       : "text-base_color"
                   } text-center`}
                 >

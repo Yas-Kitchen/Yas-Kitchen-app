@@ -4,6 +4,7 @@ import MealPercentage from "./MealPercentage";
 import MostOrders from "./MostOrders";
 import QuickSettings from "./QuickSettings";
 import { useDashboardApi } from "@/hooks/useDashboardApi";
+import Skeleton from "@/components/common/Skeleton";
 
 const Summary = () => {
   const { getDashboardStats, data, loading } = useDashboardApi();
@@ -22,15 +23,26 @@ const Summary = () => {
 
   if (loading && !data) {
     return (
-      <View className="h-64 justify-center items-center">
-        <ActivityIndicator size="large" color="#F97316" />
+      <View className="font-poppins flex-row flex-wrap gap-3 justify-center">
+        {[1, 2, 3, 4].map((i) => (
+          <View
+            key={i}
+            className="font-poppins flex-col gap-5 bg-white w-[45%] p-5 rounded-2xl"
+          >
+            <View className="font-poppins flex-row items-center gap-3">
+              <Skeleton width={36} height={36} borderRadius={18} />
+              <Skeleton width={60} height={14} />
+            </View>
+            <Skeleton width={80} height={24} />
+          </View>
+        ))}
       </View>
     );
   }
 
   return (
     <>
-      <View className="flex-row flex-wrap gap-3 justify-center">
+      <View className="font-poppins flex-row flex-wrap gap-3 justify-center">
         <QuickSettings
           header={"Active Users"}
           icon={"users"}

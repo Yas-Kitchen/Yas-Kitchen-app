@@ -1,4 +1,5 @@
 import { Addon } from "@/types/extras.types";
+import { userAPI } from "@/services/api/user.api";
 import {
   AggregatedWeeklyMenu,
   Category,
@@ -6,7 +7,15 @@ import {
   MealListRef,
   SelectedMealDetails,
 } from "@/types/meals.types";
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { supabase } from "@/lib/supabase";
+import { storage } from "@/services/storage";
 
 interface GlobalContextType {
   userId: string;
@@ -69,6 +78,10 @@ interface GlobalContextType {
   setSelectedDietUser: React.Dispatch<React.SetStateAction<any>>;
   userMealOpen: boolean;
   setUserMealOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  isAuthLoading: boolean;
+  setIsAuthLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  userData: any;
+  setUserData: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -109,6 +122,70 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [mealRefreshKey, setMealRefreshKey] = useState(Date.now());
   const [selectedDietUser, setSelectedDietUser] = useState<any>(null);
   const [userMealOpen, setUserMealOpen] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [userData, setUserData] = useState<any>(null);
+
+  const fetchUserProfile = async () => {
+    try {
+      const data = await userAPI.getUserProfile();
+      setUserData(data);
+    } catch (error) {
+      console.log("Error fetching user profile:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Check active session on mount
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (session) {
+        setUserId(session.user.id);
+        storage.setToken(session.access_token, session.refresh_token);
+        console.log("Session restored:", session.user.id);
+      }
+      setIsAuthLoading(false);
+    };
+
+    checkSession();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      /* 
+         We only want to set loading to true/false if we are actually processing an update.
+         However, onAuthStateChange fires on mount too sometimes. 
+         Safe way: set loading true, do work, set loading false.
+      */
+      if (session) {
+        // If we are already loaded and just refreshing, maybe don't toggle full loader?
+        // But for consistency let's toggle it or just ensure we fetch profile.
+        // For AuthGuard purpose, we need userData.
+        setUserId(session.user.id);
+        storage.setToken(session.access_token, session.refresh_token);
+      } else {
+        setUserId("");
+        setUserData(null);
+        // storage.clearTokens(); 
+      }
+      // If we want AuthGuard to block while refetching on auth change, we might want setIsAuthLoading(true) at start.
+      // But typically onAuthStateChange is instantaneous for session restore.
+      setIsAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserProfile();
+    } else {
+      setUserData(null);
+    }
+  }, [userId]);
 
   const getMonthlyPlanText = () => {
     if (has_regular_plan && has_kids_plan) return "Kids plan with Regular";
@@ -175,6 +252,10 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     setSelectedDietUser,
     userMealOpen,
     setUserMealOpen,
+    isAuthLoading,
+    setIsAuthLoading,
+    userData,
+    setUserData,
   };
 
   return (

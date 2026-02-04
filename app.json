@@ -52,8 +52,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "57350eea-63a6-48fb-b64e-a4ef87922deb"
+        "projectId": "40b08852-9cf9-4156-89b7-a8bb027bedff"
       }
-    }
+    },
+    "owner": "adithyakirancb"
   }
 }

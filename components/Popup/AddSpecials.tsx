@@ -2,21 +2,21 @@ import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
+  View,
   Animated,
-  Image,
-  Modal,
-  Platform,
+  TextInput,
   Pressable,
   ScrollView,
   Text,
-  TextInput,
+  Platform,
   TouchableOpacity,
-  View,
 } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 import { useExtrasApi } from "@/hooks/useExtrasApi";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { AddSpecialsProps } from "@/types/extras.types";
+import { Modal } from "react-native";
+import { Image } from "react-native";
 
 const AddSpecials: React.FC<AddSpecialsProps> = ({
   open,
@@ -35,7 +35,8 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
   const [availableDate, setAvailableDate] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const { loading, createSpecial,fetchTodaySpecials } = useExtrasApi();
+  const { loading, createSpecial, fetchTodaySpecials } = useExtrasApi();
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     if (open) {
@@ -86,7 +87,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
 
   const handleSubmit = async () => {
     if (!title || !price) {
-      alert("Please fill all required fields");
+      showAlert("Missing Fields", "Please fill all required fields");
       return;
     }
     try {
@@ -127,7 +128,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
       }
     } catch (error: any) {
       console.error("Error:", error);
-      Alert.alert("Something went wrong: " + error.message);
+      showAlert("Error", "Something went wrong: " + error.message);
     }
   };
 
@@ -135,8 +136,8 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
 
   const content = (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-faded_black text-[20px] font-bold">
+      <View className="font-poppins flex-row items-center justify-between mb-6">
+        <Text className="text-faded_black text-[20px] font-poppins-bold">
           Add New Special
         </Text>
         <Pressable onPress={onClose}>
@@ -144,16 +145,17 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Title</Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
         placeholder="Enter special title"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -161,92 +163,139 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         multiline
         numberOfLines={4}
         textAlignVertical="top"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Price (AED)</Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
         placeholder="Enter Price"
         keyboardType="decimal-pad"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Available Date</Text>
-      <Pressable
-        onPress={() => setShowDatePicker(true)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
-      >
-        <Text className="text-base_color">
-          {availableDate.toISOString().split("T")[0]}
-        </Text>
-      </Pressable>
-      {showDatePicker && (
-        <DateTimePicker
-          value={availableDate}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) setAvailableDate(selectedDate);
-          }}
-        />
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Available Date</Text>
+      {Platform.OS === "web" ? (
+        <View className="font-poppins mb-4 bg-[#F5F5F5] rounded-xl overflow-hidden">
+          {React.createElement("input", {
+            type: "date",
+            value: availableDate.toISOString().split("T")[0],
+            onChange: (e: any) => setAvailableDate(new Date(e.target.value)),
+            style: {
+              padding: 16,
+              fontSize: 16,
+              border: "none",
+              backgroundColor: "transparent",
+              outline: "none",
+              width: "100%",
+            },
+          })}
+        </View>
+      ) : (
+        <>
+          <Pressable
+            onPress={() => setShowDatePicker(true)}
+            className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+          >
+            <Text className="font-poppins text-base_color">
+              {availableDate.toISOString().split("T")[0]}
+            </Text>
+          </Pressable>
+          {showDatePicker && (
+            <DateTimePicker
+              value={availableDate}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) setAvailableDate(selectedDate);
+              }}
+            />
+          )}
+        </>
       )}
 
-      <Text className="text-base_color text-[12px] mb-2">Order Before Time</Text>
-      <Pressable
-        onPress={() => setShowTimePicker(true)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
-      >
-        <Text className="text-base_color">
-          {cutoffTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </Text>
-      </Pressable>
-      {showTimePicker && (
-        <DateTimePicker
-          value={cutoffTime}
-          mode="time"
-          display="default"
-          onChange={(event, selectedTime) => {
-            setShowTimePicker(false);
-            if (selectedTime) setCutoffTime(selectedTime);
-          }}
-        />
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Order Before Time</Text>
+      {Platform.OS === "web" ? (
+        <View className="font-poppins mb-4 bg-[#F5F5F5] rounded-xl overflow-hidden">
+          {React.createElement("input", {
+            type: "time",
+            value: cutoffTime.toTimeString().split(" ")[0].substring(0, 5),
+            onChange: (e: any) => {
+              const [hours, minutes] = e.target.value.split(":");
+              const newDate = new Date(cutoffTime);
+              newDate.setHours(parseInt(hours), parseInt(minutes));
+              setCutoffTime(newDate);
+            },
+            style: {
+              padding: 16,
+              fontSize: 16,
+              border: "none",
+              backgroundColor: "transparent",
+              outline: "none",
+              width: "100%",
+            },
+          })}
+        </View>
+      ) : (
+        <>
+          <Pressable
+            onPress={() => setShowTimePicker(true)}
+            className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+          >
+            <Text className="font-poppins text-base_color">
+              {cutoffTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+            </Text>
+          </Pressable>
+          {showTimePicker && (
+            <DateTimePicker
+              value={cutoffTime}
+              mode="time"
+              display="default"
+              onChange={(event, selectedTime) => {
+                setShowTimePicker(false);
+                if (selectedTime) setCutoffTime(selectedTime);
+              }}
+            />
+          )}
+        </>
       )}
 
-      <Text className="text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
       <Pressable
         onPress={pickImage}
-        className="mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="w-12 h-12 rounded-lg" />
+          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
         ) : (
-          <Text className="text-base_color">Upload Image</Text>
+          <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
         <Feather name="upload" size={20} color="#666" />
       </Pressable>
 
-      <View className="flex-row gap-3 mb-4">
+      <View className="font-poppins flex-row gap-3 mb-4">
         <Pressable
           onPress={onClose}
-          className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
           disabled={loading}
         >
-          <Text className="text-faded_black text-center font-medium">
+          <Text className="text-faded_black text-center font-poppins-medium">
             Cancel
           </Text>
         </Pressable>
         <TouchableOpacity
           onPress={handleSubmit}
-          className="flex-1 p-4 bg-[#FF7629] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
           disabled={loading}
           style={{ opacity: loading ? 0.5 : 1 }}
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-poppins-medium">
             {loading ? "Adding..." : "Add"}
           </Text>
         </TouchableOpacity>
@@ -257,8 +306,8 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
   if (Platform.OS === "web") {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white rounded-3xl p-6 w-[90%] max-w-[500px] max-h-[90%]">
+        <View className="font-poppins flex-1 justify-center items-center bg-black/50">
+          <View className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px] max-h-[90%]">
             {content}
           </View>
         </View>
@@ -268,14 +317,14 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="flex-1 bg-black/50 justify-end">
+      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{
               transform: [{ translateY }],
               opacity,
             }}
-            className="bg-white rounded-t-3xl p-6"
+            className="font-poppins bg-white rounded-t-3xl p-6"
           >
             {content}
           </Animated.View>

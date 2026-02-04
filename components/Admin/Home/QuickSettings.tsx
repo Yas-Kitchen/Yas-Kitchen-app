@@ -10,17 +10,17 @@ type QuickSettingsType = {
 
 const QuickSettings = ({ header, icon, number }: QuickSettingsType) => {
   return (
-    <View className="flex-col gap-5 bg-white w-[45%] p-5 rounded-2xl">
-      <View className="flex-row items-center gap-3 w-1/2">
+    <View className="font-poppins flex-col gap-5 bg-white w-[45%] p-5 rounded-2xl">
+      <View className="font-poppins flex-row items-center gap-3 w-1/2">
         <Feather
           name={icon}
           size={20}
           color={"#FF7629"}
-          className="bg-primary/10 rounded-full p-2 "
+          className="font-poppins bg-primary/10 rounded-full p-2 "
         />
-        <Text className="text-[14px] text-base_color">{header}</Text>
+        <Text className="font-poppins text-sm text-base_color">{header}</Text>
       </View>
-      <Text className="text-[20px] font-semibold">{number}</Text>
+      <Text className="text-xl font-poppins-medium">{number}</Text>
     </View>
   );
 };

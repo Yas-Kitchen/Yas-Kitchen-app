@@ -68,7 +68,7 @@ const FoodSectionWeeklyPlan = () => {
       upcomingDays.push({ dayName, date, month, lunch, dinner });
     }
     return (
-      <View className="mt-3 gap-3">
+      <View className="font-poppins mt-3 gap-3">
         {upcomingDays.map((day, index) => (
           <View
             key={index}
@@ -78,9 +78,9 @@ const FoodSectionWeeklyPlan = () => {
                 : "border-base_color/20"
             }`}
           >
-            <View className="flex-row justify-between">
+            <View className="font-poppins flex-row justify-between">
               <Text
-                className={`font-semibold text-[14px] ${
+                className={`font-poppins-semibold text-[14px] ${
                   day.dayName === currentDayName
                     ? " text-primary"
                     : "text-faded_black"
@@ -88,17 +88,17 @@ const FoodSectionWeeklyPlan = () => {
               >
                 {day.dayName}
               </Text>
-              <Text className="font-medium text-[12px] text-base_color">
+              <Text className="font-poppins-medium text-[12px] text-base_color">
                 {day.date} {day.month}
               </Text>
             </View>
-            <View className="mt-1 gap-1">
-              <Text className="text-[12px]">Lunch: {day.lunch}</Text>
-              <Text className="text-[12px]">Dinner: {day.dinner}</Text>
+            <View className="font-poppins mt-1 gap-1">
+              <Text className="font-poppins text-[12px]">Lunch: {day.lunch}</Text>
+              <Text className="font-poppins text-[12px]">Dinner: {day.dinner}</Text>
             </View>
           </View>
         ))}
-        <View className="h-40"/>
+        <View className="font-poppins h-40"/>
       </View>
     );
 };

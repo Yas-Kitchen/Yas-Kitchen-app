@@ -5,9 +5,9 @@ const SubscriptionPlan = ({ plans, price }: { plans: string; price: string }) =>
   const { setActiveStep, setIsEditing } = useGlobalContext();
 
   return (
-    <View className="bg-base_color/10 rounded-2xl p-5">
-      <View className="flex-row justify-between">
-        <Text className="font-semibold text-faded_black text-[14px]">
+    <View className="font-poppins bg-base_color/10 rounded-2xl p-5">
+      <View className="font-poppins flex-row justify-between">
+        <Text className="font-poppins-semibold text-faded_black text-[14px]">
           Subscription Plan
         </Text>
         <TouchableOpacity
@@ -16,31 +16,31 @@ const SubscriptionPlan = ({ plans, price }: { plans: string; price: string }) =>
             setIsEditing(true);
           }}
         >
-          <Text className="text-primary font-medium">Edit</Text>
+          <Text className="text-primary font-poppins-medium">Edit</Text>
         </TouchableOpacity>
       </View>
-      <View className="flex-col">
-        <View className="flex-row mt-5">
-          <Text className="text-base_color text-[12px] web:text-[10px]">
+      <View className="font-poppins flex-col">
+        <View className="font-poppins flex-row mt-5">
+          <Text className="font-poppins text-base_color text-[12px] web:text-[10px]">
             Selected Plan :
           </Text>
-          <Text className="ml-2 web:text-[10px]">
+          <Text className="font-poppins ml-2 web:text-[10px]">
             {plans || "Loading..."}
           </Text>
         </View>
-        <View className="flex-row mt-5">
-          <Text className="text-base_color text-[12px] web:text-[10px]">
+        <View className="font-poppins flex-row mt-5">
+          <Text className="font-poppins text-base_color text-[12px] web:text-[10px]">
             Monthly Price :
           </Text>
-          <Text className="mx-2 text-primary web:text-[10px]">
+          <Text className="font-poppins mx-2 text-primary web:text-[10px]">
             {price || "Loading..."}
           </Text>
         </View>
-        <View className="flex-row mt-5">
-          <Text className="text-base_color text-[12px] web:text-[10px]">
+        <View className="font-poppins flex-row mt-5">
+          <Text className="font-poppins text-base_color text-[12px] web:text-[10px]">
             Billing Cycle :
           </Text>
-          <Text className="mx-5 web:text-[10px]">Monthly</Text>
+          <Text className="font-poppins mx-5 web:text-[10px]">Monthly</Text>
         </View>
       </View>
     </View>

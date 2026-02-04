@@ -4,10 +4,10 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Alert,
   Modal,
   ActivityIndicator,
 } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { useUserAPI } from "@/hooks/useUserAPI";
 import { getCuisineNameByID } from "@/utils/cuisine.util";
@@ -23,15 +23,35 @@ const IndividualUsers = ({
   dietPlan,
   onStatusChange,
   meal_plan_id,
+  is_password_set = false,
 }: UserTypes) => {
   const { setPopupNames, setSelectedUser } = useGlobalContext();
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(
-    status === "inactive" ? "paused" : status
+    status === "inactive" ? "paused" : status,
   );
-  const { loading, updateUserStatus, deleteUser } = useUserAPI();
+  // Local state for optimistic updates on password toggle
+  const [isPasswordSet, setIsPasswordSet] = useState(is_password_set);
+
+  // Sync state if prop changes (e.g. from parent re-fetch)
+  useEffect(() => {
+    setIsPasswordSet(is_password_set);
+  }, [is_password_set]);
+
+  const { showAlert } = useAlert();
+  const { loading, updateUserStatus, deleteUser, toggleUserPasswordReset } =
+    useUserAPI();
   const [cuisine, setCuisine] = useState<string | undefined>(undefined);
   const isAdminAccount = name.toLocaleLowerCase() === "admin";
+
+  const handlePasswordToggle = async () => {
+    if (!id) return;
+    const success = await toggleUserPasswordReset(id, isPasswordSet);
+    if (success) {
+      setIsPasswordSet(!isPasswordSet);
+      if (onStatusChange) onStatusChange();
+    }
+  };
 
   useEffect(() => {
     const fetchCuisine = async () => {
@@ -70,7 +90,7 @@ const IndividualUsers = ({
   };
 
   const handleDelete = async () => {
-    Alert.alert("Delete User", `Are you sure you want to delete ${name}?`, [
+    showAlert("Delete User", `Are you sure you want to delete ${name}?`, [
       {
         text: "Cancel",
         style: "cancel",
@@ -105,7 +125,7 @@ const IndividualUsers = ({
 
   const getStatusStyle = (statusValue: string) => {
     const option = statusOptions.find(
-      (opt) => opt.value === statusValue.toLowerCase()
+      (opt) => opt.value === statusValue.toLowerCase(),
     );
     return option || statusOptions[0];
   };
@@ -113,25 +133,25 @@ const IndividualUsers = ({
   const currentStatusStyle = getStatusStyle(currentStatus);
 
   return (
-    <View className="bg-white relative rounded-2xl p-4 gap-2">
+    <View className="font-poppins bg-white rounded-xl relative border-b border-gray-100 p-4 gap-2">
       {loading && (
-        <View className="absolute inset-0 bg-black/10 rounded-2xl z-50 justify-center items-center">
+        <View className="font-poppins absolute inset-0 bg-black/10 z-50 justify-center items-center">
           <ActivityIndicator size="large" color="#FF7629" />
         </View>
       )}
 
       <Text
         className={`text-sm ${
-          isAdminAccount && "text-primary font-bold"
-        }  font-semibold`}
+          isAdminAccount && "text-primary font-poppins-bold"
+        }  font-poppins-semibold`}
       >
         {name}
       </Text>
-      <Text className="text-base_color text-xs">{number}</Text>
+      <Text className="font-poppins text-base_color text-xs">{number}</Text>
 
-      <View className="flex-row items-center gap-4">
+      <View className="font-poppins flex-row items-center gap-4">
         {!isAdminAccount && !dietPlan && (
-          <Text className="p-2 rounded-full bg-primary/10 text-primary text-[10px]">
+          <Text className="font-poppins p-2 rounded-full bg-primary/10 text-primary text-[10px]">
             {cuisine}
           </Text>
         )}
@@ -139,7 +159,7 @@ const IndividualUsers = ({
         {!isAdminAccount && !dietPlan && (
           <TouchableOpacity
             onPress={() => setShowStatusMenu(true)}
-            className="p-2 rounded-full text-[10px] flex-row items-center gap-1"
+            className="font-poppins p-2 rounded-full text-[10px] flex-row items-center gap-1"
             style={{ backgroundColor: currentStatusStyle.bg }}
           >
             <Text style={{ color: currentStatusStyle.color, fontSize: 10 }}>
@@ -154,28 +174,50 @@ const IndividualUsers = ({
         )}
       </View>
 
-      <Text className="text-base_color text-[10px]">
+      <Text className="font-poppins text-base_color text-[10px]">
         Joined: {formatDate(joindate)}
       </Text>
 
-      <View className="flex-row absolute top-5 right-5 gap-2">
+      <View className="font-poppins flex-row absolute top-5 right-5 gap-2">
         {!isAdminAccount && (
           <TouchableOpacity
             onPress={handleEdit}
-            className="flex-row bg-[#F3F4F6] p-1 text-center items-center rounded-lg gap-1"
+            className="font-poppins flex-row bg-[#F3F4F6] p-1 text-center items-center rounded-lg gap-1"
           >
             <Feather color={"#212529"} size={15} name="edit" />
-            <Text className="text-xs">Edit</Text>
+            <Text className="font-poppins text-xs">Edit</Text>
+          </TouchableOpacity>
+        )}
+
+        {!isAdminAccount && (
+          <TouchableOpacity
+            onPress={handlePasswordToggle}
+            className={`flex-row p-1 rounded-lg items-center gap-1 ${
+              isPasswordSet ? "bg-green-100" : "bg-red-100"
+            }`}
+          >
+            <Feather
+              color={isPasswordSet ? "#16A34A" : "#EF4444"}
+              size={15}
+              name={isPasswordSet ? "lock" : "unlock"}
+            />
+            <Text
+              className={`text-xs ${
+                isPasswordSet ? "text-green-700" : "text-red-700"
+              }`}
+            >
+              {isPasswordSet ? "Set" : "Unset"}
+            </Text>
           </TouchableOpacity>
         )}
 
         {!isAdminAccount && !dietPlan && (
           <TouchableOpacity
             onPress={handleDelete}
-            className="flex-row bg-primary/10 p-1 rounded-lg items-center gap-1"
+            className="font-poppins flex-row bg-primary/10 p-1 rounded-lg items-center gap-1"
           >
             <Feather color={"#FF7629"} size={15} name="trash-2" />
-            <Text className="text-primary text-xs">Delete</Text>
+            <Text className="font-poppins text-primary text-xs">Delete</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -189,23 +231,25 @@ const IndividualUsers = ({
         <TouchableOpacity
           activeOpacity={1}
           onPress={() => setShowStatusMenu(false)}
-          className="flex-1 bg-black/50 justify-center items-center"
+          className="font-poppins flex-1 bg-black/50 justify-center items-center"
         >
-          <View className="bg-white rounded-2xl p-4 w-4/5 max-w-sm">
-            <Text className="text-lg font-semibold mb-4">Change Status</Text>
+          <View className="font-poppins bg-white rounded-2xl p-4 w-4/5 max-w-sm">
+            <Text className="text-lg font-poppins-semibold mb-4">
+              Change Status
+            </Text>
 
             {statusOptions.map((option) => (
               <TouchableOpacity
                 key={option.value}
                 onPress={() => handleStatusChange(option.value)}
-                className="flex-row items-center justify-between p-4 border-b border-gray-100"
+                className="font-poppins flex-row items-center justify-between p-4 border-b border-gray-100"
               >
-                <View className="flex-row items-center gap-3">
+                <View className="font-poppins flex-row items-center gap-3">
                   <View
-                    className="w-3 h-3 rounded-full"
+                    className="font-poppins w-3 h-3 rounded-full"
                     style={{ backgroundColor: option.color }}
                   />
-                  <Text className="text-base">{option.label}</Text>
+                  <Text className="font-poppins text-base">{option.label}</Text>
                 </View>
 
                 {currentStatus.toLowerCase() === option.value && (
@@ -216,9 +260,9 @@ const IndividualUsers = ({
 
             <TouchableOpacity
               onPress={() => setShowStatusMenu(false)}
-              className="mt-4 p-4 bg-gray-100 rounded-xl"
+              className="font-poppins mt-4 p-4 bg-gray-100 rounded-xl"
             >
-              <Text className="text-center font-semibold">Cancel</Text>
+              <Text className="text-center font-poppins-semibold">Cancel</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

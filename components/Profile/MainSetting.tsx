@@ -15,15 +15,15 @@ const MainSetting = ({ icon, header, subheader }: MainSettingType) => {
   const { setPopupNames } = useGlobalContext();
   return (
     <TouchableOpacity onPress={() => setPopupNames(header)}>
-      <View className="flex-row p-5 gap-3 items-center">
-        <View className="rounded-full bg-primary/10 p-2">
+      <View className="font-poppins flex-row p-5 gap-3 items-center">
+        <View className="font-poppins rounded-full bg-primary/10 p-2">
           <Ionicons name={icon} size={22} color={"#FF7629"} />
         </View>
-        <View className="flex-col flex-1 gap-1">
-          <Text className="text-faded_black font-medium text-[14px]">
+        <View className="font-poppins flex-col flex-1 gap-1">
+          <Text className="text-faded_black font-poppins-medium text-[14px]">
             {header}
           </Text>
-          <Text className="text-base_color text-[12px]">{subheader}</Text>
+          <Text className="font-poppins text-base_color text-[12px]">{subheader}</Text>
         </View>
         <Feather name="chevron-right" size={20} color={"#FF7629"} />
       </View>

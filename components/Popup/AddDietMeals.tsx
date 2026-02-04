@@ -2,18 +2,18 @@ import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  TextInput,
+  ScrollView,
   Animated,
-  Image,
   Modal,
   Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+  Image,
 } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 import { mealsAPI } from "@/services/api/meals.api";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { AddMealProps } from "@/types/meals.types";
@@ -41,6 +41,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
   const { createDietPlan, updateDietPlan, getUserDietPlan } = useDietPlanAPI();
   const { currentWeeklyMenu, setMealRefreshKey } = useGlobalContext();
   const { selectedDietUser } = useGlobalContext();
+  const { showAlert } = useAlert();
 
   const days = [
     "Monday",
@@ -102,12 +103,12 @@ const AddDietMeals: React.FC<AddMealProps> = ({
 
   const handleSubmit = async () => {
     if (!selectedDay || !selectedTime || !title) {
-      Alert.alert("Error", "Please fill all required fields");
+      showAlert("Error", "Please fill all required fields");
       return;
     }
 
     if (!image) {
-      Alert.alert(
+      showAlert(
         "Image required",
         "Please upload an image for the meal before saving."
       );
@@ -135,7 +136,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
       }
 
       if (existingPlan && existingPlan.weekly_menu?.[dayKey]?.[timeKey]) {
-        Alert.alert(
+        showAlert(
           "Meal already exists",
           `A meal is already scheduled for ${selectedDay} ${selectedTime}. Please edit or delete it before adding another.`
         );
@@ -197,7 +198,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
       onClose();
     } catch (err: any) {
       console.error(" Error:", err);
-      Alert.alert("Error", err.message || "Failed to add meal");
+      showAlert("Error", err.message || "Failed to add meal");
     } finally {
       setUploading(false);
     }
@@ -207,8 +208,8 @@ const AddDietMeals: React.FC<AddMealProps> = ({
 
   const content = (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-faded_black text-[20px] font-bold">
+      <View className="font-poppins flex-row items-center justify-between mb-6">
+        <Text className="text-faded_black text-[20px] font-poppins-bold">
           Add New Item
         </Text>
         <Pressable onPress={onClose}>
@@ -216,10 +217,10 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         </Pressable>
       </View>
 
-      <Text className="text-base_color text-[12px] mb-2">Day</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Day</Text>
       <Pressable
         onPress={() => setShowDayPicker(!showDayPicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         <Text className={selectedDay ? "text-black" : "text-base_color"}>
           {selectedDay || "Select Day"}
@@ -228,7 +229,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
       </Pressable>
 
       {showDayPicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <View className="font-poppins mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
           {days.map((day) => (
             <Pressable
               key={day}
@@ -236,12 +237,12 @@ const AddDietMeals: React.FC<AddMealProps> = ({
                 setSelectedDay(day);
                 setShowDayPicker(false);
               }}
-              className="p-4 border-b border-gray-100"
+              className="font-poppins p-4 border-b border-gray-100"
             >
               <Text
                 className={
                   selectedDay === day
-                    ? "text-primary font-semibold"
+                    ? "text-primary font-poppins-semibold"
                     : "text-black"
                 }
               >
@@ -252,10 +253,10 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         </View>
       )}
 
-      <Text className="text-base_color text-[12px] mb-2">Time</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Time</Text>
       <Pressable
         onPress={() => setShowTimePicker(!showTimePicker)}
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         <Text className={selectedTime ? "text-black" : "text-base_color"}>
           {selectedTime || "Select Time"}
@@ -264,7 +265,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
       </Pressable>
 
       {showTimePicker && (
-        <View className="mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <View className="font-poppins mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
           {times.map((time) => (
             <Pressable
               key={time}
@@ -272,12 +273,12 @@ const AddDietMeals: React.FC<AddMealProps> = ({
                 setSelectedTime(time);
                 setShowTimePicker(false);
               }}
-              className="p-4 border-b border-gray-100"
+              className="font-poppins p-4 border-b border-gray-100"
             >
               <Text
                 className={
                   selectedTime === time
-                    ? "text-primary font-semibold"
+                    ? "text-primary font-poppins-semibold"
                     : "text-black"
                 }
               >
@@ -288,16 +289,17 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         </View>
       )}
 
-      <Text className="text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Title</Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
         placeholder="Enter meal title"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -305,50 +307,52 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         multiline
         numberOfLines={4}
         textAlignVertical="top"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Price (AED)</Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
         placeholder="Enter price"
         keyboardType="numeric"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
       <Pressable
         onPress={pickImage}
-        className="mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="w-12 h-12 rounded-lg" />
+          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
         ) : (
-          <Text className="text-base_color">Upload Image</Text>
+          <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
         <Feather name="upload" size={20} color="#666" />
       </Pressable>
 
-      <View className="flex-row gap-3 mb-4">
+      <View className="font-poppins flex-row gap-3 mb-4">
         <Pressable
           onPress={onClose}
-          className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
           disabled={uploading}
         >
-          <Text className="text-faded_black text-center font-medium">
+          <Text className="text-faded_black text-center font-poppins-medium">
             Cancel
           </Text>
         </Pressable>
         <TouchableOpacity
           onPress={handleSubmit}
-          className="flex-1 p-4 bg-[#FF7629] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
           disabled={uploading}
           style={{ opacity: uploading ? 0.5 : 1 }}
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-poppins-medium">
             {uploading ? "Adding..." : "Add"}
           </Text>
         </TouchableOpacity>
@@ -359,8 +363,8 @@ const AddDietMeals: React.FC<AddMealProps> = ({
   if (Platform.OS === "web") {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white rounded-3xl p-6 w-[90%] max-w-[500px] max-h-[90%]">
+        <View className="font-poppins flex-1 justify-center items-center bg-black/50">
+          <View className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px] max-h-[90%]">
             {content}
           </View>
         </View>
@@ -370,14 +374,14 @@ const AddDietMeals: React.FC<AddMealProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="flex-1 bg-black/50 justify-end">
+      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{
               transform: [{ translateY }],
               opacity,
             }}
-            className="bg-white rounded-t-3xl p-6"
+            className="font-poppins bg-white rounded-t-3xl p-6"
           >
             {content}
           </Animated.View>

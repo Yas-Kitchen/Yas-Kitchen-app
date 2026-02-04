@@ -8,9 +8,9 @@ type AddonTypes = {
 
 const TopAddons = ({productName, orders} : AddonTypes) => {
   return (
-      <View className="flex-row justify-between">
-        <Text className="text-base_color text-[12px]">{productName}</Text>
-        <Text className="text-primary text-[12px]">{orders} orders</Text>
+      <View className="font-poppins flex-row justify-between">
+        <Text className="font-poppins text-base_color text-[12px]">{productName}</Text>
+        <Text className="font-poppins text-primary text-[12px]">{orders} orders</Text>
       </View>
   );
 };

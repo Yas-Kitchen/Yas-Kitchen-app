@@ -2,9 +2,11 @@ import api from "@/services/api";
 import { userAPI } from "@/services/api/user.api";
 import { UserTypes } from "@/types/user.types";
 import { useState } from "react";
-import { Alert } from "react-native";
+import { supabase } from "@/lib/supabase";
+import { useAlert } from "@/context/AlertContext";
 
 export const useUserAPI = () => {
+  const { showAlert } = useAlert();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<UserTypes[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -34,10 +36,10 @@ export const useUserAPI = () => {
     } catch (err: any) {
       console.log("Failed to fetch all users", err);
       setError(err?.message || "Unable to load users");
-      Alert.alert(
+      showAlert(
         "Users unavailable",
         err?.response?.data?.detail?.message ||
-          "Failed to fetch users. Please try again later."
+        "Failed to fetch users. Please try again later."
       );
     } finally {
       setLoading(false);
@@ -97,12 +99,49 @@ export const useUserAPI = () => {
         console.warn("Invalid status :", newStatus);
         return;
       }
-      Alert.alert("Success", `User status has been change to ${newStatus}`);
+      showAlert("Success", `User status has been change to ${newStatus}`);
       await getAllUsers();
     } catch (err: any) {
       console.error("Update user api error :", err);
       setError(err?.message || "Unable to change user status");
-      Alert.alert("Failed", "Failed to change user status ");
+      showAlert("Failed", "Failed to change user status ");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleUserPasswordReset = async (
+    userId: string,
+    currentIsPasswordSet: boolean
+  ) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const newStatus = !currentIsPasswordSet;
+      const { error } = await supabase
+        .from("users")
+        .update({ is_password_set: newStatus })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      // Optimistic update or refetch
+      setUsers(
+        users.map((u) =>
+          u.id === userId ? { ...u, is_password_set: newStatus } : u
+        )
+      );
+
+      const action = newStatus
+        ? "Marked as Password Set"
+        : "Reset Allowed (Password Unset)";
+      showAlert("Success", `User ${action}`);
+      return true;
+    } catch (err: any) {
+      console.error("Failed to toggle password reset:", err);
+      setError(err?.message || "Failed to toggle password reset");
+      showAlert("Error", "Failed to update password status");
+      return false;
     } finally {
       setLoading(false);
     }
@@ -142,6 +181,7 @@ export const useUserAPI = () => {
     users,
     updateUser,
     updateUserStatus,
+    toggleUserPasswordReset,
     deleteUser,
     error,
     user,

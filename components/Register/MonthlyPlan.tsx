@@ -147,23 +147,23 @@ const MonthlyPlan = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center py-10">
+      <View className="font-poppins flex-1 items-center justify-center py-10">
         <ActivityIndicator size="large" color="#FF6F00" />
-        <Text className="text-base_color mt-2">Loading plans...</Text>
+        <Text className="font-poppins text-base_color mt-2">Loading plans...</Text>
       </View>
     );
   }
 
   if (!foodPlans || foodPlans.length === 0) {
     return (
-      <View className="flex-1 items-center justify-center py-10">
-        <Text className="text-base_color">No plans available</Text>
+      <View className="font-poppins flex-1 items-center justify-center py-10">
+        <Text className="font-poppins text-base_color">No plans available</Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-col">
+    <View className="font-poppins flex-col">
       {foodPlans.map((plan: any) => {
         let isSelected = false;
         if (plan.key === "Diet") {
@@ -198,35 +198,34 @@ const MonthlyPlan = () => {
             }}
           >
             <Pressable onPress={() => handlePress(plan)}>
-              <View className="overflow bg-[#F0F1EB] pr-10 flex-row">
+              <View className="font-poppins overflow bg-[#F0F1EB] pr-10 flex-row">
                 <Image
                   style={{ height, width }}
                   source={{ uri: plan.image_url }}
-                  className="max-w-28 max-h-32 web:max-w-24 web:max-h-24"
+                  className="font-poppins max-w-28 max-h-32 web:max-w-24 web:max-h-24"
                 />
-                <View className="flex-row pt-6 gap-1 ml-2 w-[75%]">
-                  <View className="flex-col web:w-[40%] w-1/2">
-                    <Text className="text-[14px] font-semibold web:text-[12px]">
+                <View className="font-poppins flex-row pt-6 gap-1 ml-2 w-[75%]">
+                  <View className="font-poppins flex-col web:w-[40%] w-1/2">
+                    <Text className="text-[14px] font-poppins-semibold web:text-[12px]">
                       {plan.name}
                     </Text>
-                    <Text className="text-base_color text-[12px] text-regular web:text-[9px] flex-1">
+                    <Text className="font-poppins text-base_color text-[12px] text-regular web:text-[9px] flex-1">
                       {plan.description}
                     </Text>
                   </View>
-                  <View className="flex-row text-center items-baseline gap-1 absolute right-1 top-5">
+                  <View className="font-poppins flex-row text-center items-baseline gap-1 absolute right-1 top-5">
                     <Image
-                      className="w-[10px] h-[10px] max-w-[10px] max-h-[10px] fill-primary"
+                      className="font-poppins w-[10px] h-[10px] max-w-[10px] max-h-[10px] fill-primary"
                       source={require("@assets/Shared/dirham.svg")}
                     />
-                    <Text className="text-primary font-semibold web:text-[10px]">
+                    <Text className="text-primary font-poppins-semibold web:text-[10px]">
                       {plan.price} /mo
                     </Text>
                   </View>
                 </View>
                 <View
-                  className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
-                    isSelected ? "bg-primary" : "bg-base_color/10"
-                  }`}
+                  className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${isSelected ? "bg-primary" : "bg-base_color/10"
+                    }`}
                 />
               </View>
             </Pressable>
@@ -236,57 +235,71 @@ const MonthlyPlan = () => {
 
       {/* Kids Plan */}
       {kidsPlan && (
-        <Pressable onPress={handleKidsPress}>
-          <Animated.View
-            className="overflow bg-[#F0F1EB] mt-5 pr-10 overflow-hidden rounded-2xl flex-row border-2"
-            style={{
-              borderColor: animationValues["Kids"].interpolate({
-                inputRange: [0, 1],
-                outputRange: ["transparent", "#FF6F00"],
-              }),
-              transform: [
-                {
-                  scale: animationValues["Kids"].interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 1.05],
-                  }),
-                },
-              ],
-            }}
-          >
-            <Image
+        (() => {
+          const plan = kidsPlan;
+          const isSelected = has_kids_plan;
+
+          const screenWidth = Dimensions.get("window").width;
+          const width = Math.min(Math.max(screenWidth * 0.45, 200), 110);
+          const height = width * 1;
+
+          const borderColor = animationValues["Kids"].interpolate({
+            inputRange: [0, 1],
+            outputRange: ["transparent", "#FF6F00"],
+          });
+
+          const scale = animationValues["Kids"].interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 1.05],
+          });
+
+          return (
+            <Animated.View
+              key="Kids"
               style={{
-                height: Dimensions.get("window").width * 0.25,
-                width: Dimensions.get("window").width * 0.25,
+                borderColor,
+                borderWidth: 2,
+                transform: [{ scale }],
+                borderRadius: 16,
+                marginTop: 20,
+                overflow: "hidden",
               }}
-              source={{ uri: kidsPlan.image_url }}
-            />
-            <View className="flex-row gap-1 pt-4">
-              <View className="flex-col w-1/2">
-                <Text className="text-[14px] font-semibold web:text-[12px]">
-                  {kidsPlan.name}
-                </Text>
-                <Text className="text-base_color text-[12px] web:text-[9px] text-regular">
-                  {kidsPlan.description}
-                </Text>
-              </View>
-              <View className="flex-row text-center items-baseline gap-1 justify-items-end w-1/2">
-                <Image
-                  className="w-[10px] h-[10px] fill-primary"
-                  source={require("@assets/Shared/dirham.svg")}
-                />
-                <Text className="text-primary font-semibold web:text-[10px]">
-                  {kidsPlan.price_per_month || kidsPlan.price} /mo
-                </Text>
-              </View>
-            </View>
-            {has_kids_plan ? (
-              <View className="rounded-[5px] absolute bottom-4 right-3 bg-primary w-5 h-5" />
-            ) : (
-              <View className="rounded-[5px] absolute bottom-4 right-3 bg-base_color/10 w-5 h-5" />
-            )}
-          </Animated.View>
-        </Pressable>
+            >
+              <Pressable onPress={handleKidsPress}>
+                <View className="font-poppins overflow bg-[#F0F1EB] pr-10 flex-row">
+                  <Image
+                    style={{ height, width }}
+                    source={{ uri: plan.image_url }}
+                    className="font-poppins max-w-28 max-h-32 web:max-w-24 web:max-h-24"
+                  />
+                  <View className="font-poppins flex-row pt-6 gap-1 ml-2 w-[75%]">
+                    <View className="font-poppins flex-col web:w-[40%] w-1/2">
+                      <Text className="text-[14px] font-poppins-semibold web:text-[12px]">
+                        {plan.name}
+                      </Text>
+                      <Text className="font-poppins text-base_color text-[12px] text-regular web:text-[9px] flex-1">
+                        {plan.description}
+                      </Text>
+                    </View>
+                    <View className="font-poppins flex-row text-center items-baseline gap-1 absolute right-1 top-5">
+                      <Image
+                        className="font-poppins w-[10px] h-[10px] max-w-[10px] max-h-[10px] fill-primary"
+                        source={require("@assets/Shared/dirham.svg")}
+                      />
+                      <Text className="text-primary font-poppins-semibold web:text-[10px]">
+                        {plan.price_per_month || plan.price} /mo
+                      </Text>
+                    </View>
+                  </View>
+                  <View
+                    className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${isSelected ? "bg-primary" : "bg-base_color/10"
+                      }`}
+                  />
+                </View>
+              </Pressable>
+            </Animated.View>
+          );
+        })()
       )}
     </View>
   );

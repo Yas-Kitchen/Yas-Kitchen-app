@@ -9,9 +9,10 @@ import {
   TodaySpecialUpdate,
 } from "@/types/extras.types";
 import { useState } from "react";
-import { Alert } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 
 export const useExtrasApi = () => {
+  const { showAlert } = useAlert();
   const [specials, setSpecials] = useState<TodaySpecial[]>([]);
   const [addons, setAddons] = useState<Addon[]>([]);
   const [loading, setLoading] = useState(false);
@@ -82,7 +83,7 @@ export const useExtrasApi = () => {
       };
 
       await extrasAPI.createSpecial(payload);
-      Alert.alert("Success", "Special added successfully");
+      showAlert("Success", "Special added successfully");
       await fetchTodaySpecials();
       return true;
     } catch (err: any) {
@@ -128,7 +129,7 @@ export const useExtrasApi = () => {
         ...(imageUrl && { image_url: imageUrl }),
       };
       await extrasAPI.updateSpecial(specialID, payload);
-      Alert.alert("Success", "Special has been updated successfully");
+      showAlert("Success", "Special has been updated successfully");
     } catch (err: any) {
       console.error("Failed to update specials", err);
       setError(err?.message || "Failed to update specials");
@@ -142,7 +143,7 @@ export const useExtrasApi = () => {
     setError(null);
     try {
       await extrasAPI.deleteSpecial(specialId);
-      Alert.alert("Success", "Special has been deleted successfully");
+      showAlert("Success", "Special has been deleted successfully");
     } catch (err: any) {
       console.error("Failed to delete special", err);
       setError(err?.message || "Failed to delete special");
@@ -245,13 +246,13 @@ export const useExtrasApi = () => {
     setError(null);
     try {
       await extrasAPI.deleteAddon(addonId);
-      Alert.alert("Success", "Successfully deleted the addon");
+      showAlert("Success", "Successfully deleted the addon");
       await fetchAddons();
       return true;
     } catch (err: any) {
       console.error("Failed to delete addon with error :", err);
       setError(err?.message || "failed to delete addon");
-      Alert.alert("Error", err?.message || "Failed to delete addon");
+      showAlert("Error", err?.message || "Failed to delete addon");
       return false;
     } finally {
       setLoading(false);

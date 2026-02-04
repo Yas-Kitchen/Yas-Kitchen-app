@@ -116,15 +116,15 @@ const DietPlan = () => {
 
   if (userMealOpen && selectedUser) {
     return (
-      <View className="flex-1 ">
-        <View className="flex-1 p-4">
+      <View className="font-poppins flex-1 ">
+        <View className="font-poppins flex-1 p-4">
           {!userDietPlan && !mealPlanLoading ? (
-            <View className="flex-1 items-center justify-center p-8">
-              <View className="p-6 rounded-2xl items-center w-full">
-                <Text className="text-lg font-semibold mt-4 text-center">
+            <View className="font-poppins flex-1 items-center justify-center p-8">
+              <View className="font-poppins p-6 rounded-2xl items-center w-full">
+                <Text className="text-lg font-poppins-semibold mt-4 text-center">
                   No Diet Plan Found
                 </Text>
-                <Text className="text-base_color text-sm mt-2 text-center">
+                <Text className="font-poppins text-base_color text-sm mt-2 text-center">
                   This user doesn't have a personalized diet plan yet.
                 </Text>
                 <TouchableOpacity
@@ -133,10 +133,10 @@ const DietPlan = () => {
                     setSelectedUser(selectedUser);
                     setSelectedDietUser(selectedUser);
                   }}
-                  className="mt-6 bg-primary px-6 py-3 rounded-xl flex-row items-center gap-2"
+                  className="font-poppins mt-6 bg-primary px-6 py-3 rounded-xl flex-row items-center gap-2"
                 >
                   <Feather name="plus" size={20} color="#FFFFFF" />
-                  <Text className="text-white font-semibold">
+                  <Text className="text-white font-poppins-semibold">
                     Create Diet Plan
                   </Text>
                 </TouchableOpacity>
@@ -157,66 +157,67 @@ const DietPlan = () => {
 
   return (
     <ScrollView>
-      <View className="gap-3">
-        <View className="flex-row justify-between items-center">
-          <Text className="text-[17px] font-semibold">Diet Plan</Text>
+      <View className="font-poppins gap-3">
+        <View className="font-poppins flex-row justify-between items-center">
+          <Text className="text-[17px] font-poppins-semibold">Diet Plan</Text>
           {hasActiveFilters && (
             <TouchableOpacity onPress={clearSearch}>
-              <Text className="text-primary text-xs font-semibold">
+              <Text className="text-primary text-xs font-poppins-semibold">
                 Clear All
               </Text>
             </TouchableOpacity>
           )}
         </View>
 
-        <View className="flex-row justify-between gap-3 mt-1">
-          <View className="flex-1 relative">
+        <View className="font-poppins flex-row justify-between gap-3 mt-1">
+          <View className="font-poppins flex-1 relative">
             <TextInput
-              className="p-4 pr-10 bg-white border text-xs border-base_color/10 rounded-xl"
+              className="font-poppins p-4 pr-10 bg-white border text-xs border-base_color/10 rounded-xl"
               placeholder="Search by name, phone, category..."
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
               }}
+              style={{ fontSize: 16 }}
             />
             {searchQuery.length > 0 ? (
               <TouchableOpacity
                 onPress={() => {
                   clearSearch();
                 }}
-                className="absolute right-3 top-4"
+                className="font-poppins absolute right-3 top-4"
               >
                 <Feather name="x-circle" size={16} color="#9CA3AF" />
               </TouchableOpacity>
             ) : (
-              <View className="absolute right-3 top-4">
+              <View className="font-poppins absolute right-3 top-4">
                 <Feather name="search" size={16} color="#9CA3AF" />
               </View>
             )}
           </View>
           <TouchableOpacity
-            onPress={() => {}}
-            className="p-3 bg-primary rounded-xl items-center justify-center"
+            onPress={() => { }}
+            className="font-poppins p-3 bg-primary rounded-xl items-center justify-center"
           >
-            <Text className="text-white text-xs">Add Users</Text>
+            <Text className="font-poppins text-white text-xs">Add Users</Text>
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row justify-between items-center">
-          <Text className="text-xs text-base_color">
+        <View className="font-poppins flex-row justify-between items-center">
+          <Text className="font-poppins text-xs text-base_color">
             Showing {filteredUsers.length} of {dietUsers.length} users
           </Text>
         </View>
 
         {filteredUsers.length === 0 ? (
-          <View className="p-10 items-center bg-white rounded-2xl mt-5">
+          <View className="font-poppins p-10 items-center bg-white rounded-2xl mt-5">
             <Feather name="inbox" size={48} color="#D1D5DB" />
-            <Text className="text-faded_black text-center mt-3 font-semibold text-base">
+            <Text className="text-faded_black text-center mt-3 font-poppins-semibold text-base">
               {hasActiveFilters
                 ? "No users match your filters"
                 : "No users found"}
             </Text>
-            <Text className="text-base_color text-center mt-2 text-xs">
+            <Text className="font-poppins text-base_color text-center mt-2 text-xs">
               {hasActiveFilters
                 ? "Try adjusting your search or filter criteria"
                 : "Add users to get started"}
@@ -224,9 +225,9 @@ const DietPlan = () => {
             {hasActiveFilters && (
               <TouchableOpacity
                 onPress={clearSearch}
-                className="mt-4 px-6 py-3 bg-primary/10 rounded-xl"
+                className="font-poppins mt-4 px-6 py-3 bg-primary/10 rounded-xl"
               >
-                <Text className="text-primary text-sm font-semibold">
+                <Text className="text-primary text-sm font-poppins-semibold">
                   Clear Filters
                 </Text>
               </TouchableOpacity>
@@ -242,7 +243,7 @@ const DietPlan = () => {
               category={user.category}
               status={user.status}
               joindate={user.created_at}
-              onStatusChange={() => {}}
+              onStatusChange={() => { }}
               onPress={() => {
                 setSelectedUser(user);
                 setSelectedDietUser(user);
@@ -253,7 +254,7 @@ const DietPlan = () => {
         )}
       </View>
 
-      <View className="h-32" />
+      <View className="font-poppins h-32" />
     </ScrollView>
   );
 };

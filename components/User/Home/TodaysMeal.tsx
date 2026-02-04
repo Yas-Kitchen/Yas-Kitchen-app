@@ -51,26 +51,26 @@ const TodaysMeal = ({
 
   return (
     <View>
-      <View className="border-2 bg-[#F1EFE8] border-primary rounded-2xl overflow-hidden items-center">
+      <View className="font-poppins border-2 bg-[#F1EFE8] border-primary rounded-2xl overflow-hidden items-center">
         <Image style={{ width, height }} source={imageMap[image]} />
-        <View className="bg-white p-3 gap-2">
-          <View className="flex-row justify-between">
-            <Text className="text-[16px] font-semibold">
+        <View className="font-poppins bg-white p-3 gap-2">
+          <View className="font-poppins flex-row justify-between">
+            <Text className="text-[16px] font-poppins-semibold">
               {lunch ? "Lunch:" : "Dinner:"} {name}
             </Text>
-            <View className="bg-button_bg/10 mx-2 flex-row gap-1 rounded-lg p-1">
+            <View className="font-poppins bg-button_bg/10 mx-2 flex-row gap-1 rounded-lg p-1">
               <FontAwesome name="star" size={16} color="#FFC107" />
-              <Text className="text-[12px] font-medium">{rating}</Text>
+              <Text className="text-[12px] font-poppins-medium">{rating}</Text>
             </View>
           </View>
 
-          <View className="flex-row w-full justify-between">
-            <Text className="w-[70%] leading-5 text-base_color text-[12px]">
+          <View className="font-poppins flex-row w-full justify-between">
+            <Text className="font-poppins w-[70%] leading-5 text-base_color text-[12px]">
               {description}
             </Text>
 
             {isClicked ? (
-              <View className="flex-row gap-[1px] mr-2">
+              <View className="font-poppins flex-row gap-[1px] mr-2">
                 {stars.map((star) => (
                   <TouchableOpacity
                     key={star}
@@ -99,15 +99,15 @@ const TodaysMeal = ({
             ) : (
               <TouchableOpacity
                 onPress={() => setIsClicked(true)}
-                className="rounded-full bg-button_bg p-2 h-10 w-14 items-center justify-center"
+                className="font-poppins rounded-full bg-button_bg p-2 h-10 w-14 items-center justify-center"
               >
-                <Text className="font-medium text-[12px]">Rate</Text>
+                <Text className="font-poppins-medium text-[12px]">Rate</Text>
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        <Text className="absolute top-2 right-2 bg-button_bg/30 p-2 rounded-full text-[10px] font-medium">
+        <Text className="absolute top-2 right-2 bg-button_bg/30 p-2 rounded-full text-[10px] font-poppins-medium">
           {availability}
         </Text>
       </View>

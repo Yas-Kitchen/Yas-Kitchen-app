@@ -8,9 +8,9 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Alert,
   Image,
 } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 import * as ImagePicker from "expo-image-picker";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { useMealsAPI } from "@/hooks/useMealsAPI";
@@ -28,13 +28,16 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const [categoryName, setCategoryName] = useState("");
   const [description, setDescription] = useState("");
   const [imageUri, setImageUri] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const { setPopupNames, setCuisineRefreshKey } = useGlobalContext();
-  const { createCuisine, error, loading, fetchCuisineDetails } = useMealsAPI();
+  const { createCuisine, error, fetchCuisineDetails } = useMealsAPI();
+  const { showAlert } = useAlert();
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
+      showAlert(
         "Permission denied",
         "Permission to access media library is required!"
       );
@@ -55,96 +58,104 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 
   const handleAddCategory = async () => {
     if (!categoryName.trim()) {
-      Alert.alert("Error", "Please enter a category name");
+      showAlert("Error", "Please enter a category name");
       return;
     }
     if (!description.trim()) {
-      Alert.alert("Error", "Please enter a description");
+      showAlert("Error", "Please enter a description");
       return;
     }
 
+    setIsLoading(true);
     let uploadedImageUrl = "";
 
-    if (imageUri) {
-      try {
+    try {
+      if (imageUri) {
+        setLoadingMessage("Uploading...");
         uploadedImageUrl = await mealsAPI.uploadMealImage(imageUri);
-      } catch (err) {
-        Alert.alert(
-          "Image Upload Failed",
-          "Please try again or choose another image."
-        );
-        console.error("Upload error:", err);
-        return;
       }
-    }
 
-    const payload = {
-      name: categoryName.trim(),
-      description: description.trim(),
-      image_url: uploadedImageUrl,
-      is_active: true,
-    };
+      setLoadingMessage("Adding...");
+      const payload = {
+        name: categoryName.trim(),
+        description: description.trim(),
+        image_url: uploadedImageUrl,
+        is_active: true,
+      };
 
-    await createCuisine(payload);
+      await createCuisine(payload);
 
-    if (!error) {
-      Alert.alert(
-        "Success",
-        "Category created! Please create a meal plan for this cuisine in your database before adding meals."
+      if (!error) {
+        showAlert(
+          "Success",
+          "Category created successfully! You can now start adding meals via the 'Add Meal' button."
+        );
+      }
+      setCategoryName("");
+      setDescription("");
+      setImageUri(null);
+      setPopupNames("");
+      await fetchCuisineDetails();
+      setCuisineRefreshKey(Date.now());
+    } catch (err: any) {
+      showAlert(
+        "Error",
+        err.message || "Failed to create category. Please try again."
       );
+      console.error("Creation error:", err);
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
     }
-    setCategoryName("");
-    setDescription("");
-    setImageUri(null);
-    setPopupNames("");
-    await fetchCuisineDetails();
-    setCuisineRefreshKey(Date.now());
   };
 
   return (
     <Modal visible={open} transparent animationType="fade">
-      <View className="flex-1 justify-center items-center bg-black/50">
-        <View className="bg-white rounded-3xl p-6 w-[90%] max-w-[400px]">
-          <View className="flex-row items-center justify-between mb-6">
-            <Text className="text-faded_black text-[20px] font-bold">
+      <Pressable className="font-poppins flex-1 justify-center items-center bg-black/50" onPress={onClose}>
+        <Pressable
+          className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px]"
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View className="font-poppins flex-row items-center justify-between mb-6">
+            <Text className="text-faded_black text-[20px] font-poppins-bold">
               Add New Category
             </Text>
-            <Pressable onPress={onClose} disabled={loading}>
+            <Pressable onPress={onClose} disabled={isLoading}>
               <Feather name="x" size={24} color="#666" />
             </Pressable>
           </View>
 
-          <Text className="text-base_color text-[12px] mb-2">
+          <Text className="font-poppins text-base_color text-[12px] mb-2">
             Category Name
           </Text>
           <TextInput
             value={categoryName}
             onChangeText={setCategoryName}
             placeholder="e.g., South Indian, Continental"
-            className="mb-6 p-4 bg-[#F5F5F5] rounded-xl"
+            className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl"
             placeholderTextColor="#999"
-            editable={!loading}
+            editable={!isLoading}
           />
 
-          <Text className="text-base_color text-[12px] mb-2">Description</Text>
+          <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
             placeholder="Enter description"
-            className="mb-6 p-4 bg-[#F5F5F5] rounded-xl"
+            className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl"
             placeholderTextColor="#999"
-            editable={!loading}
+            editable={!isLoading}
             multiline
             numberOfLines={3}
           />
 
-          <Text className="text-base_color text-[12px] mb-2">Upload Image</Text>
+          <Text className="font-poppins text-base_color text-[12px] mb-2">Upload Image</Text>
           <TouchableOpacity
             onPress={pickImage}
-            className="mb-4 p-4 bg-[#F5F5F5] rounded-xl items-center justify-center"
-            disabled={loading}
+            className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl items-center justify-center"
+            disabled={isLoading}
           >
-            <Text className="text-faded_black font-medium">Choose Image</Text>
+            <Text className="text-faded_black font-poppins-medium">Choose Image</Text>
           </TouchableOpacity>
           {imageUri ? (
             <Image
@@ -158,31 +169,29 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             />
           ) : null}
 
-          <View className="flex-row gap-3">
+          <View className="font-poppins flex-row gap-3">
             <Pressable
               onPress={onClose}
-              className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
-              disabled={loading}
+              className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+              disabled={isLoading}
             >
-              <Text className="text-faded_black text-center font-medium">
+              <Text className="text-faded_black text-center font-poppins-medium">
                 Cancel
               </Text>
             </Pressable>
             <TouchableOpacity
               onPress={handleAddCategory}
-              className="flex-1 p-4 bg-[#FF7629] rounded-xl"
-              disabled={loading}
-              style={{ opacity: loading ? 0.5 : 1 }}
+              className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
+              disabled={isLoading}
+              style={{ opacity: isLoading ? 0.5 : 1 }}
             >
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text className="text-white text-center font-medium">Add</Text>
-              )}
+              <Text className="text-white text-center font-poppins-medium">
+                {loadingMessage || "Add"}
+              </Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 };

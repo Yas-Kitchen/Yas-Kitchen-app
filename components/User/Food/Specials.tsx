@@ -75,13 +75,13 @@ const Specials = () => {
 
   if (loading) {
     return (
-      <View className="my-2.5 gap-4">
+      <View className="font-poppins my-2.5 gap-4">
         {[1, 2].map((i) => (
-          <View key={i} className="flex-row items-center gap-2.5">
-            <View className="w-32 h-[100px] rounded-xl bg-[#E0E0E0] opacity-60" />
-            <View className="flex-1">
-              <View className="w-[80%] h-5 rounded-md bg-[#E0E0E0] opacity-60 mb-2" />
-              <View className="w-[60%] h-4 rounded-md bg-[#E0E0E0] opacity-60" />
+          <View key={i} className="font-poppins flex-row items-center gap-2.5">
+            <View className="font-poppins w-32 h-[100px] rounded-xl bg-[#E0E0E0] opacity-60" />
+            <View className="font-poppins flex-1">
+              <View className="font-poppins w-[80%] h-5 rounded-md bg-[#E0E0E0] opacity-60 mb-2" />
+              <View className="font-poppins w-[60%] h-4 rounded-md bg-[#E0E0E0] opacity-60" />
             </View>
           </View>
         ))}
@@ -91,8 +91,8 @@ const Specials = () => {
 
   if (!loading && specials.length === 0) {
     return (
-      <View className="mt-12 items-center justify-center">
-        <Text className="text-base_color font-medium text-[14px]">
+      <View className="font-poppins mt-12 items-center justify-center">
+        <Text className="text-base_color font-poppins-medium text-[14px]">
           No specials available today
         </Text>
       </View>
@@ -100,8 +100,8 @@ const Specials = () => {
   }
 
   return (
-    <View className="mt-2 gap-3">
-      <Text className="text-faded_black font-semibold text-[17px]">
+    <View className="font-poppins mt-2 gap-3">
+      <Text className="text-faded_black font-poppins-semibold text-[17px]">
         Today&apos;s Special Items
       </Text>
       {sortedItems.map((item) => {
@@ -114,10 +114,10 @@ const Specials = () => {
             }`}
             pointerEvents={expired ? "none" : "auto"}
           >
-            <View className="flex-row">
-              <View className="relative">
+            <View className="font-poppins flex-row">
+              <View className="font-poppins relative">
                 <Image
-                  className="p-2 rounded-lg"
+                  className="font-poppins p-2 rounded-lg"
                   style={{ width, height }}
                   source={{ uri: item.image_url }}
                 />
@@ -134,56 +134,56 @@ const Specials = () => {
                   />
                 )}
               </View>
-              <View className="flex-col">
-                <Text className="text-[14px] font-semibold">{item.name}</Text>
-                <Text className="w-[80%] h-fit max-w-[80%] text-[12px] text-base_color mt-1">
+              <View className="font-poppins flex-col">
+                <Text className="text-[14px] font-poppins-semibold">{item.name}</Text>
+                <Text className="font-poppins w-[80%] h-fit max-w-[80%] text-[12px] text-base_color mt-1">
                   {item.description}
                 </Text>
                 {cart[item.id] ? (
-                  <View className="flex-row items-center mt-2">
+                  <View className="font-poppins flex-row items-center mt-2">
                     <TouchableOpacity
                       onPress={() => handleDecrement(item)}
-                      className="bg-gray-200 w-8 h-8 rounded-full items-center justify-center"
+                      className="font-poppins bg-gray-200 w-8 h-8 rounded-full items-center justify-center"
                       activeOpacity={0.7}
                       disabled={expired}
                     >
-                      <Text className="text-lg">-</Text>
+                      <Text className="font-poppins text-lg">-</Text>
                     </TouchableOpacity>
 
-                    <Text className="mx-2 font-semibold">{cart[item.id]}</Text>
+                    <Text className="mx-2 font-poppins-semibold">{cart[item.id]}</Text>
 
                     <TouchableOpacity
                       onPress={() => handleIncrement(item)}
-                      className="bg-orange-500 w-8 h-8 rounded-full items-center justify-center"
+                      className="font-poppins bg-orange-500 w-8 h-8 rounded-full items-center justify-center"
                       activeOpacity={0.7}
                       disabled={expired}
                     >
-                      <Text className="text-white text-lg">+</Text>
+                      <Text className="font-poppins text-white text-lg">+</Text>
                     </TouchableOpacity>
                   </View>
                 ) : (
                   <TouchableOpacity
                     onPress={() => handleAddToCart(item)}
-                    className="bg-primary/10 w-28 items-center p-2 rounded-xl mt-2"
+                    className="font-poppins bg-primary/10 w-28 items-center p-2 rounded-xl mt-2"
                     activeOpacity={0.7}
                     disabled={expired}
                   >
-                    <Text className="text-primary text-[12px]">
+                    <Text className="font-poppins text-primary text-[12px]">
                       Add to Order
                     </Text>
                   </TouchableOpacity>
                 )}
               </View>
-              <View className="flex-row items-center gap-1 mr-5 absolute right-0">
+              <View className="font-poppins flex-row items-center gap-1 mr-5 absolute right-0">
                 <Image
-                  className="w-2.5 h-2.5"
+                  className="font-poppins w-2.5 h-2.5"
                   source={require("@assets/Shared/dirham.svg")}
                 />
-                <Text className="text-primary font-medium text-[13px]">
+                <Text className="text-primary font-poppins-medium text-[13px]">
                   {item.price}
                 </Text>
               </View>
-              <Text className="text-base_color absolute bottom-0 right-3 font-medium text-[9px]">
+              <Text className="text-base_color absolute bottom-0 right-3 font-poppins-medium text-[9px]">
                 {item.cutoff_time}
               </Text>
             </View>

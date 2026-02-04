@@ -48,6 +48,7 @@ const AllPopup = () => {
       <AddMeal
         open={popupNames === "addmeal"}
         onClose={() => setPopupNames("")}
+        // TODO: Make this dynamic by fetching the category ID for "Regular"
         categoryId="8143039e-b302-48a9-958e-0f68560e4bb6"
         cuisineId={selectedCategory}
         onSuccess={() => mealListRef.current?.refresh()}

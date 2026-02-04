@@ -63,14 +63,14 @@ const Stepper = ({ activeStep }: any) => {
   }, [activeStep, progress]);
 
   return (
-    <View className="flex-row justify-center mt-6">
+    <View className="font-poppins flex-row justify-center mt-6">
       {steps.map((step, index) => {
         const { circleStyle, labelStyle, lineBackgroundStyle, lineForegroundStyle } =
           useStepStyles(progress, activeStep, step.id);
 
         return (
-          <View key={step.id} className="flex-row items-center">
-            <View className="items-center">
+          <View key={step.id} className="font-poppins flex-row items-center">
+            <View className="font-poppins items-center">
               <Animated.View
                 style={[
                   {

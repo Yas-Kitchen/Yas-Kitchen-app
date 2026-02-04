@@ -1,7 +1,8 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
-import { Text, TouchableOpacity, View, Alert } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 import DropDownPicker from "react-native-dropdown-picker";
 import MealList from "./MealList";
 import { AggregatedWeeklyMenu, CategoryDropdown } from "@/types/meals.types";
@@ -26,6 +27,7 @@ const getEmptyWeeklyMenu = (): AggregatedWeeklyMenu =>
 const WeeklyMeals = () => {
   const [open, setOpen] = useState(false);
   const [categories, setCategories] = useState<CategoryDropdown[]>([]);
+  const { showAlert } = useAlert();
 
   const {
     setPopupNames,
@@ -140,11 +142,11 @@ const WeeklyMeals = () => {
   return (
     <>
       <View
-        className="flex-row justify-between items-center text-[12px]"
-        style={{ zIndex: 500 }}
+        className="font-poppins flex-row justify-between items-center text-[12px]"
+        style={{ zIndex: 5000 }}
       >
-        <View className="flex-row gap-2">
-          <View className="w-40" style={{ zIndex: 500 }}>
+        <View className="font-poppins flex-row gap-2">
+          <View className="font-poppins w-40" style={{ zIndex: 5000 }}>
             <DropDownPicker
               open={open}
               value={selectedCategory}
@@ -174,7 +176,7 @@ const WeeklyMeals = () => {
                 borderRadius: 8,
                 backgroundColor: "white",
               }}
-              textStyle={{ fontSize: 12, color: "#FF7629" }}
+              textStyle={{ fontSize: 10, color: "#FF7629" }}
               disabled={categories.length === 0 || loading}
               disabledStyle={{ opacity: 0.5 }}
               renderListItem={({ item }) => (
@@ -194,14 +196,15 @@ const WeeklyMeals = () => {
                     }}
                     style={{ flex: 1 }}
                   >
-                    <Text style={{ fontSize: 12, color: "#FF7629" }}>
+                    <Text style={{ fontSize: 10, color: "#FF7629" }}>
                       {item.label}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
                       if (!item.value) return;
-                      Alert.alert(
+                      if (!item.value) return;
+                      showAlert(
                         "Delete Category",
                         `Are you sure you want to delete "${item.label}"?`,
                         [
@@ -243,11 +246,11 @@ const WeeklyMeals = () => {
 
           <TouchableOpacity
             onPress={() => setPopupNames("addcategory")}
-            className="flex-row items-center gap-1 bg-primary/10 rounded-lg"
+            className="font-poppins flex-row items-center gap-1 bg-primary/10 rounded-lg"
             style={{ height: 36, paddingHorizontal: 8 }}
           >
             <Feather name="folder-plus" size={16} color={"#FF7629"} />
-            <Text className="text-primary font-medium text-[12px]">
+            <Text className="text-primary font-poppins-medium text-[10px]">
               Add Category
             </Text>
           </TouchableOpacity>
@@ -255,12 +258,12 @@ const WeeklyMeals = () => {
           <TouchableOpacity
             onPress={() => {
               if (!selectedCategory) {
-                Alert.alert("Error", "Please select a category first");
+                showAlert("Error", "Please select a category first");
                 return;
               }
               setPopupNames("addmeal");
             }}
-            className="flex-row items-center gap-1 bg-primary/10 rounded-lg"
+            className="font-poppins flex-row items-center gap-1 bg-primary/10 rounded-lg"
             style={{
               height: 36,
               paddingHorizontal: 8,
@@ -269,26 +272,26 @@ const WeeklyMeals = () => {
             disabled={!selectedCategory}
           >
             <Feather name="plus" size={16} color={"#FF7629"} />
-            <Text className="text-primary font-medium text-[12px]">
+            <Text className="text-primary font-poppins-medium text-[10px]">
               Add Meal
             </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <View className="mt-5">
+      <View className="font-poppins mt-5">
         {categories.length === 0 ? (
           loading ? (
-            <Text className="text-gray-400 text-center mt-10">
+            <Text className="font-poppins text-gray-400 text-center mt-10">
               Loading categories...
             </Text>
           ) : (
-            <View className="items-center justify-center mt-10">
+            <View className="font-poppins items-center justify-center mt-10">
               <Feather name="folder-plus" size={48} color="#ddd" />
-              <Text className="text-gray-400 text-center mt-4 text-base">
+              <Text className="font-poppins text-gray-400 text-center mt-4 text-base">
                 No categories yet
               </Text>
-              <Text className="text-gray-400 text-center text-sm">
+              <Text className="font-poppins text-gray-400 text-center text-sm">
                 Create your first category to get started
               </Text>
             </View>
@@ -301,12 +304,12 @@ const WeeklyMeals = () => {
               onDeleteMeal={deleteMeals}
             />
           ) : (
-            <Text className="text-gray-400 text-center mt-10">
+            <Text className="font-poppins text-gray-400 text-center mt-10">
               No meals added for this cuisine yet
             </Text>
           )
         ) : (
-          <Text className="text-gray-400 text-center mt-10">
+          <Text className="font-poppins text-gray-400 text-center mt-10">
             Select a category to view meals
           </Text>
         )}

@@ -68,9 +68,9 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
   };
 
   return (
-    <View className="absolute bottom-0 left-0 right-0 pb-8 px-4 bg-transparent">
+    <View className="font-poppins absolute bottom-0 left-0 right-0 pb-8 px-4 bg-transparent">
       <View
-        className="bg-white border border-base_color/10 rounded-full shadow-2xl mx-2 overflow-hidden"
+        className="font-poppins bg-white border border-base_color/10 rounded-full shadow-2xl mx-2 overflow-hidden"
         style={{
           flexDirection: "row",
           position: "relative",
@@ -165,7 +165,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
 
 export default function RootLayout() {
   return (
-    <View className="flex-1 min-h-screen ">
+    <View className="font-poppins flex-1 min-h-screen ">
       <Tabs
         tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{

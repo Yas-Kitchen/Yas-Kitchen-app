@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
+  Image,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -31,7 +32,7 @@ const FoodStyle = () => {
       }
     };
     loadCategories();
-    
+
     //eslint-disable-next-line
   }, []);
 
@@ -48,17 +49,17 @@ const FoodStyle = () => {
 
   if (loading) {
     return (
-      <View className="mt-3 items-center justify-center py-10">
+      <View className="font-poppins mt-3 items-center justify-center py-10">
         <ActivityIndicator size="large" color="#FF6F00" />
-        <Text className="text-base_color mt-2">Loading cuisines...</Text>
+        <Text className="font-poppins text-base_color mt-2">Loading cuisines...</Text>
       </View>
     );
   }
 
   if (categories.length === 0) {
     return (
-      <View className="mt-3 items-center justify-center py-10">
-        <Text className="text-red-500">No cuisines available</Text>
+      <View className="font-poppins mt-3 items-center justify-center py-10">
+        <Text className="font-poppins text-red-500">No cuisines available</Text>
       </View>
     );
   }
@@ -71,7 +72,7 @@ const FoodStyle = () => {
   const itemHeight = itemWidth * 0.9;
 
   return (
-    <View className="mt-3">
+    <View className="font-poppins mt-3">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -145,18 +146,16 @@ const CuisineItem: React.FC<CuisineItemProps> = ({
   };
 
   return (
-    <View className="items-center">
+    <View className="font-poppins items-center">
       <TouchableOpacity onPress={onSelect}>
         <Animated.Image
-          className="rounded-2xl"
           source={getImageSource()}
-          style={[animatedStyle, { width, height }]}
+          style={[animatedStyle, { width, height, borderRadius: 16, marginBlockStart: 5 }]}
         />
       </TouchableOpacity>
       <Text
-        className={`text-[14px] mt-2 text-center ${
-          isSelected ? "text-primary font-semibold" : "text-base_color"
-        }`}
+        className={`text-[14px] mt-2 text-center ${isSelected ? "text-primary font-poppins-semibold" : "text-base_color"
+          }`}
       >
         {cuisine?.name || "Unknown"}
       </Text>

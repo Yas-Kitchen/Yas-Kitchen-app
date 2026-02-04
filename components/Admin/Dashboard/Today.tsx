@@ -7,8 +7,8 @@ import { DashboardData } from "@/types/dashboard.types";
 
 const Today = ({ data }: { data: DashboardData | null }) => {
   return (
-    <View className="gap-5">
-      <View className="flex-row justify-evenly">
+    <View className="font-poppins gap-5">
+      <View className="font-poppins flex-row justify-evenly">
         <QuickSettings
           header="Active Users"
           icon="users"
@@ -26,8 +26,8 @@ const Today = ({ data }: { data: DashboardData | null }) => {
         add_total={data?.today?.addon_revenue || "0"}
         label="Special Orders"
       />
-      <View className="bg-white rounded-2xl p-5 gap-3">
-        <Text className="text-[16px]">Top Add-on items</Text>
+      <View className="font-poppins bg-white rounded-2xl p-5 gap-3">
+        <Text className="font-poppins text-[16px]">Top Add-on items</Text>
         {data?.today?.popular_items && data.today.popular_items.length > 0 ? (
           data.today.popular_items.map((item: any, index: number) => (
             <TopAddons
@@ -37,7 +37,7 @@ const Today = ({ data }: { data: DashboardData | null }) => {
             />
           ))
         ) : (
-          <Text className="text-gray-500 text-center">No popular items</Text>
+          <Text className="font-poppins text-gray-500 text-center">No popular items</Text>
         )}
       </View>
     </View>

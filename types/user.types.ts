@@ -11,6 +11,7 @@ export interface UserTypes {
   has_kids_plan?: boolean;
   has_regular_plan?: boolean;
   onStatusChange?: () => void;
+  is_password_set?: boolean;
 }
 
 export interface DietUser {

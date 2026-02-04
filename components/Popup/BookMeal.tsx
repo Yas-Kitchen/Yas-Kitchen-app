@@ -76,11 +76,11 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
 
   const content = (
     <>
-      <Text className="text-faded_black text-[16px] font-bold">
+      <Text className="text-faded_black text-[16px] font-poppins-bold">
         Book Extra Meal
       </Text>
-      <Text className="text-base_color text-[12px] mt-5">Add Date</Text>
-      <View className="my-2">
+      <Text className="font-poppins text-base_color text-[12px] mt-5">Add Date</Text>
+      <View className="font-poppins my-2">
         {Platform.OS === "web" ? (
           <input
             type="date"
@@ -91,20 +91,20 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
                 setDate(selected);
               }
             }}
-            className="p-6 bg-button_bg rounded-2xl"
+            className="font-poppins p-6 bg-button_bg rounded-2xl"
           />
         ) : Platform.OS === "ios" ? (
           <>
             <Pressable
               onPress={() => setShowPicker(true)}
-              className="p-6 bg-button_bg rounded-2xl"
+              className="font-poppins p-6 bg-button_bg rounded-2xl"
             >
               <Text>{formattedDate}</Text>
             </Pressable>
             {showPicker && (
               <Modal transparent animationType="slide">
-                <View className="flex-1 justify-end bg-black/30">
-                  <View className="bg-white p-5">
+                <View className="font-poppins flex-1 justify-end bg-black/30">
+                  <View className="font-poppins bg-white p-5">
                     <DateTimePicker
                       value={date}
                       mode="date"
@@ -116,9 +116,9 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
                     />
                     <Pressable
                       onPress={() => setShowPicker(false)}
-                      className="mt-2 p-3 bg-primary rounded"
+                      className="font-poppins mt-2 p-3 bg-primary rounded"
                     >
-                      <Text className="text-white text-center">Done</Text>
+                      <Text className="font-poppins text-white text-center">Done</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -129,7 +129,7 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
           <>
             <Pressable
               onPress={() => setShowPicker(true)}
-              className="p-6 bg-button_bg rounded-2xl"
+              className="font-poppins p-6 bg-button_bg rounded-2xl"
             >
               <Text>{formattedDate}</Text>
             </Pressable>
@@ -144,33 +144,33 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
           </>
         )}
       </View>
-      <Text className="text-base_color text-[12px]">No of People</Text>
-      <View className="mb-5 mt-2 flex-row items-center justify-center gap-4 bg-button_bg rounded-2xl p-4">
+      <Text className="font-poppins text-base_color text-[12px]">No of People</Text>
+      <View className="font-poppins mb-5 mt-2 flex-row items-center justify-center gap-4 bg-button_bg rounded-2xl p-4">
         <Pressable
           onPress={() => setPeopleCount((count) => Math.max(1, count - 1))}
-          className="p-3 bg-white rounded-full"
+          className="font-poppins p-3 bg-white rounded-full"
         >
-          <Text className="text-faded_black text-[12px] font-bold">-</Text>
+          <Text className="text-faded_black text-[12px] font-poppins-bold">-</Text>
         </Pressable>
-        <Text className="text-faded_black text-[12px] font-semibold">
+        <Text className="text-faded_black text-[12px] font-poppins-semibold">
           {peopleCount}
         </Text>
         <Pressable
           onPress={() => setPeopleCount((count) => count + 1)}
-          className="p-3 bg-white rounded-full"
+          className="font-poppins p-3 bg-white rounded-full"
         >
-          <Text className="text-faded_black text-[12px] font-bold">+</Text>
+          <Text className="text-faded_black text-[12px] font-poppins-bold">+</Text>
         </Pressable>
       </View>
-      <View className="flex-row my-5 gap-2">
+      <View className="font-poppins flex-row my-5 gap-2">
         <Pressable
           onPress={() => onClose()}
-          className="p-6 w-1/2 bg-button_bg rounded-2xl"
+          className="font-poppins p-6 w-1/2 bg-button_bg rounded-2xl"
         >
-          <Text className="text-faded_black text-center">Cancel</Text>
+          <Text className="font-poppins text-faded_black text-center">Cancel</Text>
         </Pressable>
         <TouchableOpacity
-          className="p-6 w-1/2 bg-primary rounded-2xl"
+          className="font-poppins p-6 w-1/2 bg-primary rounded-2xl"
           onPress={() => {
             const formatted = date.toISOString().split("T")[0];
             let message = `Hi! I want to order food for ${peopleCount} people on ${formatted}`;
@@ -206,7 +206,7 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
             });
           }}
         >
-          <Text className="text-white text-center">Book Meal</Text>
+          <Text className="font-poppins text-white text-center">Book Meal</Text>
         </TouchableOpacity>
       </View>
     </>
@@ -214,7 +214,7 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
 
   if (Platform.OS === "web") {
     return (
-      <View className="shadow-sm p-5 mx-5 absolute w-[90%] rounded-3xl bg-white z-[50] bottom-0">
+      <View className="font-poppins shadow-sm p-5 mx-5 absolute w-[90%] rounded-3xl bg-white z-[50] bottom-0">
         {content}
       </View>
     );
@@ -229,7 +229,7 @@ const Bo: React.FC<LeaveReqProps> = ({ open, onClose }) => {
         width: "100%",
         alignSelf: "center",
       }}
-      className="shadow-sm absolute p-5 rounded-3xl bg-white bottom-0"
+      className="font-poppins shadow-sm absolute p-5 rounded-3xl bg-white bottom-0"
     >
       {content}
     </Animated.View>

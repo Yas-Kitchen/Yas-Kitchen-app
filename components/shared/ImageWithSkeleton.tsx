@@ -26,7 +26,7 @@ const ImageWithSkeleton: React.FC<ImageWithSkeletonProps> = ({
   return (
     <View className={`relative overflow-hidden ${containerClassName}`}>
       {!loaded && (
-        <View className="absolute inset-0 bg-gray-200/70 items-center justify-center">
+        <View className="font-poppins absolute inset-0 bg-gray-200/70 items-center justify-center">
           <ActivityIndicator color="#FF7629" />
         </View>
       )}

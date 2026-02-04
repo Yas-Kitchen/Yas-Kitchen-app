@@ -81,27 +81,27 @@ const IndividualDietUsers = ({
         onPress();
       }}
     >
-      <View className="bg-white relative rounded-2xl p-4 gap-2">
+      <View className="font-poppins bg-white relative rounded-2xl p-4 gap-2">
         {loading && (
-          <View className="absolute inset-0 bg-black/10 rounded-2xl z-50 justify-center items-center">
+          <View className="font-poppins absolute inset-0 bg-black/10 rounded-2xl z-50 justify-center items-center">
             <ActivityIndicator size="large" color="#FF7629" />
           </View>
         )}
 
         <Text
           className={`text-sm ${
-            isAdminAccount && "text-primary font-bold"
-          } font-semibold`}
+            isAdminAccount && "text-primary font-poppins-bold"
+          } font-poppins-semibold`}
         >
           {name}
         </Text>
-        <Text className="text-base_color text-xs">{number}</Text>
+        <Text className="font-poppins text-base_color text-xs">{number}</Text>
 
-        <View className="flex-row items-center gap-4">
+        <View className="font-poppins flex-row items-center gap-4">
           {!isAdminAccount && (
             <TouchableOpacity
               onPress={() => setShowStatusMenu(true)}
-              className="p-2 rounded-full text-[10px] flex-row items-center gap-1"
+              className="font-poppins p-2 rounded-full text-[10px] flex-row items-center gap-1"
               style={{ backgroundColor: currentStatusStyle.bg }}
             >
               <Text style={{ color: currentStatusStyle.color, fontSize: 10 }}>
@@ -116,10 +116,10 @@ const IndividualDietUsers = ({
           )}
         </View>
 
-        <Text className="text-base_color text-[10px]">
+        <Text className="font-poppins text-base_color text-[10px]">
           Joined: {formatDate(joindate)}
         </Text>
-        <View className="absolute top-[50%] right-5">
+        <View className="font-poppins absolute top-[50%] right-5">
           <Feather color={"#212529"} size={22} name="chevron-right" />
         </View>
 
@@ -132,23 +132,23 @@ const IndividualDietUsers = ({
           <TouchableOpacity
             activeOpacity={1}
             onPress={() => setShowStatusMenu(false)}
-            className="flex-1 bg-black/50 justify-center items-center"
+            className="font-poppins flex-1 bg-black/50 justify-center items-center"
           >
-            <View className="bg-white rounded-2xl p-4 w-4/5 max-w-sm">
-              <Text className="text-lg font-semibold mb-4">Change Status</Text>
+            <View className="font-poppins bg-white rounded-2xl p-4 w-4/5 max-w-sm">
+              <Text className="text-lg font-poppins-semibold mb-4">Change Status</Text>
 
               {statusOptions.map((option) => (
                 <TouchableOpacity
                   key={option.value}
                   onPress={() => handleStatusChange(option.value)}
-                  className="flex-row items-center justify-between p-4 border-b border-gray-100"
+                  className="font-poppins flex-row items-center justify-between p-4 border-b border-gray-100"
                 >
-                  <View className="flex-row items-center gap-3">
+                  <View className="font-poppins flex-row items-center gap-3">
                     <View
-                      className="w-3 h-3 rounded-full"
+                      className="font-poppins w-3 h-3 rounded-full"
                       style={{ backgroundColor: option.color }}
                     />
-                    <Text className="text-base">{option.label}</Text>
+                    <Text className="font-poppins text-base">{option.label}</Text>
                   </View>
 
                   {currentStatus.toLowerCase() === option.value && (
@@ -159,9 +159,9 @@ const IndividualDietUsers = ({
 
               <TouchableOpacity
                 onPress={() => setShowStatusMenu(false)}
-                className="mt-4 p-4 bg-gray-100 rounded-xl"
+                className="font-poppins mt-4 p-4 bg-gray-100 rounded-xl"
               >
-                <Text className="text-center font-semibold">Cancel</Text>
+                <Text className="text-center font-poppins-semibold">Cancel</Text>
               </TouchableOpacity>
             </View>
           </TouchableOpacity>

@@ -1,6 +1,7 @@
 import { useGlobalContext } from "@/context/GlobalContext";
 import React, { useEffect, useState } from "react";
-import { Linking, Text, TouchableOpacity, View, Alert } from "react-native";
+import { Linking, Text, TouchableOpacity, View } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 import PersonalDetails from "./PersonalDetails";
 import SubscriptionPlan from "./SubscriptionPlan";
 import { router } from "expo-router";
@@ -9,10 +10,11 @@ import { getCuisineNameByID } from "@/utils/cuisine.util";
 import { ReviewData } from "@/types/register.types";
 
 const Review = () => {
+  const { showAlert } = useAlert();
   const [loading, setLoading] = useState(false);
   const [planName, setPlanName] = useState<string>("loading...");
   const [data, setData] = useState<ReviewData | null>(null);
-  const { userId, activeStep } = useGlobalContext();
+  const { userId, activeStep, setUserData } = useGlobalContext();
   const { confirmPrice, getReviewData } = useRegisterAPI();
 
   const PLAN_NAME_MAP: Record<string, string> = {
@@ -67,7 +69,7 @@ const Review = () => {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert(
+      showAlert(
         "WhatsApp Not Found",
         "Make sure WhatsApp is installed on your device."
       );
@@ -79,7 +81,8 @@ const Review = () => {
       await confirmPrice(userId);
       await sendWhatsAppMessage();
 
-      Alert.alert(
+      setUserData((prev: any) => ({ ...prev, status: "pending" }));
+      showAlert(
         "Success!",
         "Your profile has been completed. Our team will contact you shortly.",
         [
@@ -99,8 +102,8 @@ const Review = () => {
   };
 
   return (
-    <View className="bg-white rounded-2xl mt-10 p-5 pt-8 gap-2">
-      <Text className="text-faded_black text-[16px] font-semibold">
+    <View className="font-poppins bg-white rounded-2xl mt-10 p-5 pt-8 gap-2">
+      <Text className="text-faded_black text-[16px] font-poppins-semibold">
         Review your information
       </Text>
       <PersonalDetails
@@ -113,14 +116,13 @@ const Review = () => {
       <TouchableOpacity
         onPress={handleContinue}
         disabled={loading}
-        className={`bg-primary mt-5 p-5 rounded-2xl w-full ${
-          loading && "opacity-50"
-        }`}
+        className={`bg-primary mt-5 p-5 rounded-2xl w-full ${loading && "opacity-50"
+          }`}
       >
         {loading ? (
-          <Text className="text-center text-white">Loading...</Text>
+          <Text className="font-poppins text-center text-white">Loading...</Text>
         ) : (
-          <Text className="text-center text-white">Continue</Text>
+          <Text className="font-poppins text-center text-white">Continue</Text>
         )}
       </TouchableOpacity>
     </View>

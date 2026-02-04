@@ -25,28 +25,29 @@ const AdminPass = () => {
 
   return (
     <>
-      <Pressable className="mt-20 absolute mx-5" onPress={() => router.back()}>
+      <Pressable className="font-poppins mt-20 absolute mx-5" onPress={() => router.back()}>
         <Feather name="chevron-left" size={30} />
       </Pressable>
-      <View className="mx-5 justify-center h-screen">
-        <Text className="text-[20px] font-bold text-center text-faded_black">
+      <View className="font-poppins mx-5 justify-center h-screen">
+        <Text className="text-[20px] font-poppins-bold text-center text-faded_black">
           Admin Login
         </Text>
-        <Text className="text-center mt-3">{mobile}</Text>
-        <View className="mx-20">
+        <Text className="font-poppins text-center mt-3">{mobile}</Text>
+        <View className="font-poppins mx-20">
           <TextInput
             secureTextEntry
             keyboardType="number-pad"
             maxLength={4}
-            className="mt-6 p-4 bg-white rounded-xl text-center"
+            className="font-poppins mt-6 p-4 bg-white rounded-xl text-center"
             placeholder="Enter 4-digit password"
             onChangeText={setPassword}
+            style={{ fontSize: 16 }}
           />
           <TouchableOpacity
             onPress={handleVerify}
-            className="bg-primary mt-6 p-4 rounded-xl"
+            className="font-poppins bg-primary mt-6 p-4 rounded-xl"
           >
-            <Text className="text-center text-white">Verify</Text>
+            <Text className="font-poppins text-center text-white">Verify</Text>
           </TouchableOpacity>
         </View>
       </View>

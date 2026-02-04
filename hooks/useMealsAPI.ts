@@ -86,8 +86,8 @@ export const useMealsAPI = () => {
       });
       setError(
         err?.response?.data?.message ||
-          err?.message ||
-          "Failed to get meal plan"
+        err?.message ||
+        "Failed to get meal plan"
       );
     } finally {
       setLoading(false);

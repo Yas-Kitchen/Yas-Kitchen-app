@@ -2,18 +2,18 @@ import { Feather } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+  TextInput,
+  ScrollView,
   Animated,
-  Image,
   Modal,
   Platform,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+  Image,
 } from "react-native";
+import { useAlert } from "@/context/AlertContext";
 import { useGlobalContext } from "@/context/GlobalContext";
 import { useMealsAPI } from "@/hooks/useMealsAPI";
 
@@ -27,6 +27,7 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
+  const { showAlert } = useAlert();
   const { selectedMeal } = useGlobalContext();
   const { updateMeal } = useMealsAPI();
   const [title, setTitle] = useState("");
@@ -93,12 +94,12 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert("Validation Error", "Please enter a meal title");
+      showAlert("Validation Error", "Please enter a meal title");
       return;
     }
 
     if (!selectedMeal) {
-      Alert.alert("Missing Data", "Meal data not found");
+      showAlert("Missing Data", "Meal data not found");
       return;
     }
 
@@ -112,7 +113,7 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
         image: image || null,
       });
 
-      Alert.alert("Success", "Meal updated successfully!");
+      showAlert("Success", "Meal updated successfully!");
 
       onSuccess?.();
 
@@ -137,7 +138,7 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
       });
     } catch (error: any) {
       console.error("Error:", error);
-      Alert.alert("Error", error?.message || "Something went wrong");
+      showAlert("Error", error?.message || "Something went wrong");
     } finally {
       setUploading(false);
     }
@@ -147,8 +148,8 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
 
   const content = (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-faded_black text-[20px] font-bold">
+      <View className="font-poppins flex-row items-center justify-between mb-6">
+        <Text className="text-faded_black text-[20px] font-poppins-bold">
           Edit Meal
         </Text>
         <Pressable onPress={onClose}>
@@ -157,8 +158,8 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
       </View>
 
       {selectedMeal && (
-        <View className="mb-4 p-4 bg-blue-50 rounded-xl">
-          <Text className="text-xs text-gray-600">
+        <View className="font-poppins mb-4 p-4 bg-blue-50 rounded-xl">
+          <Text className="font-poppins text-xs text-gray-600">
             {selectedMeal.day.charAt(0).toUpperCase() +
               selectedMeal.day.slice(1)}{" "}
             •{" "}
@@ -168,16 +169,17 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
         </View>
       )}
 
-      <Text className="text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Title</Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
         placeholder="Enter meal title"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -185,50 +187,52 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
         multiline
         numberOfLines={4}
         textAlignVertical="top"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl min-h-[120px]"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Price (AED)</Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
         placeholder="Enter price"
         keyboardType="numeric"
-        className="mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
         placeholderTextColor="#999"
+        style={{ fontSize: 16 }}
       />
 
-      <Text className="text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
       <Pressable
         onPress={pickImage}
-        className="mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+        className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="w-12 h-12 rounded-lg" />
+          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
         ) : (
-          <Text className="text-base_color">Upload Image</Text>
+          <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
         <Feather name="upload" size={20} color="#666" />
       </Pressable>
 
-      <View className="flex-row gap-3 mb-4">
+      <View className="font-poppins flex-row gap-3 mb-4">
         <Pressable
           onPress={onClose}
-          className="flex-1 p-4 bg-[#F5F5F5] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
           disabled={uploading}
         >
-          <Text className="text-faded_black text-center font-medium">
+          <Text className="text-faded_black text-center font-poppins-medium">
             Cancel
           </Text>
         </Pressable>
         <TouchableOpacity
           onPress={handleSubmit}
-          className="flex-1 p-4 bg-[#FF7629] rounded-xl"
+          className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
           disabled={uploading}
           style={{ opacity: uploading ? 0.5 : 1 }}
         >
-          <Text className="text-white text-center font-medium">
+          <Text className="text-white text-center font-poppins-medium">
             {uploading ? "Updating..." : "Update"}
           </Text>
         </TouchableOpacity>
@@ -239,8 +243,8 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
   if (Platform.OS === "web") {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/50">
-          <View className="bg-white rounded-3xl p-6 w-[90%] max-w-[500px] max-h-[90%]">
+        <View className="font-poppins flex-1 justify-center items-center bg-black/50">
+          <View className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px] max-h-[90%]">
             {content}
           </View>
         </View>
@@ -250,11 +254,11 @@ const EditMeal: React.FC<EditMealProps> = ({ open, onClose, onSuccess }) => {
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="flex-1 bg-black/50 justify-end">
+      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{ transform: [{ translateY }], opacity }}
-            className="bg-white rounded-t-3xl p-6"
+            className="font-poppins bg-white rounded-t-3xl p-6"
           >
             {content}
           </Animated.View>
