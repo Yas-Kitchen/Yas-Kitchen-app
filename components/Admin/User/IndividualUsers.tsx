@@ -133,7 +133,7 @@ const IndividualUsers = ({
   const currentStatusStyle = getStatusStyle(currentStatus);
 
   return (
-    <View className="font-poppins bg-white rounded-xl relative border-b border-gray-100 p-4 gap-2">
+    <View className="font-poppins bg-white rounded-xl mb-3 relative border-b border-gray-100 p-4 gap-2">
       {loading && (
         <View className="font-poppins absolute inset-0 bg-black/10 z-50 justify-center items-center">
           <ActivityIndicator size="large" color="#FF7629" />

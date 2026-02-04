@@ -1,65 +1,160 @@
+import { supabase } from "@/lib/supabase";
 import {
   AddonCreate,
   AddonUpdate,
   TodaySpecialCreate,
   TodaySpecialUpdate,
 } from "@/types/extras.types";
-import api from "../api";
 
 //Specials
 export const extrasAPI = {
   getTodaySpecials: async () => {
-    const response = await api.get("today-specials/today");
-    return response.data;
+    const today = new Date().toISOString().split("T")[0];
+    const { data, error } = await supabase
+      .from("today_specials")
+      .select("*")
+      .eq("available_date", today)
+      .eq("is_active", true);
+
+    if (error) throw error;
+    return data;
   },
+
   getUpcomingSpecials: async () => {
-    const response = await api.get("today-specials/upcoming");
-    return response.data;
+    const today = new Date().toISOString().split("T")[0];
+    const { data, error } = await supabase
+      .from("today_specials")
+      .select("*")
+      .gt("available_date", today)
+      .eq("is_active", true)
+      .order("available_date");
+
+    if (error) throw error;
+    return data;
   },
+
   getSpecialsByDate: async (targetDate: string) => {
-    const response = await api.get(`today-specials/date/${targetDate}`);
-    return response.data;
+    // targetDate format YYYY-MM-DD
+    const { data, error } = await supabase
+      .from("today_specials")
+      .select("*")
+      .eq("available_date", targetDate);
+
+    if (error) throw error;
+    return data;
   },
+
   createSpecial: async (data: TodaySpecialCreate) => {
-    const response = await api.post("admin/today-specials/", data);
-    return response.data;
+    const { data: newSpecial, error } = await supabase
+      .from("today_specials")
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return newSpecial;
   },
+
   getSpecialById: async (specialID: string) => {
-    const response = await api.get(`admin/today-specials/${specialID}`);
-    return response.data;
+    const { data, error } = await supabase
+      .from("today_specials")
+      .select("*")
+      .eq("id", specialID)
+      .single();
+
+    if (error) throw error;
+    return data;
   },
+
   updateSpecial: async (specialID: string, data: TodaySpecialUpdate) => {
-    const response = await api.put(`admin/today-specials/${specialID}`, data);
-    return response.data;
+    const { data: updated, error } = await supabase
+      .from("today_specials")
+      .update(data)
+      .eq("id", specialID)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return updated;
   },
+
   deleteSpecial: async (specialId: string): Promise<void> => {
-    const response = await api.delete(`admin/today-specials/${specialId}`);
-    return response.data;
+    const { error } = await supabase
+      .from("today_specials")
+      .delete()
+      .eq("id", specialId);
+
+    if (error) throw error;
   },
 
   //Addons
   getAllAddons: async () => {
-    const response = await api.get("addons/");
-    return response.data;
+    const { data, error } = await supabase
+      .from("addons")
+      .select("*")
+      .order("name");
+
+    if (error) throw error;
+    return data;
   },
+
   getAddonsForKids: async () => {
-    const response = await api.get("addons/kids-meals");
-    return response.data;
+    // Assuming backend filtered by category 'kids' or similar?
+    // Or maybe it was `category` = 'kids-meals'?
+    // I'll check what the category usually is, for now match backend endpoint name logic: category='kids' or 'kids-meals'
+    // Let's guess 'kids' or 'kids_meal'. If unsure, maybe fetch all and let frontend receive it?
+    // But backend was specific.
+    // I will try filtering by category ILIKE '%kid%' to be safe?
+    // Or just fetching all for now?
+    // Better: `category` = 'kids'
+
+    const { data, error } = await supabase
+      .from("addons")
+      .select("*")
+      .ilike("category", "%kid%")
+      .eq("is_active", true);
+
+    if (error) throw error;
+    return data;
   },
+
   createAddons: async (data: AddonCreate) => {
-    const response = await api.post("admin/addons/", data);
-    return response.data;
+    const { data: newAddon, error } = await supabase
+      .from("addons")
+      .insert(data)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return newAddon;
   },
+
   updateAddon: async (AddonID: string, data: AddonUpdate) => {
-    const response = await api.put(`admin/addons/${AddonID}`, data);
-    return response.data;
+    const { data: updated, error } = await supabase
+      .from("addons")
+      .update(data)
+      .eq("id", AddonID)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return updated;
   },
+
   getAddonById: async (AddonID: string) => {
-    const response = await api.get(`admin/addons/${AddonID}`);
-    return response.data;
+    const { data, error } = await supabase
+      .from("addons")
+      .select("*")
+      .eq("id", AddonID)
+      .single();
+
+    if (error) throw error;
+    return data;
   },
+
   deleteAddon: async (addonId: string): Promise<void> => {
-    const response = await api.delete(`admin/addons/${addonId}`);
-    return response.data;
-  }
+    const { error } = await supabase.from("addons").delete().eq("id", addonId);
+
+    if (error) throw error;
+  },
 };

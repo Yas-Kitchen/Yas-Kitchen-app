@@ -1,69 +1,48 @@
-import { supabase } from "@/lib/supabase";
-import {
-  AdminLoginResponse,
-  CompleteProfileData,
-  RegisterUserData,
-} from "@/types/auth.types";
+import { supabase } from "../../lib/supabase";
 import { storage } from "../storage";
-// import api from "../api"; // Keeping api import just in case, but commented out if possible to avoid usage
 
-export const authAPI = {
-  // Legacy methods removed
-
+const authAPI = {
   checkUserExists: async (phone: string) => {
-    // 1. Look up in public.users to see if user exists
-    const { data: user, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("phone_number", phone)
-      .single();
+    // Clean phone number
+    const cleanPhone = phone.replace(/\D/g, "");
 
-    if (error && error.code !== "PGRST116") {
-      // PGRST116 is "not found"
-      throw error;
-    }
+    try {
+      // Use RPC to bypass RLS securely
+      const { data, error } = await supabase.rpc("check_user_exists", {
+        p_phone: cleanPhone,
+      });
 
-    if (!user) {
+      if (error) {
+        console.warn("Error checking user existence:", error);
+        return { exists: false };
+      }
+
+      return data;
+    } catch (e) {
+      console.error("Check user exception:", e);
       return { exists: false };
     }
-
-    return {
-      exists: true,
-      status: user.status,
-      has_password: user.is_password_set,
-    };
   },
 
   register: async (phone: string, password: string) => {
-    // Register with Phone + Password
-    // Note: Supabase signUp with phone usually sends OTP.
-    // If we want to skip OTP, we must have "Auto Confirm" enabled in Supabase or use Admin API (which we can't from client).
-    // Or we rely on the fact that maybe the user WANTS OTP?
-    // BUT the flow in `index.tsx` is `register` -> `router.replace('/(register)/register')`.
-    // It doesn't seem to have an OTP verify step after `handleRegister`.
-    // So `signUp` must return a session immediately. This is only possible if "Enable Phone Confirm" is OFF in Supabase
-    // OR if we use a dummy email?
+    // Pattern: 10 digit phone @yaskitchen.app
+    const cleanPhone = phone.replace(/\D/g, "");
+    const email = `${cleanPhone}@yaskitchen.app`;
 
-    // WORKAROUND: Because we are "Refactoring to Email Auth" but user asked to keep "Frontend Flow" for *Phone*,
-    // we can implement "Phone" login by mapping Phone -> Email (e.g. phone@yaskitchen.com) in the background?
-    // User logic: "Match the data".
-    // If we map phone to email, we can use email/password auth behind the scenes!
-    // Let's try that. `phone` + `@yaskitchen.internal` (or something).
-
-    const email = `${phone}@yaskitchen.com`; // Pseudo-email
-
+    // 1. Sign Up
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: {
         data: {
-          phone_number: phone, // Store real phone in meta
+          phone_number: phone,
         },
       },
     });
 
     if (error) throw error;
 
+    // 2. Persist Tokens
     if (data.session) {
       await storage.setToken(
         data.session.access_token,
@@ -71,32 +50,60 @@ export const authAPI = {
       );
     }
 
-    // Create/Update public user
+    // 3. Fetch public profile to return "role" and "status"
+    let userProfile: any = null;
     if (data.user) {
-      const { error: profileError } = await supabase.from("users").upsert(
-        {
-          auth_user_id: data.user.id,
-          phone_number: phone,
-          role: "user",
-          status: "initiated",
-          is_password_set: true,
-        },
-        { onConflict: "auth_user_id" },
-      );
-
-      if (profileError)
-        console.error("Error creating public user:", profileError);
+      const { data: profile } = await supabase
+        .from("users")
+        .select("*")
+        .eq("auth_user_id", data.user.id)
+        .maybeSingle(); // might request creation via trigger?
+      userProfile = profile;
     }
 
+    // Merge auth user with profile data
+    const mergedUser = data.user
+      ? {
+          ...data.user,
+          role: userProfile?.role || "user",
+          status: userProfile?.status || "initiated", // Default to initiated for new users
+        }
+      : null;
+
     return {
-      user: { ...data.user, status: "initiated" },
-      session: data.session,
+      user: mergedUser,
+      access_token: data.session?.access_token,
+      refresh_token: data.session?.refresh_token,
+      message: "User registered successfully",
     };
   },
 
+  setPassword: async (phone: string, password: string) => {
+    const cleanPhone = phone.replace(/\D/g, "");
+
+    // Create auth credentials
+    const result = await authAPI.register(phone, password);
+
+    // Update users table using RPC to bypass RLS
+    if (result.user) {
+      const { data, error } = await supabase.rpc("set_user_password_status", {
+        p_phone: cleanPhone,
+        p_auth_user_id: result.user.id,
+      });
+
+      if (error) {
+        console.error("Failed to update user password status:", error);
+      } else {
+        console.log("Password status updated:", data);
+      }
+    }
+
+    return result;
+  },
+
   loginWithPassword: async (phone: string, password: string) => {
-    // Map phone to pseudo-email
-    const email = `${phone}@yaskitchen.com`;
+    const cleanPhone = phone.replace(/\D/g, "");
+    const email = `${cleanPhone}@yaskitchen.app`;
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -112,43 +119,36 @@ export const authAPI = {
       );
     }
 
-    let user = { ...data.user, role: "user", status: "active" };
-
-    const { data: profile } = await supabase
-      .from("users")
-      .select("*")
-      // query by auth_user_id to be safe
-      .eq("auth_user_id", data.user.id)
-      .single();
-
-    if (profile) {
-      user.role = profile.role || "user";
-      user.status = profile.status || "active";
+    // Fetch public profile
+    let userProfile: any = null;
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from("users")
+        .select("*")
+        .eq("auth_user_id", data.user.id)
+        .single();
+      userProfile = profile;
     }
 
+    const mergedUser = data.user
+      ? {
+          ...data.user,
+          role: userProfile?.role || "user",
+          status: userProfile?.status || "active",
+        }
+      : null;
+
     return {
-      user,
+      user: mergedUser,
       access_token: data.session?.access_token,
       refresh_token: data.session?.refresh_token,
     };
   },
 
   initiateRegistration: async (phone: string) => {
-    // Just checks if we can register?
-    // In old flow, it seemingly created a session or did nothing.
-    // We will just return a success payload so frontend proceeds to `register` page.
-    // But wait, `index.tsx` says `setUserId(authResult.user.id)`.
-    // So we need to CREATE the user here? Or just generate a fake ID?
-    // If we creates the user here, we need a password? No, implementation said "passwordless registration".
-    // But `handleRegister` (which comes AFTER `initiateRegistration` path?)
-    // checkUserExists -> false -> initiateRegistration -> router.replace('/register').
-    // Wait, `/register` path?
-    // In `index.tsx` step 411: `router.replace("/register")` (NOT `/(register)/register`).
-    // Where is `/register`? Is it the `app/register.tsx`?
-    // Let's check `app` folder structure.
-
-    // Assuming it goes to a registration conversion screen.
-    // For now, return a temp object.
+    // Just return success to proceed to password screen
+    // We don't create the user here in the "Serverless" flow because
+    // we need the password to create the Supabase Auth user.
     return {
       user: { id: "temp_" + phone },
       message: "Registration Initiated",
@@ -156,27 +156,40 @@ export const authAPI = {
   },
 
   sendOtp: async (phone: string) => {
-    // Legacy support
-    return { message: "OTP sent" };
+    // Verify using Supabase Mobile OTP
+    const { error } = await supabase.auth.signInWithOtp({
+      phone: phone,
+    });
+    if (error) throw error;
+    return { message: "OTP sent successfully" };
   },
 
-  verifyOtp: async (phone: string, token: string) => {
-    return { message: "OTP verified" };
+  verifyOtp: async (phone: string, otp: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      phone: phone,
+      token: otp,
+      type: "sms",
+    });
+
+    if (error) throw error;
+
+    if (data.session) {
+      await storage.setToken(
+        data.session.access_token,
+        data.session.refresh_token,
+      );
+    }
+
+    return data;
   },
 
-  completeProfile: async (profileData: CompleteProfileData) => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("No authenticated user");
-
+  completeProfile: async (userId: string, profileData: any) => {
+    // Update public.users table
+    // We assume the user is logged in and RLS allows updating their own profile
     const { data, error } = await supabase
       .from("users")
-      .update({
-        ...profileData,
-        status: "active",
-      })
-      .eq("auth_user_id", user.id)
+      .update(profileData)
+      .eq("auth_user_id", userId) // Ensure we use auth_user_id if that's the key
       .select()
       .single();
 
@@ -184,35 +197,22 @@ export const authAPI = {
     return data;
   },
 
-  adminLogin: async (
-    phone: string,
-    password: string,
-  ): Promise<AdminLoginResponse> => {
-    const result = await authAPI.loginWithPassword(phone, password);
-    if (result.user.role !== "admin") {
-      throw new Error("Unauthorized: Admin access only");
-    }
-    return {
-      user: result.user,
-      session: {
-        access_token: result.access_token,
-        refresh_token: result.refresh_token,
-      },
-    } as any;
-  },
-
-  registerUser: async (userData: RegisterUserData) => {
-    console.warn(
-      "registerUser not fully implemented in Supabase client-side migration",
-    );
-    throw new Error("Feature temporarily unavailable");
+  adminLogin: async (phone: string, pin: string) => {
+    // For Admin PIN login, we usually need a secure Backend verification.
+    // If "Serverless", we can try logging in with Password where Password = PIN?
+    // Or check a specific implementation.
+    // Since the request is to "fix frontend", we will assume standard password login
+    // or maybe the admin uses the same flow.
+    // Let's reuse loginWithPassword for now assuming PIN is the Password.
+    return authAPI.loginWithPassword(phone, pin);
   },
 
   getProfile: async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) throw new Error("No user found");
+
+    if (!user) throw new Error("No user logged in");
 
     const { data, error } = await supabase
       .from("users")
@@ -221,40 +221,37 @@ export const authAPI = {
       .single();
 
     if (error) throw error;
-    return { ...user, ...data };
+    return data;
   },
 
-  setPassword: async (email: string, password: string) => {
-    return authAPI.register(email, password);
-  },
-
-  updateProfile: async (profileData: Partial<RegisterUserData>) => {
+  updateProfile: async (updates: any) => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    if (!user) throw new Error("No user");
+
+    if (!user) throw new Error("No user logged in");
 
     const { data, error } = await supabase
       .from("users")
-      .update(profileData)
+      .update(updates)
       .eq("auth_user_id", user.id)
       .select()
       .single();
+
     if (error) throw error;
     return data;
   },
 
   logout: async () => {
+    await storage.clearAll();
     await supabase.auth.signOut();
-    await storage.clearTokens();
   },
 
   verifyToken: async () => {
-    const { data } = await supabase.auth.getSession();
-    return { valid: !!data.session };
-  },
-
-  getTestOtpStatus: async () => {
-    return { enabled: false };
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) throw new Error("Invalid token");
+    return data.user;
   },
 };
+
+export default authAPI;

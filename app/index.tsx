@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { usePhoneAuth } from "@/hooks/useAuth";
 import { router } from "expo-router";
 import { useGlobalContext } from "@/context/GlobalContext";
-import { authAPI } from "@/services/api/auth.api";
+import authAPI from "@/services/api/auth.api";
 import { supabase } from "@/lib/supabase";
 import { useAlert } from "@/context/AlertContext";
 import {
@@ -55,13 +55,27 @@ const Index = () => {
     const checkUser = async () => {
       // If we are done loading auth and have a user, fetch profile and redirect
       if (!isAuthLoading && userId) {
+        // Skip profile fetch for temp users (onboarding)
+        if (userId.startsWith("temp_")) {
+          // We are in registration flow, do nothing
+          return;
+        }
+
         try {
           const userData = await authAPI.getProfile();
           if (userData.role === "admin") router.replace("/(admin)/admin");
           else router.replace("/(user)/user");
-        } catch (error) {
+        } catch (error: any) {
           console.log("Error fetching profile for redirect:", error);
-          // If profile fetch fails, force logout so user can try again/isn't stuck
+          if (
+            error.message === "Network Error" ||
+            error?.code === "ERR_NETWORK"
+          ) {
+            // Don't sign out on network error, just warn or ignore
+            // showAlert("Connection Error", "Could not connect to server. Please check your internet or server IP.");
+            return;
+          }
+          // If profile fetch fails (e.g. 404), force logout so user can try again/isn't stuck
           showAlert("Error", "Failed to load profile. Please login again.");
           await supabase.auth.signOut();
         }
@@ -153,6 +167,7 @@ const Index = () => {
       }
     } catch (error: any) {
       const errorMessage =
+        error?.message ||
         error?.response?.data?.message ||
         "Registration failed. Please try again.";
       showAlert("Error", errorMessage);
@@ -167,6 +182,7 @@ const Index = () => {
       // Keep password filled so user can just click login
     } catch (error: any) {
       const errorMessage =
+        error?.message ||
         error?.response?.data?.message ||
         "Failed to set password. Please try again.";
       showAlert("Error", errorMessage);
@@ -183,7 +199,9 @@ const Index = () => {
       }
     } catch (error: any) {
       const errorMessage =
-        error?.response?.data?.message || "Invalid password. Please try again.";
+        error?.message ||
+        error?.response?.data?.message ||
+        "Invalid password. Please try again.";
       showAlert("Error", errorMessage);
     }
   };

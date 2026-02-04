@@ -270,7 +270,7 @@ const Users = () => {
 
   return (
     <View
-      style={{ paddingTop: insets.top + 20, gap: 20 }}
+      style={{ paddingTop: insets.top + 20 }}
       className="font-poppins flex-1 mx-5"
     >
       <FlatList
