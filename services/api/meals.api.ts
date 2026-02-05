@@ -194,6 +194,7 @@ export const mealsAPI = {
       return {
         ...plan,
         weekly_menu,
+        ...weekly_menu,
       };
     });
 
@@ -283,58 +284,59 @@ export const mealsAPI = {
     return data;
   },
 
-  uploadMealImage: async (imageUri: string) => {
+  uploadMealImage: async (imageUri: string, subdirectory: string = "meals") => {
     try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) throw new Error("No authentication token found");
+
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
       const userId = user?.id || "anonymous";
 
-      let fileBody;
-      let contentType = "image/jpeg"; // Default
-
+      let contentType = "image/jpeg";
       const fileExt = imageUri.split(".").pop()?.toLowerCase();
       if (fileExt === "png") contentType = "image/png";
-      else if (fileExt === "jpg" || fileExt === "jpeg")
-        contentType = "image/jpeg";
 
-      const fileName = `meals/${userId}/${Date.now()}.${fileExt || "jpg"}`;
-
-      // Upload using Native FileSystem (Bypasses RN Fetch/Axios issues on Simulator)
-      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-
+      const fileName = `${subdirectory}/${userId}/${Date.now()}.${fileExt || "jpg"}`;
+      // Construct the Storage API URL
       const uploadUrl = `${supabaseUrl}/storage/v1/object/yas-storage/${fileName}`;
 
-      console.log(`[Upload] Starting upload to ${uploadUrl}`);
+      console.log(`[Upload] Direct Supabase REST: ${uploadUrl}`);
+
       const response = await FileSystem.uploadAsync(uploadUrl, imageUri, {
         httpMethod: "POST",
         uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
         headers: {
-          Authorization: `Bearer ${supabaseKey}`,
+          Authorization: `Bearer ${token}`,
+          apikey: anonKey!,
           "Content-Type": contentType,
           "x-upsert": "true",
         },
       });
 
-      console.log(`[Upload] Response Status: ${response.status}`);
-      console.log(`[Upload] Response Body: ${response.body}`);
+      console.log(`[Upload] Status: ${response.status}`);
 
-      if (response.status < 200 || response.status >= 300) {
-        throw new Error(
-          `Supabase Upload Failed [${response.status}]: ${response.body}`,
-        );
+      if (response.status !== 200) {
+        // Log body for debugging
+        console.error("[Upload] Failed:", response.body);
+        throw new Error(`Supabase REST upload failed: ${response.status}`);
       }
 
-      const { data } = supabase.storage
-        .from("yas-storage")
-        .getPublicUrl(fileName);
+      // Construct Public URL manually
+      const publicUrl = `${supabaseUrl}/storage/v1/object/public/yas-storage/${fileName}`;
+      console.log(`[Upload] Success! URL: ${publicUrl}`);
 
-      console.log(`[Upload] Success! Public URL: ${data.publicUrl}`);
-      return data.publicUrl;
+      return publicUrl;
     } catch (e: any) {
-      console.error("Supabase storage upload CRITICAL error:", e);
-      // THROW the error so AddMeal.tsx sees it and alerts the user
+      console.error("Direct Upload Error:", e);
       throw new Error(`Image Upload Failed: ${e.message}`);
     }
   },

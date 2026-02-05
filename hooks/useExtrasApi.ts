@@ -66,7 +66,7 @@ export const useExtrasApi = () => {
 
   const createSpecial = async (
     specialData: TodaySpecialCreate,
-    imageUri?: string
+    imageUri?: string,
   ) => {
     setLoading(true);
     setError(null);
@@ -74,7 +74,7 @@ export const useExtrasApi = () => {
       let imageUrl = specialData.image_url;
 
       if (imageUri && !imageUri.startsWith("http")) {
-        imageUrl = await mealsAPI.uploadMealImage(imageUri);
+        imageUrl = await mealsAPI.uploadMealImage(imageUri, "specials");
       }
 
       const payload = {
@@ -113,7 +113,7 @@ export const useExtrasApi = () => {
   const updateSpecials = async (
     specialID: string,
     imageBase64: string,
-    specialData: TodaySpecialUpdate
+    specialData: TodaySpecialUpdate,
   ) => {
     setLoading(true);
     setError(null);
@@ -121,7 +121,7 @@ export const useExtrasApi = () => {
       let imageUrl = specialData.image_url;
 
       if (imageBase64 && !imageBase64.startsWith("http")) {
-        imageUrl = await mealsAPI.uploadMealImage(imageBase64);
+        imageUrl = await mealsAPI.uploadMealImage(imageBase64, "specials");
       }
 
       const payload = {
@@ -191,7 +191,7 @@ export const useExtrasApi = () => {
     try {
       let imageUrl = addonData.image_url;
       if (imageUri && !imageUri.startsWith("http")) {
-        imageUrl = await mealsAPI.uploadMealImage(imageUri);
+        imageUrl = await mealsAPI.uploadMealImage(imageUri, "addons");
       }
 
       const payload = {
@@ -214,7 +214,7 @@ export const useExtrasApi = () => {
   const updateAddons = async (
     addonId: string,
     addonData: AddonUpdate,
-    imageUri?: string
+    imageUri?: string,
   ) => {
     setLoading(true);
     setError(null);
@@ -223,7 +223,7 @@ export const useExtrasApi = () => {
       let imageUrl = addonData.image_url;
 
       if (imageUri && !imageUri.startsWith("http")) {
-        imageUrl = await mealsAPI.uploadMealImage(imageUri);
+        imageUrl = await mealsAPI.uploadMealImage(imageUri, "addons");
       }
       const payload = {
         ...addonData,

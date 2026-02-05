@@ -77,7 +77,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5,
     });
 
     if (!result.canceled) {
@@ -97,6 +97,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         price: parseFloat(price),
         available_date: availableDate.toISOString().split("T")[0],
         cutoff_time: cutoffTime.toTimeString().split(" ")[0],
+        is_active: true,
       };
 
       const success = await createSpecial(specialData, image ?? "");
@@ -145,7 +146,9 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         </Pressable>
       </View>
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Title
+      </Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
@@ -155,7 +158,9 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         style={{ fontSize: 16 }}
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Description
+      </Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -168,7 +173,9 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         style={{ fontSize: 16 }}
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Price (AED)
+      </Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
@@ -179,7 +186,9 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         style={{ fontSize: 16 }}
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Available Date</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Available Date
+      </Text>
       {Platform.OS === "web" ? (
         <View className="font-poppins mb-4 bg-[#F5F5F5] rounded-xl overflow-hidden">
           {React.createElement("input", {
@@ -220,7 +229,9 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         </>
       )}
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Order Before Time</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Order Before Time
+      </Text>
       {Platform.OS === "web" ? (
         <View className="font-poppins mb-4 bg-[#F5F5F5] rounded-xl overflow-hidden">
           {React.createElement("input", {
@@ -249,7 +260,10 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
             className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
           >
             <Text className="font-poppins text-base_color">
-              {cutoffTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              {cutoffTime.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </Text>
           </Pressable>
           {showTimePicker && (
@@ -266,21 +280,26 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         </>
       )}
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
-      <Pressable
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Image
+      </Text>
+      <TouchableOpacity
         onPress={pickImage}
         className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
+          <Image
+            source={{ uri: image }}
+            className="font-poppins w-12 h-12 rounded-lg"
+          />
         ) : (
           <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
         <Feather name="upload" size={20} color="#666" />
-      </Pressable>
+      </TouchableOpacity>
 
       <View className="font-poppins flex-row gap-3 mb-4">
-        <Pressable
+        <TouchableOpacity
           onPress={onClose}
           className="font-poppins flex-1 p-4 bg-[#F5F5F5] rounded-xl"
           disabled={loading}
@@ -288,7 +307,7 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
           <Text className="text-faded_black text-center font-poppins-medium">
             Cancel
           </Text>
-        </Pressable>
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={handleSubmit}
           className="font-poppins flex-1 p-4 bg-[#FF7629] rounded-xl"
@@ -317,7 +336,10 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
+      <Pressable
+        onPress={onClose}
+        className="font-poppins flex-1 bg-black/50 justify-end"
+      >
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{

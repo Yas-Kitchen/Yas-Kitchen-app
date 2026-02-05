@@ -78,10 +78,10 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5,
     });
     if (!result.canceled) {
       setImage(result.assets[0].uri);
@@ -175,7 +175,9 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
         </Pressable>
       </View>
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Name</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Name
+      </Text>
       <TextInput
         value={name}
         onChangeText={setName}
@@ -184,7 +186,9 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
         placeholderTextColor="#999"
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Description
+      </Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -194,7 +198,9 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
         multiline
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Price</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Price
+      </Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
@@ -204,7 +210,9 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
         placeholderTextColor="#999"
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Cutoff Time</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Cutoff Time
+      </Text>
       <Pressable
         onPress={() => setShowTimePicker(true)}
         className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
@@ -212,18 +220,18 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
         <Text className="font-poppins text-base_color">
           {cutoffTime
             ? (() => {
-              try {
-                return new Date(
-                  `1970-01-01T${cutoffTime}Z`
-                ).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                });
-              } catch {
-                return cutoffTime;
-              }
-            })()
+                try {
+                  return new Date(
+                    `1970-01-01T${cutoffTime}Z`,
+                  ).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  });
+                } catch {
+                  return cutoffTime;
+                }
+              })()
             : "Pick cutoff time"}
         </Text>
         <Feather name="clock" size={20} color="#666" />
@@ -261,13 +269,18 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
         />
       )}
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Image
+      </Text>
       <Pressable
         onPress={pickImage}
         className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
+          <Image
+            source={{ uri: image }}
+            className="font-poppins w-12 h-12 rounded-lg"
+          />
         ) : (
           <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
@@ -312,7 +325,10 @@ const EditAddon: React.FC<EditAddonProps> = ({ open, onClose, onSuccess }) => {
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
+      <Pressable
+        onPress={onClose}
+        className="font-poppins flex-1 bg-black/50 justify-end"
+      >
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{ transform: [{ translateY }], opacity }}

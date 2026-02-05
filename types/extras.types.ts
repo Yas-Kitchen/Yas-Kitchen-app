@@ -51,6 +51,9 @@ export interface TodaySpecialCreate {
   price: number;
   image_url?: string;
   addons?: Addon[];
+  available_date: string;
+  cutoff_time?: string;
+  is_active?: boolean;
 }
 
 export interface TodaySpecialUpdate {

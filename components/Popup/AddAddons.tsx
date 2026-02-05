@@ -36,7 +36,7 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
   const [cutoffTime, setCutoffTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [category, setCategory] = useState<"addon" | "kids_meal" | "diet">(
-    "addon"
+    "addon",
   );
   const [containerWidth, setContainerWidth] = useState(0);
   const { createAddons, fetchAddons, error, loading } = useExtrasApi();
@@ -78,7 +78,7 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
 
   const handleCategoryPress = (
     option: "addon" | "kids_meal" | "diet",
-    index: number
+    index: number,
   ) => {
     if (containerWidth === 0) return;
     const tileWidth = containerWidth / 3;
@@ -103,7 +103,7 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5,
     });
 
     if (!result.canceled) {
@@ -176,7 +176,9 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         </Pressable>
       </View>
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Title
+      </Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
@@ -185,7 +187,9 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         placeholderTextColor="#999"
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Description
+      </Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -197,7 +201,9 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         placeholderTextColor="#999"
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Price (AED)
+      </Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
@@ -207,7 +213,9 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         placeholderTextColor="#999"
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Category</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Category
+      </Text>
       <View
         className="font-poppins relative mb-4"
         onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
@@ -241,7 +249,7 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
                 onPress={() =>
                   handleCategoryPress(
                     option.value as "addon" | "kids_meal" | "diet",
-                    index
+                    index,
                   )
                 }
                 className="font-poppins flex-1 mx-1 p-3 rounded-xl items-center"
@@ -312,13 +320,18 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         </>
       )}
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Image
+      </Text>
       <Pressable
         onPress={pickImage}
         className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
+          <Image
+            source={{ uri: image }}
+            className="font-poppins w-12 h-12 rounded-lg"
+          />
         ) : (
           <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
@@ -363,7 +376,10 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
+      <Pressable
+        onPress={onClose}
+        className="font-poppins flex-1 bg-black/50 justify-end"
+      >
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{

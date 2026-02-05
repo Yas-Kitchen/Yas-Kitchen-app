@@ -35,23 +35,14 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const { showAlert } = useAlert();
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      showAlert(
-        "Permission denied",
-        "Permission to access media library is required!"
-      );
-      return;
-    }
-
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsEditing: true,
-      quality: 0.7,
-      base64: true,
+      aspect: [4, 3],
+      quality: 0.5,
     });
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
+    if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
   };
@@ -72,7 +63,10 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
     try {
       if (imageUri) {
         setLoadingMessage("Uploading...");
-        uploadedImageUrl = await mealsAPI.uploadMealImage(imageUri);
+        uploadedImageUrl = await mealsAPI.uploadMealImage(
+          imageUri,
+          "categories",
+        );
       }
 
       setLoadingMessage("Adding...");
@@ -88,7 +82,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
       if (!error) {
         showAlert(
           "Success",
-          "Category created successfully! You can now start adding meals via the 'Add Meal' button."
+          "Category created successfully! You can now start adding meals via the 'Add Meal' button.",
         );
       }
       setCategoryName("");
@@ -97,10 +91,11 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
       setPopupNames("");
       await fetchCuisineDetails();
       setCuisineRefreshKey(Date.now());
+      onClose();
     } catch (err: any) {
       showAlert(
         "Error",
-        err.message || "Failed to create category. Please try again."
+        err.message || "Failed to create category. Please try again.",
       );
       console.error("Creation error:", err);
     } finally {
@@ -111,7 +106,10 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
 
   return (
     <Modal visible={open} transparent animationType="fade">
-      <Pressable className="font-poppins flex-1 justify-center items-center bg-black/50" onPress={onClose}>
+      <Pressable
+        className="font-poppins flex-1 justify-center items-center bg-black/50"
+        onPress={onClose}
+      >
         <Pressable
           className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px]"
           onPress={(e) => e.stopPropagation()}
@@ -137,7 +135,9 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             editable={!isLoading}
           />
 
-          <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
+          <Text className="font-poppins text-base_color text-[12px] mb-2">
+            Description
+          </Text>
           <TextInput
             value={description}
             onChangeText={setDescription}
@@ -149,13 +149,17 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
             numberOfLines={3}
           />
 
-          <Text className="font-poppins text-base_color text-[12px] mb-2">Upload Image</Text>
+          <Text className="font-poppins text-base_color text-[12px] mb-2">
+            Upload Image
+          </Text>
           <TouchableOpacity
             onPress={pickImage}
             className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl items-center justify-center"
             disabled={isLoading}
           >
-            <Text className="text-faded_black font-poppins-medium">Choose Image</Text>
+            <Text className="text-faded_black font-poppins-medium">
+              Choose Image
+            </Text>
           </TouchableOpacity>
           {imageUri ? (
             <Image
