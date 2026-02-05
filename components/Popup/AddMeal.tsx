@@ -93,7 +93,7 @@ const AddMeal: React.FC<AddMealProps> = ({
       mediaTypes: ["images"],
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5,
     });
 
     if (!result.canceled) {
@@ -118,7 +118,7 @@ const AddMeal: React.FC<AddMealProps> = ({
     if (!image) {
       showAlert(
         "Image required",
-        "Please upload an image for the meal before saving."
+        "Please upload an image for the meal before saving.",
       );
       return;
     }
@@ -130,7 +130,7 @@ const AddMeal: React.FC<AddMealProps> = ({
     if (existingMeal) {
       showAlert(
         "Meal already exists",
-        `A meal is already scheduled for ${selectedDay} ${selectedTime}. Please edit or delete it before adding another.`
+        `A meal is already scheduled for ${selectedDay} ${selectedTime}. Please edit or delete it before adding another.`,
       );
       return;
     }
@@ -238,7 +238,9 @@ const AddMeal: React.FC<AddMealProps> = ({
         </View>
       )}
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Time</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Time
+      </Text>
       <Pressable
         onPress={() => setShowTimePicker(!showTimePicker)}
         className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
@@ -274,7 +276,9 @@ const AddMeal: React.FC<AddMealProps> = ({
         </View>
       )}
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Title</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Title
+      </Text>
       <TextInput
         value={title}
         onChangeText={setTitle}
@@ -284,7 +288,9 @@ const AddMeal: React.FC<AddMealProps> = ({
         style={{ fontSize: 16 }}
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Description</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Description
+      </Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -297,7 +303,9 @@ const AddMeal: React.FC<AddMealProps> = ({
         style={{ fontSize: 16 }}
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Price (AED)</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Price (AED)
+      </Text>
       <TextInput
         value={price}
         onChangeText={setPrice}
@@ -308,13 +316,18 @@ const AddMeal: React.FC<AddMealProps> = ({
         style={{ fontSize: 16 }}
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Image</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Image
+      </Text>
       <Pressable
         onPress={pickImage}
         className="font-poppins mb-6 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
       >
         {image ? (
-          <Image source={{ uri: image }} className="font-poppins w-12 h-12 rounded-lg" />
+          <Image
+            source={{ uri: image }}
+            className="font-poppins w-12 h-12 rounded-lg"
+          />
         ) : (
           <Text className="font-poppins text-base_color">Upload Image</Text>
         )}
@@ -348,7 +361,10 @@ const AddMeal: React.FC<AddMealProps> = ({
   if (Platform.OS === "web") {
     return (
       <Modal visible={visible} transparent animationType="fade">
-        <Pressable className="font-poppins flex-1 bg-black/50" onPress={onClose}>
+        <Pressable
+          className="font-poppins flex-1 bg-black/50"
+          onPress={onClose}
+        >
           <Pressable
             className="font-poppins bg-white rounded-3xl p-6 w-[90%] max-w-[400px] absolute left-1/2 top-1/2 max-h-[90%]"
             style={{
@@ -360,13 +376,15 @@ const AddMeal: React.FC<AddMealProps> = ({
           </Pressable>
         </Pressable>
       </Modal>
-
     );
   }
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
+      <Pressable
+        onPress={onClose}
+        className="font-poppins flex-1 bg-black/50 justify-end"
+      >
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{

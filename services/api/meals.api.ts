@@ -1,13 +1,18 @@
 import { supabase } from "@/lib/supabase";
 import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
+import axios from "axios";
 
 export const mealsAPI = {
   createMealPlan: async (data: any) => {
-    // data usually matches the table columns or needs transformation
-    // data: name, description, price, cuisine_type_id, category_id, image_url, items?
     console.log("mealsAPI: createMealPlan sending request", data);
+
+    // Meal time ID mapping
+    const MEAL_TIME_IDS: Record<string, string> = {
+      lunch: "3fa38ff4-34c5-40e2-a162-c31c6b5d18e4",
+      dinner: "8e852a0f-c061-49a2-ba32-3a9b40feef7f",
+    };
 
     // 1. Create the Meal Plan
     const { data: mealPlan, error } = await supabase
@@ -26,7 +31,51 @@ export const mealsAPI = {
 
     if (error) throw error;
 
-    // 2. Create Meal Plan Items if provided (backend likely did this transactionally)
+    // 2. Process weekly_menu format (from AddMeal component)
+    if (data.weekly_menu) {
+      for (const [dayKey, dayMeals] of Object.entries(data.weekly_menu)) {
+        for (const [timeKey, mealData] of Object.entries(
+          dayMeals as Record<string, any>,
+        )) {
+          // Create the meal in 'meals' table
+          const { data: meal, error: mealError } = await supabase
+            .from("meals")
+            .insert({
+              name: mealData.name,
+              description: mealData.description,
+              price: mealData.price || 0,
+              image_url: mealData.image,
+              is_available: true, // Correct column name
+              cuisine_type_id: data.cuisine_type_id, // Required field
+            })
+            .select()
+            .single();
+
+          if (mealError) {
+            console.error("Error creating meal", mealError);
+            throw mealError;
+          }
+
+          // Create meal_plan_item linking meal to plan
+          const mealTimeId = MEAL_TIME_IDS[timeKey.toLowerCase()];
+          const { error: itemError } = await supabase
+            .from("meal_plan_items")
+            .insert({
+              meal_plan_id: mealPlan.id,
+              meal_id: meal.id,
+              day_of_week: dayKey.toLowerCase(), // Must be lowercase per check constraint
+              meal_time_id: mealTimeId,
+            });
+
+          if (itemError) {
+            console.error("Error creating meal_plan_item", itemError);
+            throw itemError;
+          }
+        }
+      }
+    }
+
+    // 3. Also handle legacy 'items' format if provided
     if (data.items && data.items.length > 0) {
       const items = data.items.map((item: any) => ({
         meal_plan_id: mealPlan.id,
@@ -41,7 +90,6 @@ export const mealsAPI = {
 
       if (itemsError) {
         console.error("Error creating meal plan items", itemsError);
-        // Ideally we should rollback mealPlan creation (not possible in simple client logic without RPC)
         throw itemsError;
       }
     }
@@ -72,11 +120,32 @@ export const mealsAPI = {
   },
 
   getMealsByCategory: async (
-    categoryId: string | null,
+    categoryIdOrKey: string | null,
     cuisineId: string | null,
     includeMenu = true,
   ) => {
-    // Assuming backend returned a list of meal plans?
+    let categoryId = categoryIdOrKey;
+    if (
+      categoryIdOrKey &&
+      !categoryIdOrKey.match(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+      )
+    ) {
+      const { data: category } = await supabase
+        .from("categories")
+        .select("id")
+        .ilike("key", categoryIdOrKey)
+        .single();
+      categoryId = category?.id || null;
+    }
+    const { data: mealTimes } = await supabase
+      .from("meal_times")
+      .select("id, name");
+    const mealTimeMap: Record<string, string> = {};
+    mealTimes?.forEach((mt) => {
+      mealTimeMap[mt.id] = mt.name.toLowerCase();
+    });
+
     let query = supabase
       .from("meal_plans")
       .select(
@@ -99,11 +168,39 @@ export const mealsAPI = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data;
+
+    const transformed = data?.map((plan: any) => {
+      const weekly_menu: Record<string, Record<string, any>> = {};
+
+      plan.meal_plan_items?.forEach((item: any) => {
+        const day = item.day_of_week?.toLowerCase();
+        const mealTime = mealTimeMap[item.meal_time_id] || "lunch";
+
+        if (!weekly_menu[day]) {
+          weekly_menu[day] = {};
+        }
+
+        if (item.meals) {
+          weekly_menu[day][mealTime] = {
+            id: item.id,
+            meal_id: item.meals.id,
+            name: item.meals.name,
+            description: item.meals.description,
+            image: item.meals.image_url, // Changed from image_url to match MealList component
+          };
+        }
+      });
+
+      return {
+        ...plan,
+        weekly_menu,
+      };
+    });
+
+    return transformed;
   },
 
   getWeeklyMeals: async (mealPlanId: string) => {
-    // Fetch meal plan with items joined
     const { data, error } = await supabase
       .from("meal_plans")
       .select(
@@ -120,18 +217,10 @@ export const mealsAPI = {
 
     if (error) throw error;
 
-    // If backend did some transformation (grouping by day), we might need to do it here
-    // or expected format might be just the object.
     return data;
   },
 
   getPlanDetails: async () => {
-    // "onboarding/available-plans" usually fetches active categories and maybe cuisines?
-    // Let's assume it returns Categories which contain Plans?
-    // Or just Categories?
-    // Based on previous chats, it seems to select plans by category.
-    // Let's mimic what it likely did: Fetch All Categories?
-
     const { data: categories, error } = await supabase
       .from("categories")
       .select("*")
@@ -154,9 +243,6 @@ export const mealsAPI = {
   },
 
   deleteMealPlanItem: async (mealPlanId: string, mealId: string) => {
-    // This looks like deleting a specific relationship or item?
-    // The previous API was delete(`admin/meal-plans/${mealPlanId}/items/${mealId}`)
-    // This implies deleting from meal_plan_items where meal_id = mealId AND meal_plan_id = mealPlanId
     const { error } = await supabase
       .from("meal_plan_items")
       .delete()
@@ -176,9 +262,6 @@ export const mealsAPI = {
   },
 
   updateMeal: async (mealId: string, data: any) => {
-    // mealId might refer to a 'meal' from 'meals' table?
-    // Or a 'meal_plan'?
-    // The endpoint was `admin/meals/${mealId}`. Likely 'meals' table.
     const { data: updated, error } = await supabase
       .from("meals")
       .update(data)
@@ -209,39 +292,50 @@ export const mealsAPI = {
 
       let fileBody;
       let contentType = "image/jpeg"; // Default
-      const fileName = `meals/${userId}/${Date.now()}.jpg`;
 
-      if (Platform.OS === "web") {
-        const response = await fetch(imageUri);
-        const blob = await response.blob();
-        fileBody = blob;
-        contentType = blob.type || "image/jpeg";
-      } else {
-        // Read file as base64
-        const base64 = await FileSystem.readAsStringAsync(imageUri, {
-          encoding: "base64",
-        });
-        fileBody = decode(base64);
-        // Guess type? often just assume jpeg for uploads from picker
+      const fileExt = imageUri.split(".").pop()?.toLowerCase();
+      if (fileExt === "png") contentType = "image/png";
+      else if (fileExt === "jpg" || fileExt === "jpeg")
+        contentType = "image/jpeg";
+
+      const fileName = `meals/${userId}/${Date.now()}.${fileExt || "jpg"}`;
+
+      // Upload using Native FileSystem (Bypasses RN Fetch/Axios issues on Simulator)
+      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+      const uploadUrl = `${supabaseUrl}/storage/v1/object/yas-storage/${fileName}`;
+
+      console.log(`[Upload] Starting upload to ${uploadUrl}`);
+      const response = await FileSystem.uploadAsync(uploadUrl, imageUri, {
+        httpMethod: "POST",
+        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+        headers: {
+          Authorization: `Bearer ${supabaseKey}`,
+          "Content-Type": contentType,
+          "x-upsert": "true",
+        },
+      });
+
+      console.log(`[Upload] Response Status: ${response.status}`);
+      console.log(`[Upload] Response Body: ${response.body}`);
+
+      if (response.status < 200 || response.status >= 300) {
+        throw new Error(
+          `Supabase Upload Failed [${response.status}]: ${response.body}`,
+        );
       }
 
-      const { data, error } = await supabase.storage
-        .from("images")
-        .upload(fileName, fileBody, {
-          contentType: contentType,
-          upsert: true,
-        });
+      const { data } = supabase.storage
+        .from("yas-storage")
+        .getPublicUrl(fileName);
 
-      if (error) throw error;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("images").getPublicUrl(data.path);
-
-      return publicUrl;
-    } catch (e) {
-      console.error("Upload failed:", e);
-      throw e;
+      console.log(`[Upload] Success! Public URL: ${data.publicUrl}`);
+      return data.publicUrl;
+    } catch (e: any) {
+      console.error("Supabase storage upload CRITICAL error:", e);
+      // THROW the error so AddMeal.tsx sees it and alerts the user
+      throw new Error(`Image Upload Failed: ${e.message}`);
     }
   },
 };
