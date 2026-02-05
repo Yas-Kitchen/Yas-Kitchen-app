@@ -82,6 +82,10 @@ interface GlobalContextType {
   setIsAuthLoading: React.Dispatch<React.SetStateAction<boolean>>;
   userData: any;
   setUserData: React.Dispatch<React.SetStateAction<any>>;
+  specialRefreshKey: number;
+  setSpecialRefreshKey: React.Dispatch<React.SetStateAction<number>>;
+  addonRefreshKey: number;
+  setAddonRefreshKey: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const GlobalContext = createContext<GlobalContextType | undefined>(undefined);
@@ -104,7 +108,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   >(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<SelectedMealDetails | null>(
-    null
+    null,
   );
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -120,6 +124,8 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     useState<AggregatedWeeklyMenu>({} as AggregatedWeeklyMenu);
   const [cuisineRefreshKey, setCuisineRefreshKey] = useState(Date.now());
   const [mealRefreshKey, setMealRefreshKey] = useState(Date.now());
+  const [specialRefreshKey, setSpecialRefreshKey] = useState(Date.now());
+  const [addonRefreshKey, setAddonRefreshKey] = useState(Date.now());
   const [selectedDietUser, setSelectedDietUser] = useState<any>(null);
   const [userMealOpen, setUserMealOpen] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -169,7 +175,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
       } else {
         setUserId("");
         setUserData(null);
-        // storage.clearTokens(); 
+        // storage.clearTokens();
       }
       // If we want AuthGuard to block while refetching on auth change, we might want setIsAuthLoading(true) at start.
       // But typically onAuthStateChange is instantaneous for session restore.
@@ -256,6 +262,10 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsAuthLoading,
     userData,
     setUserData,
+    specialRefreshKey,
+    setSpecialRefreshKey,
+    addonRefreshKey,
+    setAddonRefreshKey,
   };
 
   return (

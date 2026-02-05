@@ -306,6 +306,36 @@ export const mealsAPI = {
       if (fileExt === "png") contentType = "image/png";
 
       const fileName = `${subdirectory}/${userId}/${Date.now()}.${fileExt || "jpg"}`;
+
+      // IMPLEMENTATION: WEB vs NATIVE
+      // Web: Use standard JS fetch/Blob and Supabase Client
+      if (Platform.OS === "web") {
+        console.log(
+          `[Upload] Web Platform detected. Using standard Supabase Client.`,
+        );
+
+        // Fetch the file as a Blob
+        const fetchResponse = await fetch(imageUri);
+        const blob = await fetchResponse.blob();
+
+        const { data, error } = await supabase.storage
+          .from("yas-storage")
+          .upload(fileName, blob, {
+            contentType: contentType,
+            upsert: true,
+          });
+
+        if (error) {
+          console.error("[Upload] Web Supabase Error:", error);
+          throw error;
+        }
+
+        const publicUrl = `${supabaseUrl}/storage/v1/object/public/yas-storage/${fileName}`;
+        console.log(`[Upload] Web Success! URL: ${publicUrl}`);
+        return publicUrl;
+      }
+
+      // Native: Use FileSystem.uploadAsync for robust Direct REST API upload
       // Construct the Storage API URL
       const uploadUrl = `${supabaseUrl}/storage/v1/object/yas-storage/${fileName}`;
 

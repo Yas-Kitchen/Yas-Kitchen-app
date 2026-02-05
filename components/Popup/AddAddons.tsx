@@ -74,7 +74,8 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
         onClose();
       });
     }
-  }, [open, onClose, opacity, translateY]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, opacity, translateY]);
 
   const handleCategoryPress = (
     option: "addon" | "kids_meal" | "diet",
@@ -127,31 +128,13 @@ const AddAddon: React.FC<AddAddonProps> = ({ open, onClose, onSuccess }) => {
 
       const success = await createAddons(addonData, image ?? "");
       if (success) {
-        Animated.parallel([
-          Animated.timing(translateY, {
-            toValue: 300,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setVisible(false);
-          onClose();
-          setTitle("");
-          setDescription("");
-          setImage(null);
-          setPrice("");
-          setCutoffTime(new Date());
-        });
-        const reloadAddons = async () => {
-          await fetchAddons();
-        };
-
-        reloadAddons();
+        onClose();
+        setTitle("");
+        setDescription("");
+        setImage(null);
+        setPrice("");
+        setCutoffTime(new Date());
+        onSuccess?.();
       }
       if (error) {
         console.error("Error:", error);

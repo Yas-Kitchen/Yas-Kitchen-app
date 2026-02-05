@@ -22,6 +22,8 @@ const AllPopup = () => {
     selectedCategory,
     mealListRef,
     setMealRefreshKey,
+    setSpecialRefreshKey,
+    setAddonRefreshKey,
   } = useGlobalContext();
   return (
     <>
@@ -56,6 +58,7 @@ const AllPopup = () => {
       <AddSpecials
         open={popupNames === "addspecial"}
         onClose={() => setPopupNames("")}
+        onSuccess={() => setSpecialRefreshKey(Date.now())}
       />
       <AddCategoryModal
         open={popupNames === "addcategory"}
@@ -78,6 +81,7 @@ const AllPopup = () => {
       <AddAddon
         open={popupNames === "addaddon"}
         onClose={() => setPopupNames("")}
+        onSuccess={() => setAddonRefreshKey(Date.now())}
       />
       <EditAddon
         open={popupNames === "editaddon"}

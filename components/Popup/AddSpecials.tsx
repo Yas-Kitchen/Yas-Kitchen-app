@@ -70,7 +70,8 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
         onClose();
       });
     }
-  }, [open, onClose, opacity, translateY]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, opacity, translateY]);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -103,29 +104,14 @@ const AddSpecials: React.FC<AddSpecialsProps> = ({
       const success = await createSpecial(specialData, image ?? "");
 
       if (success) {
-        Animated.parallel([
-          Animated.timing(translateY, {
-            toValue: 300,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setVisible(false);
-          onClose();
-          setTitle("");
-          setDescription("");
-          setImage(null);
-          setPrice("");
-          setCutoffTime(new Date());
-          setAvailableDate(new Date());
-          fetchTodaySpecials();
-          onSuccess?.();
-        });
+        onClose();
+        setTitle("");
+        setDescription("");
+        setImage(null);
+        setPrice("");
+        setCutoffTime(new Date());
+        setAvailableDate(new Date());
+        onSuccess?.();
       }
     } catch (error: any) {
       console.error("Error:", error);

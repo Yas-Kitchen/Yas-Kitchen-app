@@ -12,13 +12,14 @@ import {
 import { useAlert } from "@/context/AlertContext";
 
 const Addons = () => {
-  const { setPopupNames, setSelectedAddon } = useGlobalContext();
+  const { setPopupNames, setSelectedAddon, addonRefreshKey } =
+    useGlobalContext();
   const { loading, addons, deleteAddon, fetchAddons } = useExtrasApi();
   const { showAlert } = useAlert();
   useEffect(() => {
     fetchAddons();
     //eslint-disable-next-line
-  }, []);
+  }, [addonRefreshKey]);
 
   const formatCutoffTime = (time: string) => {
     if (!time) return "No cutoff time";
@@ -47,7 +48,7 @@ const Addons = () => {
             deleteAddon(addonId);
           },
         },
-      ]
+      ],
     );
   };
 
@@ -103,7 +104,9 @@ const Addons = () => {
                 AED {Number(item.price)}
               </Text>
               <View className="font-poppins flex-col w-1/2 gap-2">
-                <Text className="text-sm font-poppins-semibold mt-4">{item.name}</Text>
+                <Text className="text-sm font-poppins-semibold mt-4">
+                  {item.name}
+                </Text>
                 <Text className="font-poppins text-xs text-base_color ">
                   {item.description}
                 </Text>
@@ -116,14 +119,18 @@ const Addons = () => {
                     className="font-poppins gap-1 items-center p-2 rounded-lg bg-white/50 flex-row"
                   >
                     <Feather name="edit" />
-                    <Text className="font-poppins text-black text-xs">Edit</Text>
+                    <Text className="font-poppins text-black text-xs">
+                      Edit
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => handleDelete(item.id, item.name)}
                     className="font-poppins gap-1 items-center flex-row p-2 bg-red/10 rounded-lg"
                   >
                     <Feather name="trash" color={"#EF4444"} />
-                    <Text className="font-poppins text-red text-xs">Delete</Text>
+                    <Text className="font-poppins text-red text-xs">
+                      Delete
+                    </Text>
                   </TouchableOpacity>
                 </View>
                 <Text className="font-poppins text-xs text-red mt-1 absolute bottom-0 right-0">

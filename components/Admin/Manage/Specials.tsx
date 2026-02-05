@@ -15,7 +15,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { useAlert } from "@/context/AlertContext";
 
 const Specials = () => {
-  const { setPopupNames } = useGlobalContext();
+  const { setPopupNames, specialRefreshKey } = useGlobalContext();
   const { showAlert } = useAlert();
   const { loading, specials, fetchSpecialsByDate, deleteSpecials } =
     useExtrasApi();
@@ -25,7 +25,7 @@ const Specials = () => {
   useEffect(() => {
     fetchSpecialsByDate(selectedDate.toISOString().split("T")[0]);
     //eslint-disable-next-line
-  }, [selectedDate]);
+  }, [selectedDate, specialRefreshKey]);
 
   const convertToNumber = (value: string): number => {
     const num = Number(value);
@@ -61,7 +61,7 @@ const Specials = () => {
             await fetchSpecialsByDate(selectedDate.toISOString().split("T")[0]);
           },
         },
-      ]
+      ],
     );
   };
 
@@ -141,7 +141,12 @@ const Specials = () => {
 
       {specials.length === 0 ? (
         <View className="font-poppins items-center justify-center mt-10 p-8 bg-gray-50 rounded-2xl border-dashed border-2 border-gray-200">
-          <Feather name="inbox" size={40} color="#CBD5E1" className="font-poppins mb-3" />
+          <Feather
+            name="inbox"
+            size={40}
+            color="#CBD5E1"
+            className="font-poppins mb-3"
+          />
           <Text className="text-gray-500 text-center text-base font-poppins-medium">
             No specials found
           </Text>
@@ -166,7 +171,9 @@ const Specials = () => {
                 AED {Number(item.price).toFixed(2)}
               </Text>
               <View className="font-poppins flex-col w-1/2 gap-2 my-auto">
-                <Text className="text-sm font-poppins-semibold">{item.name}</Text>
+                <Text className="text-sm font-poppins-semibold">
+                  {item.name}
+                </Text>
                 <Text className="font-poppins text-xs text-base_color ">
                   {item.description}
                 </Text>
@@ -176,11 +183,15 @@ const Specials = () => {
                     className="font-poppins gap-1 items-center flex-row p-2 bg-red/10 rounded-lg"
                   >
                     <Feather name="trash" color={"#EF4444"} />
-                    <Text className="font-poppins text-red text-xs">Delete</Text>
+                    <Text className="font-poppins text-red text-xs">
+                      Delete
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
-              <Text className="right-5 bottom-5 absolute text-xs font-poppins-medium text-red">Cutoff time : {formatTime(item.cutoff_time ?? "")}</Text>
+              <Text className="right-5 bottom-5 absolute text-xs font-poppins-medium text-red">
+                Cutoff time : {formatTime(item.cutoff_time ?? "")}
+              </Text>
             </View>
           ))}
         </View>
