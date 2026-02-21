@@ -6,7 +6,10 @@ import { ScrollView, Text, View } from "react-native";
 const Addons = () => {
   return (
     <View className="font-poppins flex-1 relative">
-      <ScrollView contentContainerStyle={{ paddingBottom: 150 }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 150 }}
+      >
         <View className="font-poppins ios:mt-16 mt-5 mx-5 gap-3">
           <Text className="text-[#212529] font-poppins-semibold text-[16px]">
             Add-on item&apos;s

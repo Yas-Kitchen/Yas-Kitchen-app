@@ -8,9 +8,9 @@ interface GreetingProps {
 }
 
 const Greetings = ({ loading }: GreetingProps) => {
-  const { name, foodStyle } = useGlobalContext();
+  const { name, getMonthlyPlanText } = useGlobalContext();
 
-  if (loading || !name || !foodStyle) {
+  if (loading || !name) {
     return (
       <View className="font-poppins flex-col gap-2 mt-2">
         <Skeleton width={140} height={20} borderRadius={6} />
@@ -23,7 +23,9 @@ const Greetings = ({ loading }: GreetingProps) => {
       <Text className="font-poppins-semibold text-faded_black text-[16px]">
         Hello, {name}
       </Text>
-      <Text className="font-poppins text-base_color text-[12px]">{foodStyle} food plan</Text>
+      <Text className="font-poppins text-base_color text-[12px]">
+        {getMonthlyPlanText()}
+      </Text>
     </View>
   );
 };

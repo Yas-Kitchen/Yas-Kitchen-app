@@ -168,11 +168,10 @@ const AddDietMeals: React.FC<AddMealProps> = ({
         });
       } else {
         const mealPayload = {
-          name: `${selectedDay} ${selectedTime} Meal`,
-          cuisine_type_id: cuisineId || undefined,
-          description: `Meal for ${selectedDay} ${selectedTime}`,
-          price: 0.01,
-          category_id: categoryId || undefined,
+          plan_details: {
+            name: `${selectedDay} ${selectedTime} Meal`,
+            description: `Meal for ${selectedDay} ${selectedTime}`,
+          },
           is_active: true,
           weekly_menu: {
             [dayKey]: {
@@ -181,9 +180,7 @@ const AddDietMeals: React.FC<AddMealProps> = ({
           },
         };
 
-        if (onSuccess) {
-          await createDietPlan(selectedDietUser.id, mealPayload);
-        }
+        await createDietPlan(selectedDietUser.id, mealPayload);
       }
 
       setMealRefreshKey(Date.now());

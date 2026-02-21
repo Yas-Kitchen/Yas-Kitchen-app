@@ -29,6 +29,7 @@ const DietPlan = () => {
 
   const {
     setPopupNames,
+    popupNames,
     userMealOpen,
     setUserMealOpen,
     selectedUser,
@@ -43,7 +44,7 @@ const DietPlan = () => {
       await listDietUsers();
     };
     getDietUser();
-  }, []);
+  }, [popupNames]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -63,7 +64,7 @@ const DietPlan = () => {
     if (!userDietPlan || !userDietPlan.weekly_menu) return;
 
     const updatedWeeklyMenu = JSON.parse(
-      JSON.stringify(userDietPlan.weekly_menu)
+      JSON.stringify(userDietPlan.weekly_menu),
     );
     let found = false;
     for (const day in updatedWeeklyMenu) {
@@ -102,7 +103,7 @@ const DietPlan = () => {
     const searched = DietUsers.filter(
       (u) =>
         u.name?.toLowerCase().includes(lower) ||
-        u.phone_number?.toLowerCase().includes(lower)
+        u.phone_number?.toLowerCase().includes(lower),
     );
 
     setFilteredUsers(searched);
@@ -119,27 +120,42 @@ const DietPlan = () => {
       <View className="font-poppins flex-1 ">
         <View className="font-poppins flex-1 p-4">
           {!userDietPlan && !mealPlanLoading ? (
-            <View className="font-poppins flex-1 items-center justify-center p-8">
-              <View className="font-poppins p-6 rounded-2xl items-center w-full">
-                <Text className="text-lg font-poppins-semibold mt-4 text-center">
-                  No Diet Plan Found
+            <View className="font-poppins flex-1">
+              <TouchableOpacity
+                onPress={() => {
+                  setUserMealOpen(false);
+                  setSelectedUser(null);
+                }}
+                className="font-poppins flex-row items-center gap-2 mb-4"
+              >
+                <Feather name="arrow-left" size={20} color="#333" />
+                <Text className="font-poppins-semibold text-[16px]">
+                  {selectedUser.name}'s Diet Plan
                 </Text>
-                <Text className="font-poppins text-base_color text-sm mt-2 text-center">
-                  This user doesn't have a personalized diet plan yet.
-                </Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setPopupNames("createdietplan");
-                    setSelectedUser(selectedUser);
-                    setSelectedDietUser(selectedUser);
-                  }}
-                  className="font-poppins mt-6 bg-primary px-6 py-3 rounded-xl flex-row items-center gap-2"
-                >
-                  <Feather name="plus" size={20} color="#FFFFFF" />
-                  <Text className="text-white font-poppins-semibold">
-                    Create Diet Plan
+              </TouchableOpacity>
+
+              <View className="font-poppins flex-1 items-center justify-center p-8">
+                <View className="font-poppins p-6 rounded-2xl items-center w-full">
+                  <Text className="text-lg font-poppins-semibold mt-4 text-center">
+                    No Diet Plan Found
                   </Text>
-                </TouchableOpacity>
+                  <Text className="font-poppins text-base_color text-sm mt-2 text-center">
+                    This user doesn't have a personalized diet plan yet.
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setPopupNames("createdietplan");
+                      setSelectedUser(selectedUser);
+                      setSelectedDietUser(selectedUser);
+                    }}
+                    className="font-poppins mt-6 bg-primary px-6 py-3 rounded-xl flex-row items-center gap-2"
+                  >
+                    <Feather name="plus" size={20} color="#FFFFFF" />
+                    <Text className="text-white font-poppins-semibold">
+                      Create Diet Plan
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           ) : (
@@ -196,7 +212,7 @@ const DietPlan = () => {
             )}
           </View>
           <TouchableOpacity
-            onPress={() => { }}
+            onPress={() => setPopupNames("adduser_diet")}
             className="font-poppins p-3 bg-primary rounded-xl items-center justify-center"
           >
             <Text className="font-poppins text-white text-xs">Add Users</Text>
@@ -243,7 +259,7 @@ const DietPlan = () => {
               category={user.category}
               status={user.status}
               joindate={user.created_at}
-              onStatusChange={() => { }}
+              onStatusChange={() => {}}
               onPress={() => {
                 setSelectedUser(user);
                 setSelectedDietUser(user);

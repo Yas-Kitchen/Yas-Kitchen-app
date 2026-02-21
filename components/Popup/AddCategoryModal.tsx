@@ -30,7 +30,8 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-  const { setPopupNames, setCuisineRefreshKey } = useGlobalContext();
+  const { setPopupNames, setCuisineRefreshKey, setSelectedCategory } =
+    useGlobalContext();
   const { createCuisine, error, fetchCuisineDetails } = useMealsAPI();
   const { showAlert } = useAlert();
 
@@ -77,7 +78,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
         is_active: true,
       };
 
-      await createCuisine(payload);
+      const newCategory = await createCuisine(payload);
 
       if (!error) {
         showAlert(
@@ -91,6 +92,10 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({
       setPopupNames("");
       await fetchCuisineDetails();
       setCuisineRefreshKey(Date.now());
+      // Auto-select the newly created category
+      if (newCategory?.id) {
+        setSelectedCategory(newCategory.id);
+      }
       onClose();
     } catch (err: any) {
       showAlert(

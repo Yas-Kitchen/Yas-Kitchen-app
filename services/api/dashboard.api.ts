@@ -64,6 +64,28 @@ export const dashBoardAPI = {
 
       const addonMap = new Map((allAddons || []).map((a) => [a.id, a.name]));
 
+      // Fetch plan distribution from user data
+      const { count: regularUsers } = await supabase
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .eq("has_regular_plan", true)
+        .eq("role", "user");
+
+      const { count: dietUsers } = await supabase
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .eq("has_diet_plan", true)
+        .eq("role", "user");
+
+      const { count: kidsUsers } = await supabase
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .eq("has_kids_plan", true)
+        .eq("role", "user");
+
+      const totalPlanUsers =
+        (regularUsers || 0) + (dietUsers || 0) + (kidsUsers || 0);
+
       // 5. Calculate Stats
       const calculateStats = (orders: any[]) => {
         const revenue = orders.reduce(
@@ -104,9 +126,27 @@ export const dashBoardAPI = {
           active_users: activeUserCount || 0,
           pending_orders: 0,
           plan_distribution: {
-            Regular: { total_users: 0, percentage: 0 },
-            Diet: { total_users: 0, percentage: 0 },
-            Kids: { total_users: 0, percentage: 0 },
+            Regular: {
+              total_users: regularUsers || 0,
+              percentage:
+                totalPlanUsers > 0
+                  ? Math.round(((regularUsers || 0) / totalPlanUsers) * 100)
+                  : 0,
+            },
+            Diet: {
+              total_users: dietUsers || 0,
+              percentage:
+                totalPlanUsers > 0
+                  ? Math.round(((dietUsers || 0) / totalPlanUsers) * 100)
+                  : 0,
+            },
+            Kids: {
+              total_users: kidsUsers || 0,
+              percentage:
+                totalPlanUsers > 0
+                  ? Math.round(((kidsUsers || 0) / totalPlanUsers) * 100)
+                  : 0,
+            },
           },
           popular_items: popularItems,
         };

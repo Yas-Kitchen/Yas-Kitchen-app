@@ -99,7 +99,7 @@ const IndividualUsers = ({
         text: "Delete",
         style: "destructive",
         onPress: async () => {
-          deleteUser(id!);
+          await deleteUser(id!);
           if (onStatusChange) onStatusChange();
         },
       },

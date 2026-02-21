@@ -54,8 +54,9 @@ export const useMealsAPI = () => {
         is_active: true,
       };
 
-      await mealsAPI.createCuisine(payload);
+      const result = await mealsAPI.createCuisine(payload);
       await fetchCuisineDetails();
+      return result;
     } catch (err: any) {
       setError(err?.message || "Failed to create category");
       console.error("Failed to create cuisine types with err", err);
@@ -71,9 +72,9 @@ export const useMealsAPI = () => {
       const data = await mealsAPI.getMealsByCategory(
         categoryKey,
         cuisineId,
-        true
+        true,
       );
-      const parsedMeals = Array.isArray(data) ? data : data?.data ?? [];
+      const parsedMeals = Array.isArray(data) ? data : (data?.data ?? []);
       setMeals(parsedMeals);
     } catch (err: any) {
       console.error("Failed to fetch meal plan:", err);
@@ -86,8 +87,8 @@ export const useMealsAPI = () => {
       });
       setError(
         err?.response?.data?.message ||
-        err?.message ||
-        "Failed to get meal plan"
+          err?.message ||
+          "Failed to get meal plan",
       );
     } finally {
       setLoading(false);
@@ -181,7 +182,7 @@ export const useMealsAPI = () => {
       description?: string;
       image?: string | null;
       price?: number;
-    }
+    },
   ) => {
     setLoading(true);
     setError(null);

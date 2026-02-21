@@ -38,8 +38,7 @@ const WeeklyMeals = () => {
     cuisineRefreshKey,
     mealRefreshKey,
     setMealRefreshKey,
-  } =
-    useGlobalContext();
+  } = useGlobalContext();
   const {
     fetchMeals,
     deleteCuisine,
@@ -89,7 +88,7 @@ const WeeklyMeals = () => {
               is_active: c.is_active ?? true,
               created_at: c.created_at ?? "",
               updated_at: c.updated_at ?? "",
-            }))
+            })),
           );
         }
       } catch (error) {
@@ -131,7 +130,7 @@ const WeeklyMeals = () => {
 
   const hasAnyMeals = useMemo(() => {
     return Object.values(aggregatedWeeklyMenu).some(
-      (dayMeals) => Object.keys(dayMeals).length > 0
+      (dayMeals) => Object.keys(dayMeals).length > 0,
     );
   }, [aggregatedWeeklyMenu]);
 
@@ -142,10 +141,10 @@ const WeeklyMeals = () => {
   return (
     <>
       <View
-        className="font-poppins flex-row justify-between items-center text-[12px]"
+        className="font-poppins flex-row justify-center items-center text-[12px]"
         style={{ zIndex: 5000 }}
       >
-        <View className="font-poppins flex-row gap-2">
+        <View className="font-poppins flex-row gap-2 items-center">
           <View className="font-poppins w-40" style={{ zIndex: 5000 }}>
             <DropDownPicker
               open={open}
@@ -226,13 +225,13 @@ const WeeklyMeals = () => {
                                       is_active: c.is_active ?? true,
                                       created_at: c.created_at ?? "",
                                       updated_at: c.updated_at ?? "",
-                                    }))
+                                    })),
                                   );
                                 }
                               }
                             },
                           },
-                        ]
+                        ],
                       );
                     }}
                     style={{ padding: 4 }}

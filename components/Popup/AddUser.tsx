@@ -11,26 +11,50 @@ import {
   View,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { storage } from "@/services/storage";
+import { supabase } from "@/lib/supabase";
+import { useAlert } from "@/context/AlertContext";
 
 interface AddUserProps {
   open: boolean;
   onClose: () => void;
+  isDietUser?: boolean;
 }
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
+const AddUser: React.FC<AddUserProps> = ({
+  open,
+  onClose,
+  isDietUser = false,
+}) => {
+  const { showAlert } = useAlert();
   const translateY = useRef(new Animated.Value(300)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const [visible, setVisible] = useState(open);
 
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
-  const [categories, setCategories] = useState<string[]>([]);
+  const [address, setAddress] = useState("");
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    [],
+  );
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const { data } = await supabase
+          .from("categories")
+          .select("id, name")
+          .eq("is_active", true)
+          .order("name");
+        if (data) setCategories(data);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+    if (open) loadCategories();
+  }, [open]);
 
   useEffect(() => {
     if (open) {
@@ -67,35 +91,40 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
   }, [open, onClose, opacity, translateY]);
 
   const handleSubmit = async () => {
-    if (!name || !number || !selectedCategory) {
-      alert("Please fill all required fields");
+    if (!name || !number || !address || (!isDietUser && !selectedCategory)) {
+      showAlert("Missing Fields", "Please fill all required fields");
       return;
     }
 
     setUploading(true);
 
     try {
-      const payload = {
-        name,
-        number,
-        meal_type: selectedCategory,
+      const insertData: any = {
+        name: name.trim(),
+        phone_number: number.replace(/\D/g, ""),
+        address: address.trim(),
+        status: "active",
+        role: "user",
       };
 
-      const response = await fetch(`${API_URL}/users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to add user");
+      if (isDietUser) {
+        insertData.has_diet_plan = true;
+      } else {
+        insertData.selected_main_category_id = selectedCategory;
       }
 
-      alert("User added successfully!");
+      // Insert user directly into Supabase
+      const { data, error } = await supabase
+        .from("users")
+        .insert(insertData)
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      showAlert("Success", "User added successfully!");
 
       Animated.parallel([
         Animated.timing(translateY, {
@@ -113,12 +142,13 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
         onClose();
         setName("");
         setNumber("");
+        setAddress("");
         setSelectedCategory(null);
         setShowCategoryPicker(false);
       });
     } catch (error: any) {
       console.error("Error:", error);
-      alert("Something went wrong: " + error.message);
+      showAlert("Error", "Something went wrong: " + error.message);
     } finally {
       setUploading(false);
     }
@@ -137,7 +167,9 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
         </Pressable>
       </View>
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Name</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Name
+      </Text>
       <TextInput
         value={name}
         onChangeText={setName}
@@ -146,7 +178,9 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
         placeholderTextColor="#999"
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Number</Text>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Number
+      </Text>
       <TextInput
         value={number}
         onChangeText={setNumber}
@@ -156,40 +190,69 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
         placeholderTextColor="#999"
       />
 
-      <Text className="font-poppins text-base_color text-[12px] mb-2">Meal Type</Text>
-      <Pressable
-        onPress={() => setShowCategoryPicker(!showCategoryPicker)}
-        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
-      >
-        <Text className={selectedCategory ? "text-black" : "text-base_color"}>
-          {selectedCategory || "Select Meal Type"}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </Pressable>
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Address
+      </Text>
+      <TextInput
+        value={address}
+        onChangeText={setAddress}
+        placeholder="Enter address"
+        multiline
+        numberOfLines={2}
+        className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl"
+        placeholderTextColor="#999"
+      />
 
-      {showCategoryPicker && (
-        <View className="font-poppins mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {categories.map((category) => (
-            <Pressable
-              key={category}
-              onPress={() => {
-                setSelectedCategory(category);
-                setShowCategoryPicker(false);
-              }}
-              className="font-poppins p-4 border-b border-gray-100"
-            >
-              <Text
-                className={
-                  selectedCategory === category
-                    ? "text-primary font-poppins-semibold"
-                    : "text-black"
-                }
-              >
-                {category}
-              </Text>
-            </Pressable>
-          ))}
+      <Text className="font-poppins text-base_color text-[12px] mb-2">
+        Meal Type
+      </Text>
+      {isDietUser ? (
+        <View className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl">
+          <Text className="text-black font-poppins-medium">Diet Plan</Text>
         </View>
+      ) : (
+        <>
+          <Pressable
+            onPress={() => setShowCategoryPicker(!showCategoryPicker)}
+            className="font-poppins mb-4 p-4 bg-[#F5F5F5] rounded-xl flex-row items-center justify-between"
+          >
+            <Text
+              className={selectedCategory ? "text-black" : "text-base_color"}
+            >
+              {categories.find((c) => c.id === selectedCategory)?.name ||
+                "Select Meal Type"}
+            </Text>
+            <Feather name="chevron-down" size={20} color="#666" />
+          </Pressable>
+
+          {showCategoryPicker && (
+            <View
+              className="font-poppins mb-4 bg-white border border-gray-200 rounded-xl overflow-hidden"
+              style={{ zIndex: 100 }}
+            >
+              {categories.map((category) => (
+                <Pressable
+                  key={category.id}
+                  onPress={() => {
+                    setSelectedCategory(category.id);
+                    setShowCategoryPicker(false);
+                  }}
+                  className="font-poppins p-4 border-b border-gray-100"
+                >
+                  <Text
+                    className={
+                      selectedCategory === category.id
+                        ? "text-primary font-poppins-semibold"
+                        : "text-black"
+                    }
+                  >
+                    {category.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </>
       )}
 
       <View className="font-poppins flex-row gap-3 mb-4">
@@ -230,7 +293,10 @@ const AddUser: React.FC<AddUserProps> = ({ open, onClose }) => {
 
   return (
     <Modal visible={visible} transparent animationType="none">
-      <Pressable onPress={onClose} className="font-poppins flex-1 bg-black/50 justify-end">
+      <Pressable
+        onPress={onClose}
+        className="font-poppins flex-1 bg-black/50 justify-end"
+      >
         <Pressable onPress={(e) => e.stopPropagation()}>
           <Animated.View
             style={{

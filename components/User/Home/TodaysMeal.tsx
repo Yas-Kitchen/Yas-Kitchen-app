@@ -1,7 +1,10 @@
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
+import { ratingsAPI } from "@/services/api/ratings.api";
+import { useAlert } from "@/context/AlertContext";
+import ImageWithSkeleton from "@/components/shared/ImageWithSkeleton";
 
 const imageMap: Record<string, any> = {
   "biriyani.png": require("../../../assets/User/biriyani.png"),
@@ -29,15 +32,21 @@ type MealTypes = {
   availability: string;
   lunch: boolean;
   image: string;
+  mealPlanId?: string;
+  day?: string;
+  userId?: string;
 };
 
 const TodaysMeal = ({
   name,
   description,
-  rating,
+  rating: initialRating,
   availability,
   lunch,
   image,
+  mealPlanId,
+  day,
+  userId,
 }: MealTypes) => {
   const screenWidth = Dimensions.get("window").width;
   const width = Math.min(Math.max(screenWidth * 0.45, 300), 400);
@@ -46,13 +55,82 @@ const TodaysMeal = ({
   const [isClicked, setIsClicked] = useState(false);
   const [newRating, setNewRating] = useState<number | null>(null);
   const [tempRating, setTempRating] = useState(0);
+  const [avgRating, setAvgRating] = useState(initialRating);
+  const [submitting, setSubmitting] = useState(false);
+  const { showAlert } = useAlert();
 
   const stars = [1, 2, 3, 4, 5];
+  const mealTime = lunch ? "lunch" : "dinner";
+
+  // Fetch average rating and user's today rating on mount
+  useEffect(() => {
+    if (mealPlanId && day) {
+      const fetchRatings = async () => {
+        try {
+          const avg = await ratingsAPI.getAverageRating(
+            mealPlanId,
+            day,
+            mealTime,
+          );
+          setAvgRating(avg);
+
+          if (userId) {
+            const userRating = await ratingsAPI.getUserRatingToday(
+              userId,
+              mealPlanId,
+              day,
+              mealTime,
+            );
+            if (userRating) {
+              setNewRating(userRating);
+              setIsClicked(true);
+            }
+          }
+        } catch (err) {
+          console.error("Error fetching ratings:", err);
+        }
+      };
+      fetchRatings();
+    }
+  }, [mealPlanId, day, userId]);
+
+  const handleRate = async (star: number) => {
+    setNewRating(star);
+
+    if (!mealPlanId || !day || !userId) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await ratingsAPI.submitRating(userId, mealPlanId, day, mealTime, star);
+      // Refresh average
+      const avg = await ratingsAPI.getAverageRating(mealPlanId, day, mealTime);
+      setAvgRating(avg);
+    } catch (err: any) {
+      console.error("Rating error:", err);
+      showAlert("Error", "Failed to save rating");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const imageSource = image?.startsWith?.("http")
+    ? { uri: image }
+    : imageMap[image];
 
   return (
     <View>
       <View className="font-poppins border-2 bg-[#F1EFE8] border-primary rounded-2xl overflow-hidden items-center">
-        <Image style={{ width, height }} source={imageMap[image]} />
+        {image?.startsWith?.("http") ? (
+          <ImageWithSkeleton
+            uri={image}
+            containerClassName={`w-full h-[${height}px]`}
+            imageClassName="w-full h-full"
+          />
+        ) : (
+          <Image style={{ width, height }} source={imageSource} />
+        )}
         <View className="font-poppins bg-white p-3 gap-2">
           <View className="font-poppins flex-row justify-between">
             <Text className="text-[16px] font-poppins-semibold">
@@ -60,7 +138,9 @@ const TodaysMeal = ({
             </Text>
             <View className="font-poppins bg-button_bg/10 mx-2 flex-row gap-1 rounded-lg p-1">
               <FontAwesome name="star" size={16} color="#FFC107" />
-              <Text className="text-[12px] font-poppins-medium">{rating}</Text>
+              <Text className="text-[12px] font-poppins-medium">
+                {avgRating}
+              </Text>
             </View>
           </View>
 
@@ -74,9 +154,10 @@ const TodaysMeal = ({
                 {stars.map((star) => (
                   <TouchableOpacity
                     key={star}
-                    onPress={() => setNewRating(star)}
+                    onPress={() => handleRate(star)}
                     onPressIn={() => setTempRating(star)}
                     onPressOut={() => setTempRating(0)}
+                    disabled={submitting}
                   >
                     <Animated.View
                       layout={Layout.springify()}
@@ -87,7 +168,7 @@ const TodaysMeal = ({
                         name="star"
                         size={16}
                         color={
-                          star <= (tempRating || newRating || rating)
+                          star <= (tempRating || newRating || avgRating)
                             ? "#FFC107"
                             : "#ccc"
                         }

@@ -26,12 +26,14 @@ export interface DietUser {
 }
 
 export interface DietPlanData {
-  name: string;
-  description: string;
-  price: number;
+  plan_details?: {
+    name?: string;
+    description?: string;
+    [key: string]: any;
+  };
+  restrictions?: string[];
+  preferences?: string[];
   is_active?: boolean;
-  category_id?: string;
-  cuisine_type_id?: string;
   weekly_menu?: {
     [day: string]: {
       [mealTime: string]: {
@@ -41,6 +43,7 @@ export interface DietPlanData {
         availability?: string;
         rating?: number;
         image?: string | null;
+        price?: number;
       };
     };
   };

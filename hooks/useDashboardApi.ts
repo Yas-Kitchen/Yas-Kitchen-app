@@ -24,14 +24,14 @@ export const useDashboardApi = () => {
           monthStart,
           monthEnd,
         });
-        setData(response.data);
+        setData(response);
       } catch (err: any) {
         setError(err.message || err);
       } finally {
         setLoading(false);
       }
     },
-    []
+    [],
   );
   return {
     getDashboardStats,

@@ -65,8 +65,9 @@ const AllPopup = () => {
         onClose={() => setPopupNames("")}
       />
       <AddUser
-        open={popupNames === "adduser"}
+        open={popupNames === "adduser" || popupNames === "adduser_diet"}
         onClose={() => setPopupNames("")}
+        isDietUser={popupNames === "adduser_diet"}
       />
       <EditMeal
         open={popupNames === "editmeal"}
