@@ -48,7 +48,7 @@ const AddonsItems = () => {
   };
 
   const availableItems = items.filter(
-    (item) => !isPastCutoff(item.cutoff_time)
+    (item) => !isPastCutoff(item.cutoff_time),
   );
   const expiredItems = items.filter((item) => isPastCutoff(item.cutoff_time));
   const sortedItems = [...availableItems, ...expiredItems];
@@ -111,7 +111,7 @@ const AddonsItems = () => {
         selectedAddonItems,
         setCart,
         setSelectedAddonItems,
-        item
+        item,
       );
     });
   };
@@ -128,7 +128,7 @@ const AddonsItems = () => {
       selectedAddonItems,
       setCart,
       setSelectedAddonItems,
-      item.id
+      item.id,
     );
   };
 
@@ -143,7 +143,9 @@ const AddonsItems = () => {
   if (items.length === 0) {
     return (
       <View className="font-poppins items-center justify-center py-10">
-        <Text className="font-poppins text-gray-500">No add-ons available today 😞</Text>
+        <Text className="font-poppins text-gray-500">
+          No add-ons available today 😞
+        </Text>
       </View>
     );
   }
@@ -155,19 +157,22 @@ const AddonsItems = () => {
         return (
           <View
             key={item.id}
-            className={`bg-[#EFEDE6] border border-base_color/20 rounded-xl py-5 ${
+            className={`bg-[#EFEDE6] border border-base_color/20 rounded-xl ${
               expired ? "opacity-50 grayscale" : ""
             }`}
+            style={{ paddingVertical: 20, paddingHorizontal: 12 }}
             pointerEvents={expired ? "none" : "auto"}
           >
-            <View className="font-poppins flex-row">
+            <View className="font-poppins gap-2 flex-row">
               <Image
                 style={{ width, height }}
-                className="font-poppins rounded-md p-2"
+                className="font-poppins rounded-md"
                 source={{ uri: item.image_url }}
               />
               <View className="font-poppins flex-col">
-                <Text className="text-[14px] font-poppins-semibold">{item.name}</Text>
+                <Text className="text-[14px] font-poppins-semibold">
+                  {item.name}
+                </Text>
                 <Text className="font-poppins w-[80%] text-[12px] text-base_color mt-1">
                   {item.description}
                 </Text>

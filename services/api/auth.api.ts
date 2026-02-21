@@ -59,6 +59,12 @@ const authAPI = {
         .eq("auth_user_id", data.user.id)
         .maybeSingle(); // might request creation via trigger?
       userProfile = profile;
+
+      // Update users table using RPC to mark password as set
+      await supabase.rpc("set_user_password_status", {
+        p_phone: cleanPhone,
+        p_auth_user_id: data.user.id,
+      });
     }
 
     // Merge auth user with profile data

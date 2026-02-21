@@ -4,6 +4,7 @@ import { useGlobalContext } from "@/context/GlobalContext";
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 import {
   ActivityIndicator,
   Image,
@@ -22,7 +23,7 @@ const Profile = () => {
   const { showAlert } = useAlert();
 
   const [profileImage, setProfileImage] = useState<string | null>(
-    userProfile || null
+    userProfile || null,
   );
   const [loading, setLoading] = useState(false);
 
@@ -48,7 +49,7 @@ const Profile = () => {
               if (!permissionResult.granted) {
                 showAlert(
                   "Permission required",
-                  "Please allow access to your gallery."
+                  "Please allow access to your gallery.",
                 );
                 return;
               }
@@ -83,7 +84,9 @@ const Profile = () => {
           </TouchableOpacity>
           <View className="font-poppins gap-1">
             <Text className="text-[17px] font-poppins-semibold">{name}</Text>
-            <Text className="font-poppins text-base_color text-[13px]">{mobile}</Text>
+            <Text className="font-poppins text-base_color text-[13px]">
+              {mobile}
+            </Text>
           </View>
         </View>
         <View className="font-poppins bg-white/50 rounded-xl border border-base_color/10">
@@ -121,7 +124,19 @@ const Profile = () => {
           />
         </View>
         <TouchableOpacity
-          onPress={() => router.push("/")}
+          onPress={() => {
+            showAlert("Logout", "Are you sure you want to logout?", [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Logout",
+                style: "destructive",
+                onPress: async () => {
+                  await supabase.auth.signOut();
+                  router.replace("/");
+                },
+              },
+            ]);
+          }}
           className="font-poppins flex-row items-center gap-2 bg-white justify-center p-5 rounded-2xl mt-5"
         >
           <Feather name="log-out" color={"#FF7629"} size={20} />
@@ -130,8 +145,7 @@ const Profile = () => {
       </View>
       <View className="font-poppins h-32" />
     </ScrollView>
-  )
-}
-
+  );
+};
 
 export default Profile;
