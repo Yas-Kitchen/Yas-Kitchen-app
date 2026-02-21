@@ -30,7 +30,9 @@ const Review = () => {
       try {
         if (activeStep === 3) {
           const reviewData = await getReviewData();
-          setData(reviewData);
+          if (reviewData) {
+            setData(reviewData as ReviewData);
+          }
         }
       } catch (err) {
         console.log("Error loading review:", err);
@@ -42,28 +44,36 @@ const Review = () => {
   }, []);
 
   useEffect(() => {
-    const fetchCuisineName = async () => {
-      if (data?.cuisine.id) {
-        const name = await getCuisineNameByID(data?.cuisine.id);
-        setPlanName(name);
-      }
-    };
-    fetchCuisineName();
+    if (data?.cuisine?.name) {
+      setPlanName(data.cuisine.name);
+    } else {
+      setPlanName("Unknown Cuisine");
+    }
   }, [data]);
 
-  const formattedPlanName = (data?.plans.selected_plans || [])
-    .map((key) => PLAN_NAME_MAP[key] || key)
-    .join(" with ");
+  const formattedPlanName = () => {
+    const plans = [];
+    if (data?.user?.has_regular_plan) plans.push("Regular Plan");
+    if (data?.user?.has_diet_plan) plans.push("Diet Plan");
+    if (data?.user?.has_kids_plan) plans.push("Kids Plan");
+    return plans.join(" with ");
+  };
 
-  const formattedPrice = data?.plans.pricing_breakdown?.total_cost
-    ? `${data.plans.pricing_breakdown.total_cost} AED/month`
-    : "0 AED";
+  const getPrice = () => {
+    let price = 0;
+    if (data?.user?.has_regular_plan) price += 83;
+    if (data?.user?.has_diet_plan) price += 100;
+    if (data?.user?.has_kids_plan) price += 25;
+    return price;
+  };
+
+  const formattedPrice = getPrice() > 0 ? `${getPrice()} AED/month` : "0 AED";
 
   const sendWhatsAppMessage = async () => {
     const phoneNumber = process.env.EXPO_PUBLIC_NUMBER;
-    const message = `Hello, my name is ${data?.user.name}. I would like to subscribe to the ${formattedPlanName} plan under ${planName} cuisine. My address is ${data?.user.address}, and my mobile number is ${data?.user.phone_number}`;
+    const message = `Hello, my name is ${data?.user.name}. I would like to subscribe to the ${formattedPlanName()} plan under ${planName} cuisine. My address is ${data?.user.address}, and my mobile number is ${data?.user.phone_number}`;
     const url = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(
-      message
+      message,
     )}`;
 
     try {
@@ -71,7 +81,7 @@ const Review = () => {
     } catch {
       showAlert(
         "WhatsApp Not Found",
-        "Make sure WhatsApp is installed on your device."
+        "Make sure WhatsApp is installed on your device.",
       );
     }
   };
@@ -92,7 +102,7 @@ const Review = () => {
               router.replace("/");
             },
           },
-        ]
+        ],
       );
     } catch (error: any) {
       console.error("Error:", error.response?.data || error.message);
@@ -112,15 +122,18 @@ const Review = () => {
         address={user?.address}
         foodStyle={planName}
       />
-      <SubscriptionPlan plans={formattedPlanName} price={formattedPrice} />
+      <SubscriptionPlan plans={formattedPlanName()} price={formattedPrice} />
       <TouchableOpacity
         onPress={handleContinue}
         disabled={loading}
-        className={`bg-primary mt-5 p-5 rounded-2xl w-full ${loading && "opacity-50"
-          }`}
+        className={`bg-primary mt-5 p-5 rounded-2xl w-full ${
+          loading && "opacity-50"
+        }`}
       >
         {loading ? (
-          <Text className="font-poppins text-center text-white">Loading...</Text>
+          <Text className="font-poppins text-center text-white">
+            Loading...
+          </Text>
         ) : (
           <Text className="font-poppins text-center text-white">Continue</Text>
         )}

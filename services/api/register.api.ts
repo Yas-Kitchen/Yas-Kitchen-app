@@ -33,12 +33,29 @@ export const registerAPI = {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    const { data, error } = await supabase
+    const { data: existing } = await supabase
       .from("users")
-      .update({ name, address })
+      .select("id")
       .eq("auth_user_id", user.id)
-      .select()
-      .single();
+      .maybeSingle();
+
+    let query;
+    if (existing) {
+      query = supabase
+        .from("users")
+        .update({ name, address })
+        .eq("auth_user_id", user.id);
+    } else {
+      query = supabase.from("users").insert({
+        auth_user_id: user.id,
+        name,
+        address,
+        phone_number: user.phone || user.user_metadata?.phone_number,
+        status: "initiated",
+      });
+    }
+
+    const { data, error } = await query.select().single();
 
     if (error) throw error;
     return data;
@@ -116,7 +133,7 @@ export const registerAPI = {
     // Maybe update status to 'active'?
     const { data, error } = await supabase
       .from("users")
-      .update({ status: "active" })
+      .update({ status: "pending" })
       .eq("auth_user_id", user.id)
       .select()
       .single();
@@ -135,9 +152,20 @@ export const registerAPI = {
       .from("users")
       .select("*")
       .eq("auth_user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+
+    // Return structured default if data is empty (user just registered)
+    if (!data) {
+      return {
+        id: user.id, // Or a mock ID if needed
+        auth_user_id: user.id,
+        phone_number: user.phone || user.user_metadata?.phone_number,
+        status: "initiated",
+      };
+    }
+
     return data;
   },
 
@@ -151,12 +179,30 @@ export const registerAPI = {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    const { data, error } = await supabase
+    const { data: existing } = await supabase
       .from("users")
-      .update({ name, address, cuisine_type_id })
+      .select("id")
       .eq("auth_user_id", user.id)
-      .select()
-      .single();
+      .maybeSingle();
+
+    const updates = { name, address, cuisine_type_id };
+
+    let query;
+    if (existing) {
+      query = supabase
+        .from("users")
+        .update(updates)
+        .eq("auth_user_id", user.id);
+    } else {
+      query = supabase.from("users").insert({
+        auth_user_id: user.id,
+        ...updates,
+        phone_number: user.phone || user.user_metadata?.phone_number,
+        status: "initiated",
+      });
+    }
+
+    const { data, error } = await query.select().single();
 
     if (error) throw error;
     return data;
@@ -168,8 +214,33 @@ export const registerAPI = {
   },
 
   getOnboardingSession: async () => {
-    // Deprecated or return user status
-    return registerAPI.getOnboardingUserData();
+    const user = await registerAPI.getOnboardingUserData();
+
+    // Compute current_step dynamically
+    let current_step = "cuisine_selection";
+
+    if (user.cuisine_type_id) {
+      current_step = "profile_completion";
+    }
+    if (
+      user.name &&
+      user.address &&
+      user.name !== user.phone_number &&
+      user.address !== "Pending"
+    ) {
+      current_step = "plan_selection";
+    }
+    if (user.has_regular_plan || user.has_kids_plan || user.has_diet_plan) {
+      current_step = "pricing_confirmation";
+    }
+    if (user.status === "active") {
+      current_step = "completed";
+    }
+
+    return {
+      ...user,
+      current_step,
+    };
   },
 
   getReviewData: async () => {
@@ -186,7 +257,7 @@ export const registerAPI = {
       .select(
         `
             *,
-            cuisine_types (name, price),
+            cuisine_types (name),
             categories:selected_main_category_id (name, price) 
         `,
       )

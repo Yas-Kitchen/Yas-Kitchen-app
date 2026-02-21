@@ -10,20 +10,25 @@ const Plan = () => {
   } = useGlobalContext();
   const { selectPlan, updatePlan, loading } = useRegisterAPI();
   const handleContinue = async () => {
+    if (!selectedPlan || selectedPlan.length === 0) {
+      alert("Please choose at least one monthly plan to continue.");
+      return;
+    }
+
     if (isEditing) {
       await updatePlan(selectedPlan.map((p) => p.key.toLowerCase()));
       setActiveStep(3);
       return;
     }
-    if (selectedPlan.length > 0) {
-      await selectPlan(selectedPlan.map((p) => p.key.toLowerCase()));
-    }
+    await selectPlan(selectedPlan.map((p) => p.key.toLowerCase()));
     setActiveStep(3);
   };
 
   return (
     <View className="font-poppins bg-white rounded-2xl mt-10 p-5 pt-8">
-      <Text className="font-poppins text-base text-[12px]">Choose your monthly plan</Text>
+      <Text className="font-poppins text-base text-[12px]">
+        Choose your monthly plan
+      </Text>
       <MonthlyPlan />
       <View className="font-poppins flex-row gap-3 mr-3">
         <TouchableOpacity

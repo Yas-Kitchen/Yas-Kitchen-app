@@ -37,18 +37,24 @@ const MonthlyPlan = () => {
   useEffect(() => {
     const fetchData = async () => {
       const data = await fetchPlanDetails();
-      setAllPlans(data);
+      if (data && data.categories) {
+        setAllPlans(data.categories);
+      } else if (Array.isArray(data)) {
+        setAllPlans(data);
+      } else {
+        setAllPlans([]);
+      }
     };
     fetchData();
     //eslint-disable-next-line
   }, []);
 
   const foodPlans = useMemo(() => {
-    return allPlans.filter((plan: any) => plan.type === "main");
+    return (allPlans || []).filter((plan: any) => plan?.key !== "Kids");
   }, [allPlans]);
 
   const kidsPlan = useMemo(() => {
-    return allPlans.find((plan: any) => plan.type === "addon");
+    return (allPlans || []).find((plan: any) => plan?.key === "Kids");
   }, [allPlans]);
 
   foodPlans.forEach((plan: any) => {
@@ -110,7 +116,6 @@ const MonthlyPlan = () => {
     //eslint-disable-next-line
   }, [has_diet_plan, has_regular_plan, has_kids_plan, allPlans]);
 
-
   const handlePress = (plan: any) => {
     if (plan.key === "Diet") {
       if (has_diet_plan) {
@@ -149,7 +154,9 @@ const MonthlyPlan = () => {
     return (
       <View className="font-poppins flex-1 items-center justify-center py-10">
         <ActivityIndicator size="large" color="#FF6F00" />
-        <Text className="font-poppins text-base_color mt-2">Loading plans...</Text>
+        <Text className="font-poppins text-base_color mt-2">
+          Loading plans...
+        </Text>
       </View>
     );
   }
@@ -224,8 +231,9 @@ const MonthlyPlan = () => {
                   </View>
                 </View>
                 <View
-                  className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${isSelected ? "bg-primary" : "bg-base_color/10"
-                    }`}
+                  className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
+                    isSelected ? "bg-primary" : "bg-base_color/10"
+                  }`}
                 />
               </View>
             </Pressable>
@@ -234,7 +242,7 @@ const MonthlyPlan = () => {
       })}
 
       {/* Kids Plan */}
-      {kidsPlan && (
+      {kidsPlan &&
         (() => {
           const plan = kidsPlan;
           const isSelected = has_kids_plan;
@@ -292,15 +300,15 @@ const MonthlyPlan = () => {
                     </View>
                   </View>
                   <View
-                    className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${isSelected ? "bg-primary" : "bg-base_color/10"
-                      }`}
+                    className={`rounded-full absolute bottom-4 right-3 w-5 h-5 ${
+                      isSelected ? "bg-primary" : "bg-base_color/10"
+                    }`}
                   />
                 </View>
               </Pressable>
             </Animated.View>
           );
-        })()
-      )}
+        })()}
     </View>
   );
 };

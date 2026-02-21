@@ -218,9 +218,11 @@ const authAPI = {
       .from("users")
       .select("*")
       .eq("auth_user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
+    // Return partial object if null to handle missing gracefully
+    return data || { auth_user_id: user.id, status: "initiated" };
     return data;
   },
 

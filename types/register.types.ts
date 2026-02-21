@@ -1,7 +1,6 @@
 export interface ReviewData {
-  cuisine: ReviewCuisine;
-  onboarding: ReviewOnboarding;
-  plans: ReviewPlans;
+  cuisine: any;
+  plan: any[];
   user: ReviewUser;
 }
 
@@ -44,6 +43,9 @@ export interface ReviewUser {
   address: string;
   phone_number: string;
   profile_complete: boolean;
+  has_regular_plan?: boolean;
+  has_diet_plan?: boolean;
+  has_kids_plan?: boolean;
 }
 
 export interface ReviewTypes {

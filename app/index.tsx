@@ -63,8 +63,19 @@ const Index = () => {
 
         try {
           const userData = await authAPI.getProfile();
-          if (userData.role === "admin") router.replace("/(admin)/admin");
-          else router.replace("/(user)/user");
+          if (userData.status === "initiated") {
+            router.replace("/(register)/register");
+          } else if (userData.status === "pending") {
+            showAlert(
+              "Account Pending",
+              "Your account is pending admin approval.",
+            );
+            await supabase.auth.signOut();
+          } else if (userData.role === "admin") {
+            router.replace("/(admin)/admin");
+          } else {
+            router.replace("/(user)/user");
+          }
         } catch (error: any) {
           console.log("Error fetching profile for redirect:", error);
           if (
@@ -122,11 +133,9 @@ const Index = () => {
           }
           setStep(2);
         } else {
-          // New user: Initiate passwordless registration and redirect to onboarding
-          const authResult = await authAPI.initiateRegistration(mobile);
-          setUserId(authResult.user.id);
-          router.replace("/register");
-          return;
+          // New user: Proceed to password screen
+          setMode("REGISTER");
+          setStep(2);
         }
       } catch (error) {
         console.log("Check user error:", error);
