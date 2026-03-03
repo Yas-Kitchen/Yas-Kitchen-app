@@ -160,7 +160,7 @@ const WeeklyMeals = () => {
               }}
               setItems={setCategories}
               listMode="SCROLLVIEW"
-              placeholder="Select Category"
+              placeholder="Select Cuisine Type"
               placeholderStyle={{ color: "#999" }}
               style={{
                 borderRadius: 8,
@@ -204,7 +204,7 @@ const WeeklyMeals = () => {
                       if (!item.value) return;
                       if (!item.value) return;
                       showAlert(
-                        "Delete Category",
+                        "Delete Cuisine",
                         `Are you sure you want to delete "${item.label}"?`,
                         [
                           { text: "Cancel", style: "cancel" },
@@ -250,14 +250,14 @@ const WeeklyMeals = () => {
           >
             <Feather name="folder-plus" size={16} color={"#FF7629"} />
             <Text className="text-primary font-poppins-medium text-[10px]">
-              Add Category
+              Add Cuisine
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => {
               if (!selectedCategory) {
-                showAlert("Error", "Please select a category first");
+                showAlert("Error", "Please select a cuisine first");
                 return;
               }
               setPopupNames("addmeal");
@@ -288,10 +288,10 @@ const WeeklyMeals = () => {
             <View className="font-poppins items-center justify-center mt-10">
               <Feather name="folder-plus" size={48} color="#ddd" />
               <Text className="font-poppins text-gray-400 text-center mt-4 text-base">
-                No categories yet
+                No cuisines yet
               </Text>
               <Text className="font-poppins text-gray-400 text-center text-sm">
-                Create your first category to get started
+                Create your first cuisine to get started
               </Text>
             </View>
           )
@@ -309,7 +309,7 @@ const WeeklyMeals = () => {
           )
         ) : (
           <Text className="font-poppins text-gray-400 text-center mt-10">
-            Select a category to view meals
+            Select a cuisine to view meals
           </Text>
         )}
       </View>

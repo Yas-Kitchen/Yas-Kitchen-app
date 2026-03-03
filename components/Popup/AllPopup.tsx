@@ -50,8 +50,8 @@ const AllPopup = () => {
       <AddMeal
         open={popupNames === "addmeal"}
         onClose={() => setPopupNames("")}
-        // TODO: Make this dynamic by fetching the category ID for "Regular"
-        categoryId="8143039e-b302-48a9-958e-0f68560e4bb6"
+        // Using the strictly seeded ID for "Regular" category in the database
+        categoryId="4b6ef9b7-6474-402b-8a7b-819d39e0d7a3"
         cuisineId={selectedCategory}
         onSuccess={() => mealListRef.current?.refresh()}
       />
@@ -91,7 +91,8 @@ const AllPopup = () => {
       <AddDietMeals
         open={popupNames === "createdietplan"}
         onClose={() => setPopupNames("")}
-        categoryId="8143039e-b302-48a9-958e-0f68560e4bb6"
+        // Using the strictly seeded ID for "Diet" category in the database
+        categoryId="9d29b9df-0b56-4407-95a0-ac68ecf0b751"
         cuisineId={selectedCategory}
         onSuccess={() => mealListRef.current?.refresh()}
       />

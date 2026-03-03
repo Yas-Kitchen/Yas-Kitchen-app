@@ -37,7 +37,6 @@ export const storage = {
     await AsyncStorage.multiRemove([KEYS.ACCESS_TOKEN, KEYS.REFRESH_TOKEN]);
   },
 
-  // User profile management
   setUserProfile: async (profile: any) => {
     await AsyncStorage.setItem(KEYS.USER_PROFILE, JSON.stringify(profile));
   },
@@ -51,7 +50,6 @@ export const storage = {
     await AsyncStorage.removeItem(KEYS.USER_PROFILE);
   },
 
-  // Clear all storage
   clearAll: async () => {
     await AsyncStorage.multiRemove([
       KEYS.ACCESS_TOKEN,

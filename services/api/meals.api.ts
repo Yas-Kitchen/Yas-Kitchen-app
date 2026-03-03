@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { decode } from "base64-arraybuffer";
 import * as FileSystem from "expo-file-system/legacy";
 import axios from "axios";
-
+import CryptoJS from "crypto-js";
 export const mealsAPI = {
   createMealPlan: async (data: any) => {
     console.log("mealsAPI: createMealPlan sending request", data);
@@ -286,87 +286,64 @@ export const mealsAPI = {
 
   uploadMealImage: async (imageUri: string, subdirectory: string = "meals") => {
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      const token = session?.access_token;
+      const uploadUrl =
+        process.env.EXPO_PUBLIC_CLOUDINARY_URL ||
+        "https://api.cloudinary.com/v1_1/yas-kitchen-storage/image/upload";
+      const uploadPreset =
+        process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET ||
+        "yas-kitchen-storage";
 
-      if (!token) throw new Error("No authentication token found");
-
-      const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
-      const anonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const userId = user?.id || "anonymous";
-
-      let contentType = "image/jpeg";
-      const fileExt = imageUri.split(".").pop()?.toLowerCase();
-      if (fileExt === "png") contentType = "image/png";
-
-      const fileName = `${subdirectory}/${userId}/${Date.now()}.${fileExt || "jpg"}`;
-
-      // IMPLEMENTATION: WEB vs NATIVE
-      // Web: Use standard JS fetch/Blob and Supabase Client
       if (Platform.OS === "web") {
-        console.log(
-          `[Upload] Web Platform detected. Using standard Supabase Client.`,
-        );
+        console.log(`[Upload] Web Platform — Cloudinary unsigned upload`);
 
-        // Fetch the file as a Blob
         const fetchResponse = await fetch(imageUri);
         const blob = await fetchResponse.blob();
 
-        const { data, error } = await supabase.storage
-          .from("yas-storage")
-          .upload(fileName, blob, {
-            contentType: contentType,
-            upsert: true,
-          });
+        const formData = new FormData();
+        formData.append("file", blob);
+        formData.append("upload_preset", uploadPreset);
+        formData.append("folder", subdirectory);
 
-        if (error) {
-          console.error("[Upload] Web Supabase Error:", error);
-          throw error;
+        const res = await fetch(uploadUrl, {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errBody = await res.text();
+          console.error("[Upload] Cloudinary Web Error:", errBody);
+          throw new Error(`Cloudinary upload failed: ${res.status}`);
         }
 
-        const publicUrl = `${supabaseUrl}/storage/v1/object/public/yas-storage/${fileName}`;
-        console.log(`[Upload] Web Success! URL: ${publicUrl}`);
-        return publicUrl;
+        const result = await res.json();
+        console.log(`[Upload] Web Success! URL: ${result.secure_url}`);
+        return result.secure_url;
       }
 
-      // Native: Use FileSystem.uploadAsync for robust Direct REST API upload
-      // Construct the Storage API URL
-      const uploadUrl = `${supabaseUrl}/storage/v1/object/yas-storage/${fileName}`;
-
-      console.log(`[Upload] Direct Supabase REST: ${uploadUrl}`);
+      console.log(`[Upload] Native Platform — Cloudinary unsigned upload`);
 
       const response = await FileSystem.uploadAsync(uploadUrl, imageUri, {
         httpMethod: "POST",
-        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          apikey: anonKey!,
-          "Content-Type": contentType,
-          "x-upsert": "true",
+        uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+        fieldName: "file",
+        parameters: {
+          upload_preset: uploadPreset,
+          folder: subdirectory,
         },
       });
 
       console.log(`[Upload] Status: ${response.status}`);
 
       if (response.status !== 200) {
-        // Log body for debugging
         console.error("[Upload] Failed:", response.body);
-        throw new Error(`Supabase REST upload failed: ${response.status}`);
+        throw new Error(`Cloudinary upload failed: ${response.status}`);
       }
 
-      // Construct Public URL manually
-      const publicUrl = `${supabaseUrl}/storage/v1/object/public/yas-storage/${fileName}`;
-      console.log(`[Upload] Success! URL: ${publicUrl}`);
-
-      return publicUrl;
+      const result = JSON.parse(response.body);
+      console.log(`[Upload] Success! URL: ${result.secure_url}`);
+      return result.secure_url;
     } catch (e: any) {
-      console.error("Direct Upload Error:", e);
+      console.error("Cloudinary Upload Error:", e);
       throw new Error(`Image Upload Failed: ${e.message}`);
     }
   },
